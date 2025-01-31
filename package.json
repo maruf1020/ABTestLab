@@ -1,0 +1,20 @@
+{
+  "name": "ab-testing-cli",
+  "version": "1.0.0",
+  "description": "A CLI tool for managing websites, AB tests, multipage tests, and simple tests",
+  "main": "src/index.js",
+  "type": "module",
+  "bin": {
+    "ab-test": "./src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "cli": "node src/index.js"
+  },
+  "dependencies": {
+    "commander": "^9.4.1",
+    "inquirer": "^8.2.5",
+    "fs-extra": "^11.1.0",
+    "chalk": "^4.1.2"
+  }
+}
