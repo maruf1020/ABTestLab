@@ -1,10 +1,10 @@
 import fs from "fs-extra"
 import path from "path"
 import inquirer from "inquirer"
-import ora from "ora"
 import chalk from "chalk"
 import { fileURLToPath } from "url"
 import { ROOT_DIR } from "../config.js"
+import { initializeTemplates } from "./init.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -12,21 +12,39 @@ const TEMPLATES_DIR = path.resolve(__dirname, "..", "templates")
 
 export async function createWebsite(websiteName) {
   const websiteDir = path.join(ROOT_DIR, websiteName)
-  const spinner = ora("Creating website...").start()
   try {
     await fs.ensureDir(websiteDir)
     await fs.writeJson(path.join(websiteDir, "info.json"), { name: websiteName })
-    spinner.succeed(chalk.green(`Website "${websiteName}" created successfully.`))
+    console.log(chalk.green(`Website "${websiteName}" created successfully.`))
   } catch (error) {
-    spinner.fail(chalk.red(`Failed to create website: ${error.message}`))
+    console.error(chalk.red(`Failed to create website: ${error.message}`))
     throw error
   }
 }
 
-export async function createTest(website, testName, testType) {
-  const testDir = path.join(ROOT_DIR, website, testName)
+async function ensureTemplatesExist() {
+  const templatesExist = await fs.pathExists(TEMPLATES_DIR)
+  if (!templatesExist) {
+    const { createTemplates } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "createTemplates",
+        message: "Templates do not exist. Do you want to create them?",
+        default: true,
+      },
+    ])
+    if (createTemplates) {
+      await initializeTemplates()
+    } else {
+      throw new Error('Templates are required to create tests. Please run "npm run cli init" to create templates.')
+    }
+  }
+}
 
+export async function createTest(website, testName, testType) {
   try {
+    await ensureTemplatesExist()
+    const testDir = path.join(ROOT_DIR, website, testName)
     await fs.ensureDir(testDir)
 
     switch (testType) {
@@ -42,13 +60,12 @@ export async function createTest(website, testName, testType) {
     }
 
     await fs.writeJson(path.join(testDir, "info.json"), { name: testName, type: testType })
-
+    console.log(chalk.green(`Test "${testName}" created successfully for website "${website}".`))
   } catch (error) {
+    console.error(chalk.red(`Failed to create test: ${error.message}`))
     throw error
   }
 }
-
-
 
 async function createNormalTest(testDir) {
   const { createVariation } = await inquirer.prompt([
@@ -103,7 +120,8 @@ async function createTouchPoints(testDir) {
   const touchPoints = []
   let touchPointCount = 0
 
-  while (true) { // Loop until user decides to stop
+  while (true) {
+    // Loop until user decides to stop
     touchPointCount++
 
     const response = await inquirer.prompt([
@@ -141,7 +159,8 @@ async function createVariations(testDir, touchPointCount) {
   const variations = []
   let variationCount = 0
 
-  while (true) { // Loop until user decides to stop
+  while (true) {
+    // Loop until user decides to stop
     variationCount++
 
     const response = await inquirer.prompt([
@@ -179,3 +198,4 @@ async function createVariations(testDir, touchPointCount) {
 
   return variations
 }
+
