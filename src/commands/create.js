@@ -2,6 +2,7 @@ import { Command } from "commander"
 import inquirer from "inquirer"
 import { createWebsite, createTest } from "../utils/creators.js"
 import { listWebsites } from "../utils/fileUtils.js"
+import chalk from "chalk"
 
 export const createCommand = new Command("create").description("Create a new website or test").action(async () => {
   let exit = false
@@ -14,7 +15,7 @@ export const createCommand = new Command("create").description("Create a new web
         choices: ["Create New Website", "Create New Test", "Go Back", "Exit"],
       },
     ])
-    console.log(choice, "===")
+
     switch (choice) {
       case "Create New Website":
         await createNewWebsite()
@@ -23,11 +24,11 @@ export const createCommand = new Command("create").description("Create a new web
         await createNewTest()
         break
       case "Go Back":
-        // In this case, the loop will continue, showing the main menu again
+        // Continue the loop
         break
       case "Exit":
         exit = true
-        console.log("Goodbye!")
+        console.log(chalk.blue("Goodbye!"))
         break
     }
   }
@@ -39,31 +40,35 @@ async function createNewWebsite() {
       type: "input",
       name: "websiteName",
       message: "Enter the name of the new website:",
-      validate: (input) => input.trim() !== "",
+      validate: (input) => input.trim() !== "" || "Website name cannot be empty",
     },
   ])
 
-  await createWebsite(websiteName)
-  console.log(`Website "${websiteName}" created successfully.`)
+  try {
+    await createWebsite(websiteName)
+    console.log(chalk.green(`Website "${websiteName}" created successfully.`))
 
-  const { createTest: shouldCreateTest } = await inquirer.prompt([
-    {
-      type: "confirm",
-      name: "createTest",
-      message: "Would you like to create a test for this website now?",
-      default: true,
-    },
-  ])
+    const { createTest } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "createTest",
+        message: "Would you like to create a test for this website now?",
+        default: true,
+      },
+    ])
 
-  if (shouldCreateTest) {
-    await promptAndCreateTest(websiteName)
+    if (createTest) {
+      await promptAndCreateTest(websiteName)
+    }
+  } catch (error) {
+    console.error(chalk.red(`Failed to create website: ${error.message}`))
   }
 }
 
 async function createNewTest() {
   const websites = await listWebsites()
   if (websites.length === 0) {
-    console.log("No websites found. Please create a new website first.")
+    console.log(chalk.yellow("No websites found. Please create a new website first."))
     return
   }
 
@@ -89,7 +94,7 @@ async function promptAndCreateTest(website) {
       type: "input",
       name: "testName",
       message: "Enter the name of the new test:",
-      validate: (input) => input.trim() !== "",
+      validate: (input) => input.trim() !== "" || "Test name cannot be empty",
     },
     {
       type: "list",
@@ -99,7 +104,11 @@ async function promptAndCreateTest(website) {
     },
   ])
 
-  await createTest(website, testName, testType)
-  console.log(`Test "${testName}" created successfully for website "${website}".`)
+  try {
+    await createTest(website, testName, testType)
+    console.log(chalk.green(`Test "${testName}" created successfully for website "${website}".`))
+  } catch (error) {
+    console.error(chalk.red(`Failed to create test: ${error.message}`))
+  }
 }
 
