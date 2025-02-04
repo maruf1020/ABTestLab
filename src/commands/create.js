@@ -1,5 +1,5 @@
 import { Command } from "commander"
-import inquirer from "inquirer"
+import prompts from "prompts"
 import { createWebsite, createTest } from "../utils/creators.js"
 import { listWebsites } from "../utils/fileUtils.js"
 import chalk from "chalk"
@@ -7,14 +7,18 @@ import chalk from "chalk"
 export const createCommand = new Command("create").description("Create a new website or test").action(async () => {
   let exit = false
   while (!exit) {
-    const { choice } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "choice",
-        message: "What would you like to do?",
-        choices: ["Create New Website", "Create New Test", "Go Back", "Exit"],
-      },
-    ])
+    const response = await prompts({
+      type: "select",
+      name: "choice",
+      message: "What would you like to do?",
+      choices: [
+        { title: "Create New Website", value: "Create New Website" },
+        { title: "Create New Test", value: "Create New Test" },
+        { title: "Go Back", value: "Go Back" },
+        { title: "Exit", value: "Exit" },
+      ],
+    })
+    const { choice } = response
 
     switch (choice) {
       case "Create New Website":
@@ -35,26 +39,26 @@ export const createCommand = new Command("create").description("Create a new web
 })
 
 async function createNewWebsite() {
-  const { websiteName } = await inquirer.prompt([
-    {
-      type: "input",
-      name: "websiteName",
-      message: "Enter the name of the new website:",
-      validate: (input) => input.trim() !== "" || "Website name cannot be empty",
-    },
-  ])
+  const response = await prompts({
+    type: "text",
+    name: "websiteName",
+    message: "Enter the name of the new website:",
+    validate: (input) => input.trim() !== "" || "Website name cannot be empty",
+  })
+  const { websiteName } = response
 
   try {
     await createWebsite(websiteName)
 
-    const { createTest } = await inquirer.prompt([
-      {
-        type: "confirm",
-        name: "createTest",
-        message: "Would you like to create a test for this website now?",
-        default: true,
-      },
-    ])
+    const response = await prompts({
+      type: "toggle",
+      name: "createTest",
+      message: "Would you like to create a test for this website now?",
+      initial: true,
+      active: "yes",
+      inactive: "no",
+    })
+    const { createTest } = response
 
     if (createTest) {
       await promptAndCreateTest(websiteName)
@@ -71,14 +75,16 @@ async function createNewTest() {
     return
   }
 
-  const { website } = await inquirer.prompt([
-    {
-      type: "list",
-      name: "website",
-      message: "Select a website to create a test for:",
-      choices: [...websites, "Go Back"],
-    },
-  ])
+  const response = await prompts({
+    type: "select",
+    name: "website",
+    message: "Select a website to create a test for:",
+    choices: [
+      ...websites.map((website) => ({ title: website, value: website })),
+      { title: "Go Back", value: "Go Back" },
+    ],
+  })
+  const { website } = response
 
   if (website === "Go Back") {
     return
@@ -88,20 +94,21 @@ async function createNewTest() {
 }
 
 async function promptAndCreateTest(website) {
-  const { testName, testType } = await inquirer.prompt([
+  const response = await prompts([
     {
-      type: "input",
+      type: "text",
       name: "testName",
       message: "Enter the name of the new test:",
       validate: (input) => input.trim() !== "" || "Test name cannot be empty",
     },
     {
-      type: "list",
+      type: "select",
       name: "testType",
       message: "Select the test type:",
-      choices: ["A/B", "AA", "Multipage", "Patch"],
+      choices: ["A/B", "AA", "Multipage", "Patch"].map(type => ({ title: type, value: type })),
     },
   ])
+  const { testName, testType } = response
 
   try {
     await createTest(website, testName, testType)
@@ -110,4 +117,3 @@ async function promptAndCreateTest(website) {
     console.error(chalk.red(`Failed to create test: ${error.message}`))
   }
 }
-

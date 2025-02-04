@@ -1,10 +1,11 @@
 import fs from "fs-extra"
 import path from "path"
-import inquirer from "inquirer"
-import chalk from "chalk"
+import prompts from "prompts"
+import kleur from "kleur"
 import { fileURLToPath } from "url"
 import { ROOT_DIR } from "../config.js"
 import { initializeTemplates } from "./init.js"
+import { convertScssToCSS } from "./cssUtils.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -15,16 +16,14 @@ export async function createWebsite(websiteName) {
   try {
     await fs.ensureDir(websiteDir)
 
-    const { hostnames } = await inquirer.prompt([
-      {
-        type: "input",
-        name: "hostnames",
-        message: "Enter the website host(s) (separate multiple hosts with commas):",
-        validate: (input) => input.trim() !== "" || "At least one hostname is required",
-      },
-    ])
+    const response = await prompts({
+      type: "text",
+      name: "hostnames",
+      message: "Enter the website host(s) (separate multiple hosts with commas):",
+      validate: (input) => input.trim() !== "" || "At least one hostname is required",
+    })
 
-    const hostnameList = hostnames.split(",").map((host) => host.trim())
+    const hostnameList = response.hostnames.split(",").map((host) => host.trim())
 
     const websiteInfo = {
       name: websiteName,
@@ -36,10 +35,10 @@ export async function createWebsite(websiteName) {
 
     await fs.writeJson(path.join(websiteDir, "info.json"), websiteInfo, { spaces: 2 })
     console.log(
-      chalk.green(`Website "${websiteName}" created successfully with hostname(s): ${hostnameList.join(", ")}`),
+      kleur.green(`Website "${websiteName}" created successfully with hostname(s): ${hostnameList.join(", ")}`),
     )
   } catch (error) {
-    console.error(chalk.red(`Failed to create website: ${error.message}`))
+    console.error(kleur.red(`Failed to create website: ${error.message}`))
     throw error
   }
 }
@@ -47,15 +46,13 @@ export async function createWebsite(websiteName) {
 async function ensureTemplatesExist() {
   const templatesExist = await fs.pathExists(TEMPLATES_DIR)
   if (!templatesExist) {
-    const { createTemplates } = await inquirer.prompt([
-      {
-        type: "confirm",
-        name: "createTemplates",
-        message: "Templates do not exist. Do you want to create them?",
-        default: true,
-      },
-    ])
-    if (createTemplates) {
+    const response = await prompts({
+      type: "confirm",
+      name: "createTemplates",
+      message: "Templates do not exist. Do you want to create them?",
+      initial: true,
+    })
+    if (response.createTemplates) {
       await initializeTemplates()
     } else {
       throw new Error('Templates are required to create tests. Please run "npm run cli init" to create templates.')
@@ -101,14 +98,14 @@ export async function createTest(website, testName, testType) {
     }
 
     await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 })
-    console.log(chalk.green(`Test "${testName}" created successfully for website "${website}".`))
+    console.log(kleur.green(`Test "${testName}" created successfully for website "${website}".`))
 
     // Prompt for variation activation
     if (variations.length > 0) {
       await activateVariation(testDir, variations, testType)
     }
   } catch (error) {
-    console.error(chalk.red(`Failed to create test: ${error.message}`))
+    console.error(kleur.red(`Failed to create test: ${error.message}`))
     throw error
   }
 }
@@ -128,7 +125,7 @@ async function createABTest(testDir) {
     },
     { spaces: 2 },
   )
-  console.log(chalk.green("Control variation created successfully."))
+  console.log(kleur.green("Control variation created successfully."))
 
   // Create variations
   return await createVariations(testDir, 1)
@@ -173,7 +170,7 @@ async function createMultipageTest(testDir) {
       },
       { spaces: 2 },
     )
-    console.log(chalk.green(`Touch point "${touchPoint}" created successfully.`))
+    console.log(kleur.green(`Touch point "${touchPoint}" created successfully.`))
   }
 
   return variations
@@ -194,7 +191,7 @@ async function createPatchTest(testDir) {
     },
     { spaces: 2 },
   )
-  console.log(chalk.green(`Patch variation "${variationName}" created successfully.`))
+  console.log(kleur.green(`Patch variation "${variationName}" created successfully.`))
   return [variationName]
 }
 
@@ -205,9 +202,9 @@ async function createTouchPoints(testDir) {
   while (true) {
     touchPointCount++
 
-    const response = await inquirer.prompt([
+    const response = await prompts([
       {
-        type: "input",
+        type: "text",
         name: "touchPointName",
         message: `Enter the name for Touch Point ${touchPointCount}:`,
         validate: async (input) => {
@@ -220,7 +217,7 @@ async function createTouchPoints(testDir) {
         type: "confirm",
         name: "createAnother",
         message: "Do you want to create another Touch Point?",
-        default: false,
+        initial: false,
       },
     ])
 
@@ -229,7 +226,7 @@ async function createTouchPoints(testDir) {
     const touchPointDir = path.join(testDir, response.touchPointName)
     await fs.ensureDir(touchPointDir)
     await fs.copy(path.join(TEMPLATES_DIR, "touch-point"), touchPointDir)
-    console.log(chalk.green(`Touch point "${response.touchPointName}" created successfully.`))
+    console.log(kleur.green(`Touch point "${response.touchPointName}" created successfully.`))
 
     if (!response.createAnother) break
   }
@@ -244,9 +241,9 @@ async function createVariations(testDir, touchPointCount) {
   while (true) {
     variationCount++
 
-    const response = await inquirer.prompt([
+    const response = await prompts([
       {
-        type: "input",
+        type: "text",
         name: "variationName",
         message: `Enter the name for Variation ${variationCount}:`,
         validate: async (input) => {
@@ -259,7 +256,7 @@ async function createVariations(testDir, touchPointCount) {
         type: "confirm",
         name: "createAnother",
         message: "Do you want to create another variation?",
-        default: false,
+        initial: false,
       },
     ])
 
@@ -281,7 +278,7 @@ async function createVariations(testDir, touchPointCount) {
       )
     }
 
-    console.log(chalk.green(`Variation "${response.variationName}" created successfully.`))
+    console.log(kleur.green(`Variation "${response.variationName}" created successfully.`))
 
     if (!response.createAnother) break
   }
@@ -290,14 +287,14 @@ async function createVariations(testDir, touchPointCount) {
 }
 
 async function activateVariation(testDir, variations, testType) {
-  const { activeVariation } = await inquirer.prompt([
-    {
-      type: "list",
-      name: "activeVariation",
-      message: "Select a variation to activate:",
-      choices: ["None", ...variations],
-    },
-  ])
+  const response = await prompts({
+    type: "select",
+    name: "activeVariation",
+    message: "Select a variation to activate:",
+    choices: [{ title: "None", value: "None" }, ...variations.map((v) => ({ title: v, value: v }))],
+  })
+
+  const activeVariation = response.activeVariation
 
   if (activeVariation !== "None") {
     const testInfo = await fs.readJson(path.join(testDir, "info.json"))
@@ -310,26 +307,34 @@ async function activateVariation(testDir, variations, testType) {
       for (const touchPoint of touchPoints) {
         const touchPointDir = path.join(testDir, touchPoint)
         if ((await fs.stat(touchPointDir)).isDirectory()) {
-          const variationDir = path.join(touchPointDir, activeVariation)
-          if (await fs.pathExists(variationDir)) {
-            const variationInfo = await fs.readJson(path.join(variationDir, "info.json"))
-            variationInfo.active = true
-            variationInfo.lastUpdated = new Date().toISOString()
-            await fs.writeJson(path.join(variationDir, "info.json"), variationInfo, { spaces: 2 })
-          }
+          await updateVariationStatus(touchPointDir, activeVariation)
         }
       }
     } else {
-      const variationDir = path.join(testDir, activeVariation)
-      if (await fs.pathExists(variationDir)) {
-        const variationInfo = await fs.readJson(path.join(variationDir, "info.json"))
-        variationInfo.active = true
-        variationInfo.lastUpdated = new Date().toISOString()
-        await fs.writeJson(path.join(variationDir, "info.json"), variationInfo, { spaces: 2 })
-      }
+      await updateVariationStatus(testDir, activeVariation)
     }
 
-    console.log(chalk.green(`Activated variation: ${activeVariation}`))
+    console.log(kleur.green(`Activated variation: ${activeVariation}`))
+  }
+}
+
+async function updateVariationStatus(dir, activeVariation) {
+  const variations = await fs.readdir(dir)
+  for (const variation of variations) {
+    if (variation !== "info.json" && (await fs.stat(path.join(dir, variation))).isDirectory()) {
+      const variationDir = path.join(dir, variation)
+      const variationInfo = await fs.readJson(path.join(variationDir, "info.json"))
+      variationInfo.active = variation === activeVariation
+      variationInfo.lastUpdated = new Date().toISOString()
+      await fs.writeJson(path.join(variationDir, "info.json"), variationInfo, { spaces: 2 })
+
+      // Convert SCSS to CSS
+      const scssFile = path.join(variationDir, "style.scss")
+      const cssFile = path.join(variationDir, "style.css")
+      if (await fs.pathExists(scssFile)) {
+        await convertScssToCSS(scssFile, cssFile)
+      }
+    }
   }
 }
 
