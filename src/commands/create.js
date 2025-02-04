@@ -14,7 +14,7 @@ export const createCommand = new Command("create").description("Create a new web
         choices: ["Create New Website", "Create New Test", "Go Back", "Exit"],
       },
     ])
-
+    console.log(choice, "===")
     switch (choice) {
       case "Create New Website":
         await createNewWebsite()
