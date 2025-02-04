@@ -21,3 +21,12 @@ export async function listTests(website) {
   }
 }
 
+export async function getTestInfo(website, test) {
+  try {
+    const testInfoPath = path.join(ROOT_DIR, website, test, "info.json")
+    return await fs.readJson(testInfoPath)
+  } catch (error) {
+    throw new Error(`Failed to get test info for ${test} in website ${website}: ${error.message}`)
+  }
+}
+

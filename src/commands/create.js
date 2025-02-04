@@ -46,7 +46,6 @@ async function createNewWebsite() {
 
   try {
     await createWebsite(websiteName)
-    console.log(chalk.green(`Website "${websiteName}" created successfully.`))
 
     const { createTest } = await inquirer.prompt([
       {
@@ -100,7 +99,7 @@ async function promptAndCreateTest(website) {
       type: "list",
       name: "testType",
       message: "Select the test type:",
-      choices: ["Normal", "A/B", "Multipage"],
+      choices: ["A/B", "AA", "Multipage", "Patch"],
     },
   ])
 

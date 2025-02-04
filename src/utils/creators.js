@@ -26,10 +26,15 @@ export async function createWebsite(websiteName) {
 
     const hostnameList = hostnames.split(",").map((host) => host.trim())
 
-    await fs.writeJson(path.join(websiteDir, "info.json"), {
+    const websiteInfo = {
       name: websiteName,
       hostnames: hostnameList,
-    })
+      createdAt: new Date().toISOString(),
+      createdAtReadable: new Date().toLocaleString(),
+      lastUpdated: new Date().toISOString(),
+    }
+
+    await fs.writeJson(path.join(websiteDir, "info.json"), websiteInfo, { spaces: 2 })
     console.log(
       chalk.green(`Website "${websiteName}" created successfully with hostname(s): ${hostnameList.join(", ")}`),
     )
@@ -67,18 +72,35 @@ export async function createTest(website, testName, testType) {
     let variations = []
 
     switch (testType) {
-      case "Normal":
-        variations = await createNormalTest(testDir)
-        break
       case "A/B":
         variations = await createABTest(testDir)
+        break
+      case "AA":
+        variations = await createAATest(testDir)
         break
       case "Multipage":
         variations = await createMultipageTest(testDir)
         break
+      case "Patch":
+        variations = await createPatchTest(testDir)
+        break
     }
 
-    await fs.writeJson(path.join(testDir, "info.json"), { name: testName, type: testType })
+    const testInfo = {
+      name: testName,
+      type: testType,
+      website: website,
+      variations: variations,
+      createdAt: new Date().toISOString(),
+      createdAtReadable: new Date().toLocaleString(),
+      lastUpdated: new Date().toISOString(),
+    }
+
+    if (testType === "Multipage") {
+      testInfo.touchpoints = await fs.readdir(testDir)
+    }
+
+    await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 })
     console.log(chalk.green(`Test "${testName}" created successfully for website "${website}".`))
 
     // Prompt for variation activation
@@ -91,30 +113,28 @@ export async function createTest(website, testName, testType) {
   }
 }
 
-async function createNormalTest(testDir) {
-  const { createVariation } = await inquirer.prompt([
-    {
-      type: "confirm",
-      name: "createVariation",
-      message: "Would you like to create a variation?",
-      default: true,
-    },
-  ])
-
-  if (createVariation) {
-    return await createVariations(testDir, 1)
-  }
-  return []
-}
-
 async function createABTest(testDir) {
   // Create control
   const controlDir = path.join(testDir, "control")
   await fs.ensureDir(controlDir)
   await fs.copy(path.join(TEMPLATES_DIR, "variation"), controlDir)
-  await fs.writeJson(path.join(controlDir, "info.json"), { name: "Control" })
+  await fs.writeJson(
+    path.join(controlDir, "info.json"),
+    {
+      name: "Control",
+      createdAt: new Date().toISOString(),
+      createdAtReadable: new Date().toLocaleString(),
+      lastUpdated: new Date().toISOString(),
+    },
+    { spaces: 2 },
+  )
+  console.log(chalk.green("Control variation created successfully."))
 
   // Create variations
+  return await createVariations(testDir, 1)
+}
+
+async function createAATest(testDir) {
   return await createVariations(testDir, 1)
 }
 
@@ -125,22 +145,57 @@ async function createMultipageTest(testDir) {
   for (const touchPoint of touchPoints) {
     const touchPointDir = path.join(testDir, touchPoint)
 
-    // Create control for this touch point
-    const controlDir = path.join(touchPointDir, "control")
-    await fs.ensureDir(controlDir)
-    await fs.copy(path.join(TEMPLATES_DIR, "variation"), controlDir)
-    await fs.writeJson(path.join(controlDir, "info.json"), { name: "Control" })
-
     // Create variations for this touch point
     for (const variation of variations) {
       const variationDir = path.join(touchPointDir, variation)
       await fs.ensureDir(variationDir)
       await fs.copy(path.join(TEMPLATES_DIR, "variation"), variationDir)
-      await fs.writeJson(path.join(variationDir, "info.json"), { name: variation })
+      await fs.writeJson(
+        path.join(variationDir, "info.json"),
+        {
+          name: variation,
+          createdAt: new Date().toISOString(),
+          createdAtReadable: new Date().toLocaleString(),
+          lastUpdated: new Date().toISOString(),
+        },
+        { spaces: 2 },
+      )
     }
+
+    await fs.writeJson(
+      path.join(touchPointDir, "info.json"),
+      {
+        name: touchPoint,
+        variations: variations,
+        createdAt: new Date().toISOString(),
+        createdAtReadable: new Date().toLocaleString(),
+        lastUpdated: new Date().toISOString(),
+      },
+      { spaces: 2 },
+    )
+    console.log(chalk.green(`Touch point "${touchPoint}" created successfully.`))
   }
 
   return variations
+}
+
+async function createPatchTest(testDir) {
+  const variationName = "patch"
+  const variationDir = path.join(testDir, variationName)
+  await fs.ensureDir(variationDir)
+  await fs.copy(path.join(TEMPLATES_DIR, "variation"), variationDir)
+  await fs.writeJson(
+    path.join(variationDir, "info.json"),
+    {
+      name: variationName,
+      createdAt: new Date().toISOString(),
+      createdAtReadable: new Date().toLocaleString(),
+      lastUpdated: new Date().toISOString(),
+    },
+    { spaces: 2 },
+  )
+  console.log(chalk.green(`Patch variation "${variationName}" created successfully.`))
+  return [variationName]
 }
 
 async function createTouchPoints(testDir) {
@@ -174,6 +229,7 @@ async function createTouchPoints(testDir) {
     const touchPointDir = path.join(testDir, response.touchPointName)
     await fs.ensureDir(touchPointDir)
     await fs.copy(path.join(TEMPLATES_DIR, "touch-point"), touchPointDir)
+    console.log(chalk.green(`Touch point "${response.touchPointName}" created successfully.`))
 
     if (!response.createAnother) break
   }
@@ -213,10 +269,19 @@ async function createVariations(testDir, touchPointCount) {
       const variationDir = path.join(testDir, response.variationName)
       await fs.ensureDir(variationDir)
       await fs.copy(path.join(TEMPLATES_DIR, "variation"), variationDir)
-      await fs.writeJson(path.join(variationDir, "info.json"), { name: response.variationName })
+      await fs.writeJson(
+        path.join(variationDir, "info.json"),
+        {
+          name: response.variationName,
+          createdAt: new Date().toISOString(),
+          createdAtReadable: new Date().toLocaleString(),
+          lastUpdated: new Date().toISOString(),
+        },
+        { spaces: 2 },
+      )
     }
 
-    console.log(chalk.green(`Created variation: ${response.variationName}`))
+    console.log(chalk.green(`Variation "${response.variationName}" created successfully.`))
 
     if (!response.createAnother) break
   }
@@ -237,7 +302,8 @@ async function activateVariation(testDir, variations, testType) {
   if (activeVariation !== "None") {
     const testInfo = await fs.readJson(path.join(testDir, "info.json"))
     testInfo.activeVariation = activeVariation
-    await fs.writeJson(path.join(testDir, "info.json"), testInfo)
+    testInfo.lastUpdated = new Date().toISOString()
+    await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 })
 
     if (testType === "Multipage") {
       const touchPoints = await fs.readdir(testDir)
@@ -248,7 +314,8 @@ async function activateVariation(testDir, variations, testType) {
           if (await fs.pathExists(variationDir)) {
             const variationInfo = await fs.readJson(path.join(variationDir, "info.json"))
             variationInfo.active = true
-            await fs.writeJson(path.join(variationDir, "info.json"), variationInfo)
+            variationInfo.lastUpdated = new Date().toISOString()
+            await fs.writeJson(path.join(variationDir, "info.json"), variationInfo, { spaces: 2 })
           }
         }
       }
@@ -257,7 +324,8 @@ async function activateVariation(testDir, variations, testType) {
       if (await fs.pathExists(variationDir)) {
         const variationInfo = await fs.readJson(path.join(variationDir, "info.json"))
         variationInfo.active = true
-        await fs.writeJson(path.join(variationDir, "info.json"), variationInfo)
+        variationInfo.lastUpdated = new Date().toISOString()
+        await fs.writeJson(path.join(variationDir, "info.json"), variationInfo, { spaces: 2 })
       }
     }
 

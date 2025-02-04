@@ -1,0 +1,14 @@
+{
+  "name": "color change of header",
+  "type": "A/B",
+  "website": "foodie",
+  "variations": [
+    "v01",
+    "v02",
+    "v03"
+  ],
+  "createdAt": "2025-02-04T18:50:32.128Z",
+  "createdAtReadable": "5/2/2025, 12:50:32 am",
+  "lastUpdated": "2025-02-04T18:50:34.507Z",
+  "activeVariation": "v02"
+}
