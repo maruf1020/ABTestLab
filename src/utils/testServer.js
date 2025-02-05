@@ -70,9 +70,9 @@ export async function startTestServer(website, test, activeVariation) {
                 const cssFile = path.join(path.dirname(filePath), "style.css")
                 await convertScssToCSS(filePath, cssFile)
                 const css = await fs.readFile(cssFile, "utf-8")
-                io.emit("fileChanged", { testId: test, type: "css", path: "style.css", content: css })
+                io.emit("hmr", { type: "css", path: "style.css", content: css })
             } else if (path.extname(filePath) === ".js") {
-                io.emit("fileChanged", { testId: test, type: "js", path: relativePath, content: fileContent })
+                io.emit("hmr", { type: "js", path: relativePath, content: fileContent })
             }
         })
         .on("error", (error) => log(`Watcher error: ${error}`))

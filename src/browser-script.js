@@ -10,7 +10,6 @@
         const socket = io("http://localhost:3000")
         const activeTests = {}
         let config = {}
-        const injectedElements = new Set()
 
         socket.on("connect", () => {
             console.log("Connected to A/B testing server")
@@ -53,95 +52,48 @@
             applyTestData(testId, data)
         })
 
-        socket.on("fileChanged", (data) => {
-            console.log(`File changed: ${data.type} - ${data.path}`)
+        socket.on("hmr", (data) => {
+            console.log(`HMR update received: ${data.type} - ${data.path}`)
             if (data.type === "css") {
-                updateStyle(data.testId, data.path, data.content)
-                if (config.cssReload) {
-                    location.reload()
-                }
+                updateStyle(data.path, data.content)
             } else if (data.type === "js") {
-                updateScript(data.testId, data.path, data.content)
-                handleJsReload(data.content)
+                updateScript(data.path, data.content)
             }
         })
 
-        function handleJsReload(content) {
-            switch (config.jsReload) {
-                case "smart":
-                    if (checkForDuplicateInjections(content)) {
-                        location.reload()
-                    }
-                    break
-                case true:
-                    location.reload()
-                    break
-                case false:
-                    // Do nothing, don't reload
-                    break
-            }
-        }
-
-        function checkForDuplicateInjections(content) {
-            const parser = new DOMParser()
-            const doc = parser.parseFromString(content, "text/html")
-            const newElements = doc.body.children
-
-            for (const element of newElements) {
-                const selector = getUniqueSelector(element)
-                if (injectedElements.has(selector)) {
-                    return true // Duplicate found
-                }
-                injectedElements.add(selector)
-            }
-
-            return false // No duplicates found
-        }
-
-        function getUniqueSelector(element) {
-            if (element.id) {
-                return `#${element.id}`
-            }
-            if (element.className) {
-                return `.${element.className.split(" ").join(".")}`
-            }
-            return element.tagName.toLowerCase()
-        }
-
         function applyTestData(testId, data) {
             if (data.css["style.css"]) {
-                updateStyle(testId, "style.css", data.css["style.css"])
+                updateStyle("style.css", data.css["style.css"])
             }
 
             Object.entries(data.js).forEach(([file, content]) => {
-                updateScript(testId, file, content)
+                updateScript(file, content)
             })
         }
 
-        function updateStyle(testId, file, content) {
-            let style = document.getElementById(`ab-test-style-${testId}`)
+        function updateStyle(file, content) {
+            let style = document.getElementById(`ab-test-style-${file}`)
             if (!style) {
                 style = document.createElement("style")
-                style.id = `ab-test-style-${testId}`
+                style.id = `ab-test-style-${file}`
                 document.head.appendChild(style)
             }
             style.textContent = content
-
-            // Remove the link tag if it exists
-            const linkTag = document.getElementById(`ab-test-css-${testId}`)
-            if (linkTag) {
-                linkTag.remove()
-            }
         }
 
-        function updateScript(testId, file, content) {
-            let script = document.getElementById(`ab-test-script-${testId}`)
-            if (script) {
-                script.remove()
+        function updateScript(file, content) {
+            const existingScript = document.querySelector(`script[data-ab-test-file="${file}"]`)
+            if (existingScript) {
+                existingScript.remove()
             }
-            script = document.createElement("script")
-            script.id = `ab-test-script-${testId}`
-            script.textContent = content
+
+            const script = document.createElement("script")
+            script.setAttribute("data-ab-test-file", file)
+            script.textContent = `
+                  (function() {
+                      ${content}
+                  })();
+              `
             document.body.appendChild(script)
         }
 

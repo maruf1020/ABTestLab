@@ -1,6 +1,6 @@
 {
     "cssReload": false,
-    "jsReload": "smart",
+    "jsReload": "true",
     "vite": false,
     "_comments": {
       "cssReload": "If true, the page will reload when CSS changes are detected. If false, CSS changes will be applied without reloading.",
