@@ -67,12 +67,12 @@ export async function startTestServer(website, test, activeVariation) {
             const fileContent = await fs.readFile(filePath, "utf-8")
 
             if (path.extname(filePath) === ".scss") {
-                const cssFile = path.join(path.dirname(filePath), path.basename(filePath, ".scss") + ".css")
+                const cssFile = path.join(path.dirname(filePath), "style.css")
                 await convertScssToCSS(filePath, cssFile)
                 const css = await fs.readFile(cssFile, "utf-8")
-                io.emit("fileChanged", { type: "css", path: relativePath, content: css })
+                io.emit("fileChanged", { testId: test, type: "css", path: "style.css", content: css })
             } else if (path.extname(filePath) === ".js") {
-                io.emit("fileChanged", { type: "js", path: relativePath, content: fileContent })
+                io.emit("fileChanged", { testId: test, type: "js", path: relativePath, content: fileContent })
             }
         })
         .on("error", (error) => log(`Watcher error: ${error}`))
@@ -107,7 +107,7 @@ async function getTestData(variationDir) {
         const filePath = path.join(variationDir, file)
         const stats = await fs.stat(filePath)
         if (stats.isFile()) {
-            if (path.extname(file) === ".css") {
+            if (file === "style.css") {
                 testData.css[file] = await fs.readFile(filePath, "utf-8")
             } else if (path.extname(file) === ".js") {
                 testData.js[file] = await fs.readFile(filePath, "utf-8")

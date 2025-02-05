@@ -1,3 +1,25 @@
-.pt-3.pb-3.home-block__header.category-gallery__header {
-    color: rgb(102, 255, 0);
+.pt-3.pb-3 {
+    &.home-block__header.category-gallery__header {
+        color: rgb(224, 30, 30);
+    }
+}
+
+body {
+    background-color: #a17272;
+}
+
+h1 {
+    color: #000;
+}
+
+h2 {
+    color: #000;
+}
+
+h3 {
+    color: #000;
+}
+
+h4 {
+    color: #000;
 }

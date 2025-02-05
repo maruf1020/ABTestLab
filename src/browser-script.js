@@ -19,10 +19,12 @@
             const cssLink = document.createElement("link")
             cssLink.rel = "stylesheet"
             cssLink.href = `http://localhost:3000/${testId}/css`
+            cssLink.id = `ab-test-css-${testId}`
             document.head.appendChild(cssLink)
 
             const jsScript = document.createElement("script")
             jsScript.src = `http://localhost:3000/${testId}/js`
+            jsScript.id = `ab-test-js-${testId}`
             document.body.appendChild(jsScript)
 
             activeTests[testId] = { css: cssLink, js: jsScript }
@@ -50,9 +52,9 @@
         })
 
         function applyTestData(testId, data) {
-            Object.entries(data.css).forEach(([file, content]) => {
-                updateStyle(testId, file, content)
-            })
+            if (data.css["style.css"]) {
+                updateStyle(testId, "style.css", data.css["style.css"])
+            }
 
             Object.entries(data.js).forEach(([file, content]) => {
                 updateScript(testId, file, content)
@@ -60,22 +62,28 @@
         }
 
         function updateStyle(testId, file, content) {
-            let style = document.getElementById(`ab-test-style-${testId}-${file}`)
+            let style = document.getElementById(`ab-test-style-${testId}`)
             if (!style) {
                 style = document.createElement("style")
-                style.id = `ab-test-style-${testId}-${file}`
+                style.id = `ab-test-style-${testId}`
                 document.head.appendChild(style)
             }
             style.textContent = content
+
+            // Remove the link tag if it exists
+            const linkTag = document.getElementById(`ab-test-css-${testId}`)
+            if (linkTag) {
+                linkTag.remove()
+            }
         }
 
         function updateScript(testId, file, content) {
-            let script = document.getElementById(`ab-test-script-${testId}-${file}`)
+            let script = document.getElementById(`ab-test-script-${testId}`)
             if (script) {
                 script.remove()
             }
             script = document.createElement("script")
-            script.id = `ab-test-script-${testId}-${file}`
+            script.id = `ab-test-script-${testId}`
             script.textContent = content
             document.body.appendChild(script)
         }
