@@ -19,8 +19,8 @@ export async function createWebsite(websiteName) {
     const response = await prompts({
       type: "text",
       name: "hostnames",
-      message: "Enter the website host(s) (separate multiple hosts with commas):",
-      validate: (input) => input.trim() !== "" || "At least one hostname is required",
+      message: "Enter the website host(s) or URL(s) (separate multiple with commas):",
+      validate: (input) => input.trim() !== "" || "At least one hostname or URL is required",
     })
 
     const hostnameList = response.hostnames.split(",").map((host) => host.trim())

@@ -80,6 +80,23 @@ export async function startTestServer(website, test, activeVariation) {
     io.on("connection", (socket) => {
         log("Browser connected")
 
+        socket.on("checkWebsite", async (data, callback) => {
+            const { testId, url } = data
+            const websiteInfo = await fs.readJson(path.join(ROOT_DIR, website, "info.json"))
+            const match = websiteInfo.hostnames.some((hostname) => url.includes(hostname))
+            callback({ match, websiteName: websiteInfo.name })
+        })
+
+        socket.on("getConfig", async (callback) => {
+            try {
+                const config = await fs.readJson(path.join(__dirname, "..", "config.json"))
+                callback(config)
+            } catch (error) {
+                log(`Error reading config: ${error.message}`)
+                callback({})
+            }
+        })
+
         socket.on("requestTestData", async (testId) => {
             try {
                 const testData = await getTestData(variationDir)

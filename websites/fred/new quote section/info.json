@@ -1,0 +1,12 @@
+{
+  "name": "new quote section",
+  "type": "A/B",
+  "website": "fred",
+  "variations": [
+    "v-01"
+  ],
+  "createdAt": "2025-02-05T20:11:20.911Z",
+  "createdAtReadable": "6/2/2025, 2:11:20 am",
+  "lastUpdated": "2025-02-05T20:11:22.309Z",
+  "activeVariation": "v-01"
+}
