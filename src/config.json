@@ -1,15 +1,9 @@
 {
     "cssReload": false,
-    "jsReload": "true",
-    "vite": false,
+    "jsReload": true,
     "_comments": {
       "cssReload": "If true, the page will reload when CSS changes are detected. If false, CSS changes will be applied without reloading.",
-      "jsReload": {
-        "smart": "Checks for duplicate injections and reloads the page only if necessary.",
-        "true": "Always reloads the page when JavaScript changes are made.",
-        "false": "Never reloads the page when JavaScript changes are made."
-      },
-      "vite": "If true, the project will use Vite for building and serving. If false, it will use the default setup."
+      "jsReload": "If true, the page will reload when CSS changes are detected. If false, CSS changes will be applied without reloading."
     }
   }
   

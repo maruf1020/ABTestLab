@@ -128,3 +128,8 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# wnat to ignote website folder in root directory and insilde every folders and filea
+website/
+website/**
+

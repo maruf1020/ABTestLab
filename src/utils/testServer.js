@@ -4,7 +4,6 @@ import fs from "fs-extra"
 import path from "path"
 import chokidar from "chokidar"
 import { ROOT_DIR } from "../config.js"
-import { convertScssToCSS } from "./cssUtils.js"
 import debug from "debug"
 import { fileURLToPath } from "url"
 
@@ -24,15 +23,14 @@ export async function startTestServer(website, test, activeVariation) {
             const content = await fs.readFile(scriptPath, "utf-8")
             res.writeHead(200, { "Content-Type": "application/javascript" })
             res.end(content)
-        } else if (testId && (fileType === "css" || fileType === "js")) {
+        } else if (testId && fileType === "js") {
             const testDir = path.join(ROOT_DIR, website, test)
             const variationDir = path.join(testDir, activeVariation)
-            const filePath = path.join(variationDir, `style.${fileType}`)
+            const filePath = path.join(variationDir, `index.js`)
 
             if (await fs.pathExists(filePath)) {
                 const content = await fs.readFile(filePath, "utf-8")
-                const contentType = fileType === "css" ? "text/css" : "application/javascript"
-                res.writeHead(200, { "Content-Type": contentType })
+                res.writeHead(200, { "Content-Type": "application/javascript" })
                 res.end(content)
             } else {
                 res.writeHead(404)
@@ -66,13 +64,9 @@ export async function startTestServer(website, test, activeVariation) {
             const relativePath = path.relative(variationDir, filePath)
             const fileContent = await fs.readFile(filePath, "utf-8")
 
-            if (path.extname(filePath) === ".scss") {
-                const cssFile = path.join(path.dirname(filePath), "style.css")
-                await convertScssToCSS(filePath, cssFile)
-                const css = await fs.readFile(cssFile, "utf-8")
-                io.emit("hmr", { type: "css", path: "style.css", content: css })
-            } else if (path.extname(filePath) === ".js") {
-                io.emit("hmr", { type: "js", path: relativePath, content: fileContent })
+            if (path.extname(filePath) === ".js") {
+                log(`JavaScript file changed: ${filePath}`)
+                io.emit("jsUpdate", { path: relativePath, content: fileContent })
             }
         })
         .on("error", (error) => log(`Watcher error: ${error}`))
@@ -90,6 +84,7 @@ export async function startTestServer(website, test, activeVariation) {
         socket.on("getConfig", async (callback) => {
             try {
                 const config = await fs.readJson(path.join(__dirname, "..", "config.json"))
+                log("Config sent to client:", config)
                 callback(config)
             } catch (error) {
                 log(`Error reading config: ${error.message}`)
@@ -115,7 +110,6 @@ export async function startTestServer(website, test, activeVariation) {
 
 async function getTestData(variationDir) {
     const testData = {
-        css: {},
         js: {},
     }
 
@@ -123,12 +117,8 @@ async function getTestData(variationDir) {
     for (const file of files) {
         const filePath = path.join(variationDir, file)
         const stats = await fs.stat(filePath)
-        if (stats.isFile()) {
-            if (file === "style.css") {
-                testData.css[file] = await fs.readFile(filePath, "utf-8")
-            } else if (path.extname(file) === ".js") {
-                testData.js[file] = await fs.readFile(filePath, "utf-8")
-            }
+        if (stats.isFile() && path.extname(file) === ".js") {
+            testData.js[file] = await fs.readFile(filePath, "utf-8")
         }
     }
 

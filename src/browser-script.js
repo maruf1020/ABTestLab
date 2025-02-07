@@ -77,6 +77,11 @@
                 style = document.createElement("style")
                 style.id = `ab-test-style-${file}`
                 document.head.appendChild(style)
+            } else {
+                if (config.cssReload === true) {
+                    window.location.reload()
+                    return;
+                }
             }
             style.textContent = content
         }
@@ -84,7 +89,12 @@
         function updateScript(file, content) {
             const existingScript = document.querySelector(`script[data-ab-test-file="${file}"]`)
             if (existingScript) {
-                existingScript.remove()
+                if (config.jsReload === true) {
+                    window.location.reload()
+                    return;
+                } else {
+                    existingScript.remove()
+                }
             }
 
             const script = document.createElement("script")
