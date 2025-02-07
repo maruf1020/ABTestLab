@@ -16,3 +16,5 @@ document.querySelector('.category-gallery__header').insertAdjacentHTML('afterend
 
 console.log("new upgrade is working fine");
 console.log("new upgrade is working fine");
+console.log("new upgrade is working fine");
+console.log("new upgrade is working fine");

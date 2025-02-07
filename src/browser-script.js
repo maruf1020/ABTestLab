@@ -28,18 +28,7 @@
             socket.emit("checkWebsite", { testId, url: window.location.href }, (response) => {
                 if (response.match) {
                     console.log(`Loading test ${testId} for ${response.websiteName}`)
-                    const cssLink = document.createElement("link")
-                    cssLink.rel = "stylesheet"
-                    cssLink.href = `http://localhost:3000/${testId}/css`
-                    cssLink.id = `ab-test-css-${testId}`
-                    document.head.appendChild(cssLink)
-
-                    const jsScript = document.createElement("script")
-                    jsScript.src = `http://localhost:3000/${testId}/js`
-                    jsScript.id = `ab-test-js-${testId}`
-                    document.body.appendChild(jsScript)
-
-                    activeTests[testId] = { css: cssLink, js: jsScript }
+                    activeTests[testId] = { js: null }
                     socket.emit("requestTestData", testId)
                 } else {
                     console.log(`Test ${testId} is not applicable for this website`)
@@ -52,8 +41,8 @@
             applyTestData(testId, data)
         })
 
-        socket.on("hmr", (data) => {
-            console.log(`HMR update received: ${data.type} - ${data.path}`)
+        socket.on("update", (data) => {
+            console.log(`Update received:`, data)
             if (data.type === "css") {
                 updateStyle(data.path, data.content)
             } else if (data.type === "js") {
@@ -62,11 +51,11 @@
         })
 
         function applyTestData(testId, data) {
-            if (data.css["style.css"]) {
+            if (data.css && data.css["style.css"]) {
                 updateStyle("style.css", data.css["style.css"])
             }
 
-            Object.entries(data.js).forEach(([file, content]) => {
+            Object.entries(data.js || {}).forEach(([file, content]) => {
                 updateScript(file, content)
             })
         }
@@ -78,7 +67,7 @@
                 style.id = `ab-test-style-${file}`
                 document.head.appendChild(style)
             } else {
-                if (config.cssReload === true) {
+                if (config.cssReload == true) {
                     window.location.reload()
                     return;
                 }
@@ -87,9 +76,10 @@
         }
 
         function updateScript(file, content) {
+            console.log(`Updating script: ${file}-----${Object.entries(config)}`)
             const existingScript = document.querySelector(`script[data-ab-test-file="${file}"]`)
             if (existingScript) {
-                if (config.jsReload === true) {
+                if (config.jsReload == true) {
                     window.location.reload()
                     return;
                 } else {
@@ -100,11 +90,12 @@
             const script = document.createElement("script")
             script.setAttribute("data-ab-test-file", file)
             script.textContent = `
-                  (function() {
-                      ${content}
-                  })();
-              `
+              (function() {
+                  ${content}
+              })();
+          `
             document.body.appendChild(script)
+
         }
 
         // Expose a method to load additional tests
