@@ -2,12 +2,17 @@ import fs from "fs-extra"
 import path from "path"
 import { fileURLToPath } from "url"
 import chalk from "chalk"
+import { downloadSocketIO } from "../../scripts/download-socket-io.js" // Ensure the correct path and file extension
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 export async function initializeTemplates() {
     try {
+        console.log(chalk.yellow("Creating template folders and downloading dependence files..."))
+
+        await downloadSocketIO()
+
         const templatesDir = path.resolve(__dirname, "..", "templates")
 
         // Create templates directory
@@ -38,4 +43,3 @@ export async function initializeTemplates() {
         throw error
     }
 }
-

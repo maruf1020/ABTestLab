@@ -1,11 +1,9 @@
 {
   "name": "fred",
   "hostnames": [
-    "fred.com",
-    "www.fred.com",
-    "https://www.fred.com"
+    "www.fred.com"
   ],
-  "createdAt": "2025-02-05T20:09:48.523Z",
-  "createdAtReadable": "6/2/2025, 2:09:48 am",
-  "lastUpdated": "2025-02-05T20:09:48.541Z"
+  "createdAt": "2025-02-08T20:34:20.974Z",
+  "createdAtReadable": "9/2/2025, 2:34:20 am",
+  "lastUpdated": "2025-02-08T20:34:20.991Z"
 }

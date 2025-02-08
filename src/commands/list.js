@@ -39,3 +39,4 @@ export const listCommand = new Command("list")
       console.error("Error:", error.message)
     }
   })
+

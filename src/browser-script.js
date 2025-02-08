@@ -1,7 +1,7 @@
 ; (() => {
     // Load Socket.IO client
-    const script = document.createElement("script")
-    script.src = "https://cdn.socket.io/4.5.4/socket.io.min.js"
+    var script = document.createElement("script")
+    script.src = "http://localhost:3000/socket-io-client.js"
     script.onload = initializeABTest
     document.head.appendChild(script)
 

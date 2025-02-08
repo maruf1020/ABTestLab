@@ -1,6 +1,6 @@
 {
   "name": "ab-testing-cli",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A CLI tool for A/B testing directly from a local machine",
   "main": "src/index.js",
   "type": "module",
@@ -21,6 +21,7 @@
     "execa": "^8.0.1",
     "sass": "^1.69.5",
     "socket.io": "^4.7.2",
+    "socket.io-client": "^4.7.2",
     "chokidar": "^3.5.3"
   },
   "devDependencies": {
