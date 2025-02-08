@@ -7,7 +7,8 @@
 
     function initializeABTest() {
         const { io } = window
-        const socket = io("http://localhost:3000")
+        const socket = io("http://localhost:3000");
+        let isWebsiteMatch = false;
         const activeTests = {}
         let config = {}
 
@@ -27,6 +28,7 @@
 
             socket.emit("checkWebsite", { testId, url: window.location.href }, (response) => {
                 if (response.match) {
+                    isWebsiteMatch = true;
                     console.log(`Loading test ${testId} for ${response.websiteName}`)
                     activeTests[testId] = { js: null }
                     socket.emit("requestTestData", testId)
@@ -42,6 +44,7 @@
         })
 
         socket.on("update", (data) => {
+            if (!isWebsiteMatch) return;
             console.log(`Update received:`, data)
             if (data.type === "css") {
                 updateStyle(data.path, data.content)

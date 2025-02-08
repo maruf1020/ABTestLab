@@ -130,6 +130,5 @@ dist
 .pnp.*
 
 # wnat to ignote website folder in root directory and insilde every folders and filea
-website/
-website/**
+websites/
 
