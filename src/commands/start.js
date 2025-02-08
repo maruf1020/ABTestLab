@@ -27,13 +27,19 @@ export const startCommand = new Command("start")
                 }
 
                 const websiteResponse = await prompts({
-                    type: "select",
+                    type: "autocomplete", // Changed from "select" to "autocomplete"
                     name: "website",
-                    message: "Select a website:",
+                    message: "Search & select a website:",
                     choices: websites.map((w) => ({ title: w, value: w })),
+                    suggest: (input, choices) => {
+                        return Promise.resolve(
+                            choices.filter(choice => choice.title.toLowerCase().includes(input.toLowerCase()))
+                        )
+                    }
                 })
                 website = websiteResponse.website
             }
+
 
             if (!test) {
                 const tests = await listTests(website)
@@ -43,13 +49,19 @@ export const startCommand = new Command("start")
                 }
 
                 const testResponse = await prompts({
-                    type: "select",
+                    type: "autocomplete", // Changed from "select" to "autocomplete"
                     name: "test",
-                    message: "Select a test:",
+                    message: "Search & select a test:",
                     choices: tests.map((t) => ({ title: t, value: t })),
+                    suggest: (input, choices) => {
+                        return Promise.resolve(
+                            choices.filter(choice => choice.title.toLowerCase().includes(input.toLowerCase()))
+                        )
+                    }
                 })
                 test = testResponse.test
             }
+
 
             const testDir = path.join(ROOT_DIR, website, test)
             const testInfo = await fs.readJson(path.join(testDir, "info.json"))
