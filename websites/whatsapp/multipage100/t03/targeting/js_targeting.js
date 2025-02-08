@@ -1,1 +1,0 @@
-// JavaScript file for JS targeting
