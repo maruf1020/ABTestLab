@@ -17,11 +17,10 @@ export const startCommand = new Command("start")
     .option("-t, --test <name>", "Specify the test name")
     .action(async (options) => {
         try {
-            const websitesPath = path.join(ROOT_DIR, "websites")
+            const websitesPath = path.join(ROOT_DIR)
 
-            // Check if the websites directory exists, otherwise prompt to create one
             if (!fs.existsSync(websitesPath)) {
-                console.log(kleur.yellow("No websites directory found. You need to create a website first."))
+                console.log(kleur.yellow("No websites directory found. You need to create a website first."));
                 return;
             }
 
