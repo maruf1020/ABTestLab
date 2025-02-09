@@ -7,6 +7,7 @@ import { ROOT_DIR } from "../config.js"
 import { listWebsites, listTests } from "../utils/fileUtils.js"
 import { startTestServer } from "../utils/testServer.js"
 import debug from "debug"
+import { execSync } from "child_process"
 
 const log = debug("ab-testing-cli:start")
 
@@ -16,18 +17,37 @@ export const startCommand = new Command("start")
     .option("-t, --test <name>", "Specify the test name")
     .action(async (options) => {
         try {
+            const websitesPath = path.join(ROOT_DIR, "websites")
+
+            // Check if the websites directory exists, otherwise prompt to create one
+            if (!fs.existsSync(websitesPath)) {
+                console.log(kleur.yellow("No websites directory found. You need to create a website first."))
+                return;
+            }
+
             let website = options.website
             let test = options.test
+            const websites = await listWebsites()
+
+            if (websites.length === 0) {
+                console.log(kleur.yellow("No websites found. Please create a website first."))
+
+                const createWebsiteResponse = await prompts({
+                    type: "confirm",
+                    name: "createWebsite",
+                    message: "Would you like to create a new website?",
+                    initial: true
+                })
+
+                if (createWebsiteResponse.createWebsite) {
+                    execSync("node ./commands/create.js", { stdio: "inherit" })
+                }
+                return
+            }
 
             if (!website) {
-                const websites = await listWebsites()
-                if (websites.length === 0) {
-                    console.log(kleur.yellow("No websites found. Please create a website first."))
-                    return
-                }
-
                 const websiteResponse = await prompts({
-                    type: "autocomplete", // Changed from "select" to "autocomplete"
+                    type: "autocomplete",
                     name: "website",
                     message: "Search & select a website:",
                     choices: websites.map((w) => ({ title: w, value: w })),
@@ -40,16 +60,27 @@ export const startCommand = new Command("start")
                 website = websiteResponse.website
             }
 
+            const tests = await listTests(website)
+
+            if (tests.length === 0) {
+                console.log(kleur.yellow(`No tests found for website "${website}". Please create a test first.`))
+
+                const createTestResponse = await prompts({
+                    type: "confirm",
+                    name: "createTest",
+                    message: `Would you like to create a new test for website "${website}"?`,
+                    initial: true
+                })
+
+                if (createTestResponse.createTest) {
+                    execSync("node ./commands/create.js", { stdio: "inherit" })
+                }
+                return
+            }
 
             if (!test) {
-                const tests = await listTests(website)
-                if (tests.length === 0) {
-                    console.log(kleur.yellow(`No tests found for website "${website}". Please create a test first.`))
-                    return
-                }
-
                 const testResponse = await prompts({
-                    type: "autocomplete", // Changed from "select" to "autocomplete"
+                    type: "autocomplete",
                     name: "test",
                     message: "Search & select a test:",
                     choices: tests.map((t) => ({ title: t, value: t })),
@@ -61,7 +92,6 @@ export const startCommand = new Command("start")
                 })
                 test = testResponse.test
             }
-
 
             const testDir = path.join(ROOT_DIR, website, test)
             const testInfo = await fs.readJson(path.join(testDir, "info.json"))
@@ -81,4 +111,3 @@ export const startCommand = new Command("start")
             log(`Stack trace: ${error.stack}`)
         }
     })
-
