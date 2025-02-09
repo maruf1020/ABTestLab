@@ -108,8 +108,8 @@ export async function createTest(website, testName, testType) {
       case "AA":
         variations = await createAATest(testDir)
         break
-      case "Multipage":
-        variations = await createMultipageTest(testDir)
+      case "Multi-touch":
+        variations = await createMultiTouchTest(testDir)
         break
       case "Patch":
         variations = await createPatchTest(testDir)
@@ -126,7 +126,7 @@ export async function createTest(website, testName, testType) {
       lastUpdated: new Date().toISOString(),
     }
 
-    if (testType === "Multipage") {
+    if (testType === "Multi-touch") {
       const dirs = await fs.readdir(testDir)
       testInfo.touchpoints = dirs.filter((dir) => dir !== "targeting" && dir !== "info.json")
     }
@@ -164,30 +164,30 @@ async function createAATest(testDir) {
   return [...variations, ...additionalVariations]
 }
 
-async function createMultipageTest(testDir) {
-  const touchPoints = await createTouchPoints(testDir)
+async function createMultiTouchTest(testDir) {
+  const touchpoints = await createTouchpoints(testDir)
   const variations = await createVariations(testDir, 0) // Pass 0 to prevent creating variations in test folder
 
   // Copy targeting folder to the test directory
   await copyTargetingFolder(testDir)
 
-  for (const touchPoint of touchPoints) {
-    const touchPointDir = path.join(testDir, touchPoint)
-    await fs.ensureDir(touchPointDir)
-    await copyTargetingFolder(touchPointDir)
+  for (const touchpoint of touchpoints) {
+    const touchpointDir = path.join(testDir, touchpoint)
+    await fs.ensureDir(touchpointDir)
+    await copyTargetingFolder(touchpointDir)
 
     // Create Control variation first
-    await createVariation(touchPointDir, "Control")
+    await createVariation(touchpointDir, "Control")
 
     // Create other variations
     for (const variation of variations) {
-      await createVariation(touchPointDir, variation)
+      await createVariation(touchpointDir, variation)
     }
 
     await fs.writeJson(
-      path.join(touchPointDir, "info.json"),
+      path.join(touchpointDir, "info.json"),
       {
-        name: touchPoint,
+        name: touchpoint,
         variations: ["Control", ...variations],
         createdAt: new Date().toISOString(),
         createdAtReadable: new Date().toLocaleString(),
@@ -195,7 +195,7 @@ async function createMultipageTest(testDir) {
       },
       { spaces: 2 },
     )
-    console.log(kleur.green(`Touch point "${touchPoint}" created successfully.`))
+    console.log(kleur.green(`Touchpoint "${touchpoint}" created successfully.`))
   }
 
   return ["Control", ...variations]
@@ -208,43 +208,43 @@ async function createPatchTest(testDir) {
   return variations
 }
 
-async function createTouchPoints(testDir) {
-  const touchPoints = []
-  let touchPointCount = 0
+async function createTouchpoints(testDir) {
+  const touchpoints = []
+  let touchpointCount = 0
 
   while (true) {
-    touchPointCount++
+    touchpointCount++
 
     const response = await prompts([
       {
         type: "text",
-        name: "touchPointName",
-        message: `Enter the name for Touch Point ${touchPointCount}:`,
+        name: "touchpointName",
+        message: `Enter the name for Touchpoint ${touchpointCount}:`,
         validate: async (input) => {
-          if (input.trim() === "") return "Touch Point name cannot be empty"
-          if (touchPoints.includes(input)) return "A Touch Point with this name already exists"
+          if (input.trim() === "") return "Touchpoint name cannot be empty"
+          if (touchpoints.includes(input)) return "A Touchpoint with this name already exists"
           return true
         },
       },
       {
         type: "confirm",
         name: "createAnother",
-        message: "Do you want to create another Touch Point?",
+        message: "Do you want to create another Touchpoint?",
         initial: false,
       },
     ])
 
-    touchPoints.push(response.touchPointName)
+    touchpoints.push(response.touchpointName)
 
-    const touchPointDir = path.join(testDir, response.touchPointName)
-    await fs.ensureDir(touchPointDir)
-    await fs.copy(path.join(TEMPLATES_DIR, "touch-point"), touchPointDir)
-    console.log(kleur.green(`Touch point "${response.touchPointName}" created successfully.`))
+    const touchpointDir = path.join(testDir, response.touchpointName)
+    await fs.ensureDir(touchpointDir)
+    await copyTargetingFolder(touchpointDir)
+    console.log(kleur.green(`Touchpoint "${response.touchpointName}" created successfully.`))
 
     if (!response.createAnother) break
   }
 
-  return touchPoints
+  return touchpoints
 }
 
 async function createVariations(testDir, touchPointCount) {
@@ -344,12 +344,12 @@ async function activateVariation(testDir, variations, testType) {
     testInfo.lastUpdated = new Date().toISOString()
     await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 })
 
-    if (testType === "Multipage") {
-      const touchPoints = await fs.readdir(testDir)
-      for (const touchPoint of touchPoints) {
-        const touchPointDir = path.join(testDir, touchPoint)
-        if ((await fs.stat(touchPointDir)).isDirectory()) {
-          await updateVariationStatus(touchPointDir, activeVariation)
+    if (testType === "Multi-touch") {
+      const touchpoints = await fs.readdir(testDir)
+      for (const touchpoint of touchpoints) {
+        const touchpointDir = path.join(testDir, touchpoint)
+        if ((await fs.stat(touchpointDir)).isDirectory()) {
+          await updateVariationStatus(touchpointDir, activeVariation)
         }
       }
     } else {

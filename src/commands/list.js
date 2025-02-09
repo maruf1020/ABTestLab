@@ -1,5 +1,4 @@
 import path from "path"
-import fs from "fs-extra"
 import chalk from "chalk"
 import { Command } from "commander"
 import { listTests, getTestInfo } from "./testUtils.js" // Ensure the correct path and file extension
@@ -18,13 +17,13 @@ export const listCommand = new Command("list")
           console.log(chalk.yellow(`  Created: ${testInfo.createdAtReadable}`))
           console.log(chalk.yellow(`  Last Updated: ${new Date(testInfo.lastUpdated).toLocaleString()}`))
 
-          if (testInfo.type === "Multipage") {
+          if (testInfo.type === "Multi-touch") {
             console.log(chalk.yellow(`  Touchpoints:`))
-            for (const touchPoint of testInfo.touchpoints) {
-              console.log(chalk.cyan(`    - ${touchPoint}`))
-              if (options.website && test && touchPoint) {
-                const touchPointDir = path.join(process.cwd(), "websites", options.website, test, touchPoint)
-                console.log(chalk.green(`    Directory: ${touchPointDir}`))
+            for (const touchpoint of testInfo.touchpoints) {
+              console.log(chalk.cyan(`    - ${touchpoint}`))
+              if (options.website && test && touchpoint) {
+                const touchpointDir = path.join(process.cwd(), "websites", options.website, test, touchpoint)
+                console.log(chalk.green(`    Directory: ${touchpointDir}`))
               } else {
                 console.error("Error: Missing required parameters for path.join")
               }

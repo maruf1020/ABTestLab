@@ -105,7 +105,7 @@ async function promptAndCreateTest(website) {
       type: "select",
       name: "testType",
       message: "Select the test type:",
-      choices: ["A/B", "AA", "Multipage", "Patch"].map(type => ({ title: type, value: type })),
+      choices: ["A/B", "AA", "Multi-touch", "Patch"].map((type) => ({ title: type, value: type })),
     },
   ])
   const { testName, testType } = response
