@@ -1,0 +1,24 @@
+{
+    "rules": [],
+    "_comments": {
+        "basic": "Use multiple objects in the same format to define multiple conditions.",
+        "example": [
+            {
+                "selector": "body",
+                "isMatch": true,
+                "waitingTime": 1000,
+                "totalElementNumber": 1
+            },
+            {
+                "selector": ".grid-plp",
+                "isMatch": false,
+                "waitingTime": 2000,
+                "totalElementNumber": 1
+            }
+        ],
+        "selector": "The custom element selector will go here.",
+        "isMatch": "If false, the test won't bucket if this element is in the DOM; if true, the test runs if the element is present.",
+        "waitingTime": "The waiting time in milliseconds before checking the element.",
+        "totalElementNumber": "The expected number of elements that should match the condition."
+    }
+}

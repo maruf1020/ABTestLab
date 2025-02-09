@@ -1,0 +1,23 @@
+{
+    "regex": "/https?:\\/\\/(www\\.)?[^\\s/$.?#].[^\\s]*/gi",
+    "targetUrls": [],
+    "_comment": {
+        "basic": "Use the regex expression to match against all websites. The regex will be tested against each URL in the 'targetUrls' array.",
+        "rules": [
+            "The regex should be case-insensitive (use 'gi' flags).",
+            "Target URLs should be provided as an array of strings.",
+            "This regex is designed to match any website URL starting with 'http' or 'https'.",
+            "Make sure to test the regex against each URL to see if it matches.",
+            "If you enter the value in both places then both condition will be checked",
+            "By default your test will only run the only under your website hostname"
+        ],
+        "example": {
+            "regex": "/example\\.com/gi",
+            "targetUrls": [
+                "https://www.example.com",
+                "http://another-site.org",
+                "https://subdomain.example.net"
+            ]
+        }
+    }
+}

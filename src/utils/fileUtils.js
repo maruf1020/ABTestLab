@@ -4,6 +4,9 @@ import { ROOT_DIR } from "../config.js"
 
 export async function listWebsites() {
   try {
+    if (!fs.existsSync(ROOT_DIR)) {
+      return []
+    }
     const items = await fs.readdir(ROOT_DIR)
     return items.filter((item) => fs.statSync(path.join(ROOT_DIR, item)).isDirectory())
   } catch (error) {
