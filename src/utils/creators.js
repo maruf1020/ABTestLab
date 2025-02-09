@@ -40,21 +40,6 @@ async function validateTemplates() {
 async function copyTargetingFolder(destination) {
   const targetingTemplateDir = path.join(TEMPLATES_DIR, "targeting")
   await fs.copy(targetingTemplateDir, path.join(destination, "targeting"))
-
-  // Ensure info.json exists in the targeting folder
-  const infoJsonPath = path.join(destination, "targeting", "info.json")
-  if (!(await fs.pathExists(infoJsonPath))) {
-    await fs.writeJson(
-      infoJsonPath,
-      {
-        name: "Targeting",
-        createdAt: new Date().toISOString(),
-        createdAtReadable: new Date().toLocaleString(),
-        lastUpdated: new Date().toISOString(),
-      },
-      { spaces: 2 },
-    )
-  }
 }
 
 export async function createWebsite(websiteName) {
@@ -315,8 +300,11 @@ async function createVariation(dir, variationName) {
   } else {
     await fs.copy(path.join(TEMPLATES_DIR, "variation"), variationDir)
   }
+
+  // Create info.json for the variation
+  const infoJsonPath = path.join(variationDir, "info.json")
   await fs.writeJson(
-    path.join(variationDir, "info.json"),
+    infoJsonPath,
     {
       name: variationName,
       isVariation: true,
@@ -363,18 +351,26 @@ async function activateVariation(testDir, variations, testType) {
 async function updateVariationStatus(dir, activeVariation) {
   const variations = await fs.readdir(dir)
   for (const variation of variations) {
-    if (variation !== "info.json" && (await fs.stat(path.join(dir, variation))).isDirectory()) {
+    if (
+      variation !== "info.json" &&
+      variation !== "targeting" &&
+      (await fs.stat(path.join(dir, variation))).isDirectory()
+    ) {
       const variationDir = path.join(dir, variation)
-      const variationInfo = await fs.readJson(path.join(variationDir, "info.json"))
-      variationInfo.active = variation === activeVariation
-      variationInfo.lastUpdated = new Date().toISOString()
-      await fs.writeJson(path.join(variationDir, "info.json"), variationInfo, { spaces: 2 })
+      const infoJsonPath = path.join(variationDir, "info.json")
 
-      // Convert SCSS to CSS
-      const scssFile = path.join(variationDir, "style.scss")
-      const cssFile = path.join(variationDir, "style.css")
-      if (await fs.pathExists(scssFile)) {
-        await convertScssToCSS(scssFile, cssFile)
+      if (await fs.pathExists(infoJsonPath)) {
+        const variationInfo = await fs.readJson(infoJsonPath)
+        variationInfo.active = variation === activeVariation
+        variationInfo.lastUpdated = new Date().toISOString()
+        await fs.writeJson(infoJsonPath, variationInfo, { spaces: 2 })
+
+        // Convert SCSS to CSS
+        const scssFile = path.join(variationDir, "style.scss")
+        const cssFile = path.join(variationDir, "style.css")
+        if (await fs.pathExists(scssFile)) {
+          await convertScssToCSS(scssFile, cssFile)
+        }
       }
     }
   }
