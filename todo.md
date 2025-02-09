@@ -9,29 +9,32 @@
         - elementChecker.json:
             ```
                 {
+                    "multiple_rules_check_by_condition" : "OR",
                     "rules": [],
                     "_comments": {
-                        "basic": "Use multiple objects in the same format to define multiple conditions.",
-                        "example": [
+                        "EXAMPLE": [
                             {
                                 "selector": "body",
-                                "isMatch": true,
-                                "waitingTime": 1000,
-                                "totalElementNumber": 1
+                                "is_matched": true,
+                                "waiting_time": 1000,
+                                "total_element_count": 1
                             },
                             {
                                 "selector": ".grid-plp",
-                                "isMatch": false,
-                                "waitingTime": 2000,
-                                "totalElementNumber": 1
+                                "is_matched": false,
+                                "waiting_time": 2000,
+                                "total_element_count": 1
                             }
                         ],
-                        "selector": "The custom element selector will go here.",
-                        "isMatch": "If false, the test won't bucket if this element is in the DOM; if true, the test runs if the element is present.",
-                        "waitingTime": "The waiting time in milliseconds before checking the element.",
-                        "totalElementNumber": "The expected number of elements that should match the condition."
+                        "multiple_rules_check_by_condition": "Use 'multiple_rules_check_by_condition' to define the condition for multiple rules check. Use 'AND' to run the test only if all conditions are met. Use 'OR' to run the test if any of the conditions are met.",
+                        "keep the array empty": "If you want to run the test on all pages, keep the array empty.",
+                        "selector": "Use 'selector' to define the CSS selector for the element you want to check.",
+                        "is_matched": "Use 'is_matched' to define the condition for the element check. Set it to 'true' if the element should be present on the page. Set it to 'false' if the element should not be present on the page.",
+                        "waiting_time": "Use 'waiting_time' to define the time in milliseconds to wait for the element to appear on the page.",
+                        "total_element_count": "Use 'total_element_count' to define the total number of elements that should match the selector. If the value is greater than 1, the test will pass only if the total number of elements that match the selector is equal to the value."
                     }
                 }
+
             ```
         - customJS.js:
             there will be a export default function which will return true or a callback function.
@@ -71,24 +74,48 @@
         - urlChecker.json
                 ```
                     {
-                        "regex": "/https?:\\/\\/(www\\.)?[^\\s/$.?#].[^\\s]*/gi",
-                        "targetUrls": [],
+                        "multiple_rules_check_by_condition" : "OR",
+                        "targeting_rules": [
+                            {
+                                "value": "/https?:\\/\\/(www\\.)?[^\\s/$.?#].[^\\s]*/gi",
+                                "match_type": "REGEX_MATCHED"
+                            }
+                        ],
                         "_comment": {
-                            "basic": "Use the regex expression to match against all websites. The regex will be tested against each URL in the 'targetUrls' array.",
+                            "description": "Use 'targeting_rules' to define conditions for matching URLs.",
                             "rules": [
-                                "The regex should be case-insensitive (use 'gi' flags).",
-                                "Target URLs should be provided as an array of strings.",
-                                "This regex is designed to match any website URL starting with 'http' or 'https'.",
-                                "Make sure to test the regex against each URL to see if it matches.",
-                                "If you enter the value in both places then both condition will be checked",
-                                "By default your test will only run the only under your website hostname"
+                                "use 'multiple_rules_check_by_condition' to define the condition for multiple rules check. Use 'AND' to run the test only if all conditions are met. Use 'OR' to run the test if any of the conditions are met.",
+                                "Use 'EXACTLY_MATCHED' to match the exact URL.",
+                                "Use 'URL_CONTAINS' to check if the URL contains a specific substring.",
+                                "Use 'URL_DOES_NOT_CONTAIN' to check if the URL does NOT contain a specific substring.",
+                                "Use 'REGEX_MATCHED' to apply a regex pattern for matching URLs.",
+                                "Use 'REGEX_DOES_NOT_MATCH' to apply a regex pattern that should NOT match URLs.",
+                                "If multiple conditions are added, all will be checked against the target URLs.",
+                                "By default, your test will only run under the website's hostname unless specified otherwise."
                             ],
                             "example": {
-                                "regex": "/example\\.com/gi",
-                                "targetUrls": [
-                                    "https://www.example.com",
-                                    "http://another-site.org",
-                                    "https://subdomain.example.net"
+                                "multiple_rules_check_by_condition" : "OR",
+                                "targeting_rules": [
+                                    {
+                                        "value": "https://www.example.com",
+                                        "match_type": "EXACTLY_MATCHED"
+                                    },
+                                    {
+                                        "value": "example.com",
+                                        "match_type": "URL_CONTAINS"
+                                    },
+                                    {
+                                        "value": "blockedsite.com",
+                                        "match_type": "URL_DOES_NOT_CONTAIN"
+                                    },
+                                    {
+                                        "value": "/example\\.com/gi",
+                                        "match_type": "REGEX_MATCHED"
+                                    },
+                                    {
+                                        "value": "/forbidden\\.com/gi",
+                                        "match_type": "REGEX_DOES_NOT_MATCH"
+                                    }
                                 ]
                             }
                         }
