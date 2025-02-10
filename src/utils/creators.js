@@ -140,13 +140,11 @@ async function createABTest(testDir) {
 }
 
 async function createAATest(testDir) {
-  const variations = ["Control"]
-  await createVariation(testDir, "Control")
-  const additionalVariations = await createVariations(testDir, 1)
-  for (const variation of additionalVariations) {
+  const variations = await createVariations(testDir, 2)
+  for (const variation of variations) {
     await createVariation(testDir, variation)
   }
-  return [...variations, ...additionalVariations]
+  return variations
 }
 
 async function createMultiTouchTest(testDir) {
@@ -187,8 +185,7 @@ async function createMultiTouchTest(testDir) {
 }
 
 async function createPatchTest(testDir) {
-  const variations = ["Control", "patch"]
-  await createVariation(testDir, "Control")
+  const variations = ["patch"]
   await createVariation(testDir, "patch")
   return variations
 }
@@ -288,18 +285,7 @@ async function createVariations(testDir, touchPointCount) {
 async function createVariation(dir, variationName) {
   const variationDir = path.join(dir, variationName)
   await fs.ensureDir(variationDir)
-  if (variationName === "Control") {
-    // For Control, copy the first non-Control variation
-    const variations = await fs.readdir(dir)
-    const nonControlVariation = variations.find((v) => v !== "Control" && v !== "targeting" && v !== "info.json")
-    if (nonControlVariation) {
-      await fs.copy(path.join(dir, nonControlVariation), variationDir)
-    } else {
-      await fs.copy(path.join(TEMPLATES_DIR, "variation"), variationDir)
-    }
-  } else {
-    await fs.copy(path.join(TEMPLATES_DIR, "variation"), variationDir)
-  }
+  await fs.copy(path.join(TEMPLATES_DIR, "variation"), variationDir)
 
   // Create info.json for the variation
   const infoJsonPath = path.join(variationDir, "info.json")
@@ -317,34 +303,40 @@ async function createVariation(dir, variationName) {
 }
 
 async function activateVariation(testDir, variations, testType) {
+  const choices = [{ title: "None", value: "None" }, ...variations.map((v) => ({ title: v, value: v }))]
+
   const response = await prompts({
     type: "select",
     name: "activeVariation",
-    message: "Select a variation to activate:",
-    choices: variations.map((v) => ({ title: v, value: v })),
+    message: "Select a variation to activate (or 'None' to deactivate all):",
+    choices: choices,
   })
 
   const activeVariation = response.activeVariation
 
-  if (activeVariation) {
-    const testInfo = await fs.readJson(path.join(testDir, "info.json"))
+  const testInfo = await fs.readJson(path.join(testDir, "info.json"))
+
+  if (activeVariation === "None") {
+    delete testInfo.activeVariation
+    console.log(kleur.yellow("No variation activated. All variations are now inactive."))
+  } else {
     testInfo.activeVariation = activeVariation
-    testInfo.lastUpdated = new Date().toISOString()
-    await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 })
-
-    if (testType === "Multi-touch") {
-      const touchpoints = await fs.readdir(testDir)
-      for (const touchpoint of touchpoints) {
-        const touchpointDir = path.join(testDir, touchpoint)
-        if ((await fs.stat(touchpointDir)).isDirectory()) {
-          await updateVariationStatus(touchpointDir, activeVariation)
-        }
-      }
-    } else {
-      await updateVariationStatus(testDir, activeVariation)
-    }
-
     console.log(kleur.green(`Activated variation: ${activeVariation}`))
+  }
+
+  testInfo.lastUpdated = new Date().toISOString()
+  await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 })
+
+  if (testType === "Multi-touch") {
+    const touchpoints = await fs.readdir(testDir)
+    for (const touchpoint of touchpoints) {
+      const touchpointDir = path.join(testDir, touchpoint)
+      if ((await fs.stat(touchpointDir)).isDirectory()) {
+        await updateVariationStatus(touchpointDir, activeVariation)
+      }
+    }
+  } else {
+    await updateVariationStatus(testDir, activeVariation)
   }
 }
 
@@ -361,7 +353,7 @@ async function updateVariationStatus(dir, activeVariation) {
 
       if (await fs.pathExists(infoJsonPath)) {
         const variationInfo = await fs.readJson(infoJsonPath)
-        variationInfo.active = variation === activeVariation
+        variationInfo.active = activeVariation !== "None" && variation === activeVariation
         variationInfo.lastUpdated = new Date().toISOString()
         await fs.writeJson(infoJsonPath, variationInfo, { spaces: 2 })
 
