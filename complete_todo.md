@@ -2,7 +2,8 @@
 ------------------------------------------------------------------------------------
 Date: 11-FEB-2025
 ------------------------------------------------------------------------------------
-### Except multi-touch test have to check all the test are workable (now working)
+### Except multi-touch test have to check all the test are workable ( working)
+### multi touch test is also working
 
 
 

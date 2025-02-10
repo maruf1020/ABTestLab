@@ -316,54 +316,99 @@ async function activateVariation(testDir, variations, testType) {
 
   const testInfo = await fs.readJson(path.join(testDir, "info.json"))
 
-  if (activeVariation === "None") {
-    delete testInfo.activeVariation
-    console.log(kleur.yellow("No variation activated. All variations are now inactive."))
-  } else {
-    testInfo.activeVariation = activeVariation
-    console.log(kleur.green(`Activated variation: ${activeVariation}`))
-  }
-
-  testInfo.lastUpdated = new Date().toISOString()
-  await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 })
-
   if (testType === "Multi-touch") {
-    const touchpoints = await fs.readdir(testDir)
+    const touchpoints = testInfo.touchpoints || []
     for (const touchpoint of touchpoints) {
       const touchpointDir = path.join(testDir, touchpoint)
-      if ((await fs.stat(touchpointDir)).isDirectory()) {
-        await updateVariationStatus(touchpointDir, activeVariation)
+      const touchpointInfoPath = path.join(touchpointDir, "info.json")
+      if (await fs.pathExists(touchpointInfoPath)) {
+        const touchpointInfo = await fs.readJson(touchpointInfoPath)
+        if (activeVariation === "None") {
+          delete touchpointInfo.activeVariation
+        } else {
+          touchpointInfo.activeVariation = activeVariation
+        }
+        touchpointInfo.lastUpdated = new Date().toISOString()
+        await fs.writeJson(touchpointInfoPath, touchpointInfo, { spaces: 2 })
+      }
+    }
+    // Update the main test's info.json
+    if (activeVariation === "None") {
+      delete testInfo.activeVariation
+    } else {
+      testInfo.activeVariation = activeVariation
+    }
+    testInfo.lastUpdated = new Date().toISOString()
+    await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 })
+
+    console.log(kleur.green(`Updated active variation for the main test to: ${activeVariation}`))
+    console.log(kleur.green(`Updated active variation for all touchpoints to: ${activeVariation}`))
+  } else {
+    if (activeVariation === "None") {
+      delete testInfo.activeVariation
+      console.log(kleur.yellow("No variation activated. All variations are now inactive."))
+    } else {
+      testInfo.activeVariation = activeVariation
+      console.log(kleur.green(`Activated variation: ${activeVariation}`))
+    }
+    testInfo.lastUpdated = new Date().toISOString()
+    await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 })
+  }
+
+  await updateVariationStatus(testDir, activeVariation, testType)
+}
+
+async function updateVariationStatus(dir, activeVariation, testType) {
+  if (testType === "Multi-touch") {
+    const touchpoints = await fs.readdir(dir)
+    for (const touchpoint of touchpoints) {
+      const touchpointDir = path.join(dir, touchpoint)
+      if ((await fs.stat(touchpointDir)).isDirectory() && touchpoint !== "targeting") {
+        await updateTouchpointVariationStatus(touchpointDir, activeVariation)
       }
     }
   } else {
-    await updateVariationStatus(testDir, activeVariation)
+    const variations = await fs.readdir(dir)
+    for (const variation of variations) {
+      if (
+        variation !== "info.json" &&
+        variation !== "targeting" &&
+        (await fs.stat(path.join(dir, variation))).isDirectory()
+      ) {
+        await updateSingleVariationStatus(dir, variation, activeVariation)
+      }
+    }
   }
 }
 
-async function updateVariationStatus(dir, activeVariation) {
-  const variations = await fs.readdir(dir)
+async function updateTouchpointVariationStatus(touchpointDir, activeVariation) {
+  const variations = await fs.readdir(touchpointDir)
   for (const variation of variations) {
     if (
       variation !== "info.json" &&
       variation !== "targeting" &&
-      (await fs.stat(path.join(dir, variation))).isDirectory()
+      (await fs.stat(path.join(touchpointDir, variation))).isDirectory()
     ) {
-      const variationDir = path.join(dir, variation)
-      const infoJsonPath = path.join(variationDir, "info.json")
+      await updateSingleVariationStatus(touchpointDir, variation, activeVariation)
+    }
+  }
+}
 
-      if (await fs.pathExists(infoJsonPath)) {
-        const variationInfo = await fs.readJson(infoJsonPath)
-        variationInfo.active = activeVariation !== "None" && variation === activeVariation
-        variationInfo.lastUpdated = new Date().toISOString()
-        await fs.writeJson(infoJsonPath, variationInfo, { spaces: 2 })
+async function updateSingleVariationStatus(dir, variation, activeVariation) {
+  const variationDir = path.join(dir, variation)
+  const infoJsonPath = path.join(variationDir, "info.json")
 
-        // Convert SCSS to CSS
-        const scssFile = path.join(variationDir, "style.scss")
-        const cssFile = path.join(variationDir, "style.css")
-        if (await fs.pathExists(scssFile)) {
-          await convertScssToCSS(scssFile, cssFile)
-        }
-      }
+  if (await fs.pathExists(infoJsonPath)) {
+    const variationInfo = await fs.readJson(infoJsonPath)
+    variationInfo.active = activeVariation !== "None" && variation === activeVariation
+    variationInfo.lastUpdated = new Date().toISOString()
+    await fs.writeJson(infoJsonPath, variationInfo, { spaces: 2 })
+
+    // Convert SCSS to CSS
+    const scssFile = path.join(variationDir, "style.scss")
+    const cssFile = path.join(variationDir, "style.css")
+    if (await fs.pathExists(scssFile)) {
+      await convertScssToCSS(scssFile, cssFile)
     }
   }
 }

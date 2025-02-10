@@ -7,8 +7,8 @@
 
     function initializeABTest() {
         const { io } = window
-        const socket = io("http://localhost:3000");
-        let isWebsiteMatch = false;
+        const socket = io("http://localhost:3000")
+        let isWebsiteMatch = false
         const activeTests = {}
         let config = {}
 
@@ -28,7 +28,7 @@
 
             socket.emit("checkWebsite", { testId, url: window.location.href }, (response) => {
                 if (response.match) {
-                    isWebsiteMatch = true;
+                    isWebsiteMatch = true
                     console.log(`Loading test ${testId} for ${response.websiteName}`)
                     activeTests[testId] = { js: null }
                     socket.emit("requestTestData", testId)
@@ -38,18 +38,22 @@
             })
         }
 
-        socket.on("testData", ({ testId, data }) => {
-            console.log(`Received initial test data for ${testId}`)
-            applyTestData(testId, data)
+        socket.on("testData", ({ testId, data, isMultiTouch }) => {
+            console.log(`Received initial test data for ${testId}:`, data)
+            if (isMultiTouch) {
+                applyMultiTouchTestData(testId, data)
+            } else {
+                applyTestData(testId, data)
+            }
         })
 
         socket.on("update", (data) => {
-            if (!isWebsiteMatch) return;
+            if (!isWebsiteMatch) return
             console.log(`Update received:`, data)
             if (data.type === "css") {
-                updateStyle(data.path, data.content)
+                updateStyle(data.path, data.content, data.touchpoint)
             } else if (data.type === "js") {
-                updateScript(data.path, data.content)
+                updateScript(data.path, data.content, data.touchpoint)
             }
         })
 
@@ -63,42 +67,58 @@
             })
         }
 
-        function updateStyle(file, content) {
-            let style = document.getElementById(`ab-test-style-${file}`)
+        function applyMultiTouchTestData(testId, data) {
+            console.log("Applying multi-touch test data:", data)
+            Object.entries(data).forEach(([touchpoint, touchpointData]) => {
+                if (touchpointData.css && touchpointData.css["style.css"]) {
+                    updateStyle("style.css", touchpointData.css["style.css"], touchpoint)
+                }
+
+                Object.entries(touchpointData.js || {}).forEach(([file, content]) => {
+                    updateScript(file, content, touchpoint)
+                })
+            })
+        }
+
+        function updateStyle(file, content, touchpoint = null) {
+            const id = touchpoint ? `ab-test-style-${touchpoint}-${file}` : `ab-test-style-${file}`
+            let style = document.getElementById(id)
             if (!style) {
                 style = document.createElement("style")
-                style.id = `ab-test-style-${file}`
+                style.id = id
                 document.head.appendChild(style)
             } else {
                 if (config.cssReload == true) {
                     window.location.reload()
-                    return;
+                    return
                 }
             }
             style.textContent = content
+            console.log(`Updated style for ${touchpoint ? `touchpoint ${touchpoint}` : "test"}:`, content)
         }
 
-        function updateScript(file, content) {
-            console.log(`Updating script: ${file}-----${Object.entries(config)}`)
-            const existingScript = document.querySelector(`script[data-ab-test-file="${file}"]`)
+        function updateScript(file, content, touchpoint = null) {
+            const id = touchpoint ? `ab-test-script-${touchpoint}-${file}` : `ab-test-script-${file}`
+            console.log(`Updating script: ${file} for ${touchpoint ? `touchpoint ${touchpoint}` : "test"}`)
+            const existingScript = document.querySelector(`script[data-ab-test-file="${id}"]`)
             if (existingScript) {
                 if (config.jsReload == true) {
                     window.location.reload()
-                    return;
+                    return
                 } else {
                     existingScript.remove()
                 }
             }
 
             const script = document.createElement("script")
-            script.setAttribute("data-ab-test-file", file)
+            script.setAttribute("data-ab-test-file", id)
             script.textContent = `
               (function() {
                   ${content}
               })();
           `
             document.body.appendChild(script)
-
+            console.log(`Updated script for ${touchpoint ? `touchpoint ${touchpoint}` : "test"}:`, content)
         }
 
         // Expose a method to load additional tests
