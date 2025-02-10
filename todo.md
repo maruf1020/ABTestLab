@@ -6,3 +6,6 @@
 
 ### have to work on targeting
     - Here I have to marge the initial development branch with master and and create another branch for enhancement targeting. 
+
+
+### have to move the public and script folder inside the src folder and their code accordingly 
