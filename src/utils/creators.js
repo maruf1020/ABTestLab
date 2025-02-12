@@ -11,6 +11,13 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const TEMPLATES_DIR = path.resolve(__dirname, "..", "templates")
 
+function generateId(name) {
+  const timestamp = Date.now()
+  const randomNum = Math.floor(Math.random() * 10000)
+  const sanitizedName = name.replace(/[^a-zA-Z0-9]/g, "_")
+  return `${timestamp}_${randomNum}_${sanitizedName}`
+}
+
 async function ensureTemplatesExist() {
   const templatesExist = await fs.pathExists(TEMPLATES_DIR)
   if (!templatesExist) {
@@ -57,6 +64,7 @@ export async function createWebsite(websiteName) {
     const hostnameList = response.hostnames.split(",").map((host) => host.trim())
 
     const websiteInfo = {
+      id: generateId(websiteName),
       name: websiteName,
       hostnames: hostnameList,
       createdAt: new Date().toISOString(),
@@ -102,6 +110,7 @@ export async function createTest(website, testName, testType) {
     }
 
     const testInfo = {
+      id: generateId(testName),
       name: testName,
       type: testType,
       website: website,
@@ -170,6 +179,7 @@ async function createMultiTouchTest(testDir) {
     await fs.writeJson(
       path.join(touchpointDir, "info.json"),
       {
+        id: generateId(touchpoint),
         name: touchpoint,
         variations: ["Control", ...variations],
         createdAt: new Date().toISOString(),
@@ -264,6 +274,7 @@ async function createVariations(testDir, touchPointCount) {
       await fs.writeJson(
         path.join(variationDir, "info.json"),
         {
+          id: generateId(response.variationName),
           name: response.variationName,
           isVariation: true,
           createdAt: new Date().toISOString(),
@@ -292,6 +303,7 @@ async function createVariation(dir, variationName) {
   await fs.writeJson(
     infoJsonPath,
     {
+      id: generateId(variationName),
       name: variationName,
       isVariation: true,
       createdAt: new Date().toISOString(),
