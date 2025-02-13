@@ -25,18 +25,6 @@ export async function initializeTemplates() {
         await fs.writeFile(path.join(variationDir, "style.scss"), "/* SCSS file for variation styling */");
         await fs.writeJson(path.join(variationDir, "info.json"), { name: "Variation Name" });
 
-        // // Create touch-point template
-        // const touchPointDir = path.join(templatesDir, "touch-point")
-        // await fs.ensureDir(touchPointDir)
-        // await fs.ensureDir(path.join(touchPointDir, "targeting"))
-        // await fs.writeFile(
-        //     path.join(touchPointDir, "targeting", "css_targeting.js"),
-        //     "// JavaScript file for CSS targeting",
-        // )
-        // await fs.writeFile(path.join(touchPointDir, "targeting", "js_targeting.js"), "// JavaScript file for JS targeting")
-        // await fs.writeJson(path.join(touchPointDir, "targeting", "json_targeting.json"), {})
-        // await fs.writeJson(path.join(touchPointDir, "info.json"), { name: "Touch Point Name" })
-
         // Create targeting folder structure
         const targetingDir = path.join(templatesDir, "targeting");
         await fs.ensureDir(targetingDir);

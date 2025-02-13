@@ -1,6 +1,6 @@
 {
   "name": "ab-testing-cli",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "A CLI tool for A/B testing directly from a local machine",
   "main": "src/index.js",
   "type": "module",
@@ -28,6 +28,12 @@
     "rollup": "^4.6.1",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3"
+  },
+  "_comments": {
+    "development_node_version": "22.8.0",
+    "development_npm_version": "10.8.3",
+    "node_version": "minimum Node version should be 14 but 18 - 22 is recommended",
+    "npm_version": "minimum npm version should be 6 but 9 - 10 is recommended"
   }
 }
 
