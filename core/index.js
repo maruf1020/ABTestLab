@@ -14,4 +14,3 @@ program.addCommand(listCommand)
 program.addCommand(startCommand)
 
 program.parse(process.argv)
-

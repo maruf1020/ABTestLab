@@ -15,11 +15,11 @@ async function createFolderStructure() {
     await fs.ensureDir(ROOT_DIR)
 
     // Create template folders
-    const templatesDir = path.join(ROOT_DIR, "_templates")
-    await fs.ensureDir(templatesDir)
+    const skeletonDir = path.join(ROOT_DIR, "_skeleton")
+    await fs.ensureDir(skeletonDir)
 
     // Create template for Normal test
-    const normalTestDir = path.join(templatesDir, "normal_test")
+    const normalTestDir = path.join(skeletonDir, "normal_test")
     await fs.ensureDir(normalTestDir)
     await fs.ensureDir(path.join(normalTestDir, "Variation_name"))
     await fs.writeFile(path.join(normalTestDir, "Variation_name", "config.js"), "// JavaScript file for targeting")
@@ -32,7 +32,7 @@ async function createFolderStructure() {
     await fs.writeJson(path.join(normalTestDir, "info.json"), { type: "Normal Test" })
 
     // Create template for A/B test
-    const abTestDir = path.join(templatesDir, "ab_test")
+    const abTestDir = path.join(skeletonDir, "ab_test")
     await fs.ensureDir(abTestDir)
     await fs.ensureDir(path.join(abTestDir, "config"))
     await fs.writeFile(path.join(abTestDir, "config", "css_targeting.js"), "// JavaScript file for CSS targeting")
@@ -48,7 +48,7 @@ async function createFolderStructure() {
     await fs.writeJson(path.join(abTestDir, "info.json"), { type: "A/B Test" })
 
     // Create template for Multipage test
-    const multipageTestDir = path.join(templatesDir, "multipage_test")
+    const multipageTestDir = path.join(skeletonDir, "multipage_test")
     await fs.ensureDir(multipageTestDir)
     await fs.ensureDir(path.join(multipageTestDir, "Experience_name"))
     await fs.ensureDir(path.join(multipageTestDir, "Experience_name", "targeting"))
@@ -89,4 +89,3 @@ async function createFolderStructure() {
 }
 
 createFolderStructure()
-

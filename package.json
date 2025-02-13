@@ -1,14 +1,14 @@
 {
   "name": "ab-testing-cli",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A CLI tool for A/B testing directly from a local machine",
-  "main": "src/index.js",
+  "main": "core/index.js",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js",
-    "cli": "node src/index.js",
+    "start": "node core/index.js",
+    "cli": "node core/index.js",
     "build": "rollup -c",
-    "dev": "DEBUG=ab-testing-cli:* node src/index.js"
+    "dev": "DEBUG=ab-testing-cli:* node core/index.js"
   },
   "dependencies": {
     "commander": "^11.1.0",

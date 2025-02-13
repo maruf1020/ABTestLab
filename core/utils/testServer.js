@@ -21,7 +21,7 @@ export async function startTestServer(website, test, activeVariation) {
             res.writeHead(200, { "Content-Type": "application/javascript" })
             res.end(content)
         } else if (req.url === "/socket-io-client.js") {
-            const socketIoClientPath = path.join(__dirname, "..", "..", "public", "js", "vendor", "socket-io-client.js")
+            const socketIoClientPath = path.join(__dirname, "..", "public", "js", "vendor", "socket-io-client.js")
             const content = await fs.readFile(socketIoClientPath, "utf-8")
             res.writeHead(200, { "Content-Type": "application/javascript" })
             res.end(content)
@@ -198,4 +198,3 @@ async function getMultiTouchTestData(testDir) {
     }
     return testData
 }
-

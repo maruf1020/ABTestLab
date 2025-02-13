@@ -4,12 +4,12 @@ import prompts from "prompts"
 import kleur from "kleur"
 import { fileURLToPath } from "url"
 import { ROOT_DIR } from "../config.js"
-import { initializeTemplates } from "./init.js"
+import { initializeSkeleton } from "./init.js"
 import { convertScssToCSS } from "./cssUtils.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const TEMPLATES_DIR = path.resolve(__dirname, "..", "templates")
+const SKELETON_DIR = path.resolve(__dirname, "..", "..", "skeleton")
 
 function generateId(name) {
   const timestamp = Date.now()
@@ -18,34 +18,34 @@ function generateId(name) {
   return `${timestamp}_${randomNum}_${sanitizedName}`
 }
 
-async function ensureTemplatesExist() {
-  const templatesExist = await fs.pathExists(TEMPLATES_DIR)
-  if (!templatesExist) {
+async function ensureSkeletonExist() {
+  const skeletonExist = await fs.pathExists(SKELETON_DIR)
+  if (!skeletonExist) {
     const response = await prompts({
       type: "confirm",
-      name: "initializeTemplates",
-      message: "Templates are missing. Do you want to initialize them now?",
+      name: "initializeSkeleton",
+      message: "Skeleton are missing. Do you want to initialize them now?",
       initial: true,
     })
-    if (response.initializeTemplates) {
-      await initializeTemplates()
+    if (response.initializeSkeleton) {
+      await initializeSkeleton()
     } else {
-      throw new Error('Templates are required. Please run "npm run cli init" to create templates.')
+      throw new Error('Skeleton are required. Please run "npm run cli init" to create skeleton.')
     }
   }
 }
 
-async function validateTemplates() {
-  const targetingTemplateExists = await fs.pathExists(path.join(TEMPLATES_DIR, "targeting"))
-  const variationTemplateExists = await fs.pathExists(path.join(TEMPLATES_DIR, "variation"))
+async function validateSkeleton() {
+  const targetingTemplateExists = await fs.pathExists(path.join(SKELETON_DIR, "targeting"))
+  const variationTemplateExists = await fs.pathExists(path.join(SKELETON_DIR, "variation"))
 
   if (!targetingTemplateExists || !variationTemplateExists) {
-    throw new Error('Required templates are missing. Please run "npm run cli init" to create templates.')
+    throw new Error('Required skeleton are missing. Please run "npm run cli init" to create skeleton.')
   }
 }
 
 async function copyTargetingFolder(destination) {
-  const targetingTemplateDir = path.join(TEMPLATES_DIR, "targeting")
+  const targetingTemplateDir = path.join(SKELETON_DIR, "targeting")
   await fs.copy(targetingTemplateDir, path.join(destination, "targeting"))
 }
 
@@ -84,8 +84,8 @@ export async function createWebsite(websiteName) {
 
 export async function createTest(website, testName, testType) {
   try {
-    await ensureTemplatesExist()
-    await validateTemplates()
+    await ensureSkeletonExist()
+    await validateSkeleton()
     const testDir = path.join(ROOT_DIR, website, testName)
     await fs.ensureDir(testDir)
 
@@ -270,7 +270,7 @@ async function createVariations(testDir, touchPointCount) {
     if (touchPointCount !== 0) {
       const variationDir = path.join(testDir, response.variationName)
       await fs.ensureDir(variationDir)
-      await fs.copy(path.join(TEMPLATES_DIR, "variation"), variationDir)
+      await fs.copy(path.join(SKELETON_DIR, "variation"), variationDir)
       await fs.writeJson(
         path.join(variationDir, "info.json"),
         {
@@ -296,7 +296,7 @@ async function createVariations(testDir, touchPointCount) {
 async function createVariation(dir, variationName) {
   const variationDir = path.join(dir, variationName)
   await fs.ensureDir(variationDir)
-  await fs.copy(path.join(TEMPLATES_DIR, "variation"), variationDir)
+  await fs.copy(path.join(SKELETON_DIR, "variation"), variationDir)
 
   // Create info.json for the variation
   const infoJsonPath = path.join(variationDir, "info.json")
@@ -424,4 +424,3 @@ async function updateSingleVariationStatus(dir, variation, activeVariation) {
     }
   }
 }
-

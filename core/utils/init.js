@@ -2,31 +2,31 @@ import fs from "fs-extra";
 import path from "path";
 import { fileURLToPath } from "url";
 import chalk from "chalk";
-import { downloadSocketIO } from "../../scripts/download-socket-io.js";
+import { downloadSocketIO } from "../scripts/download-socket-io.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export async function initializeTemplates() {
+export async function initializeSkeleton() {
     try {
         console.log(chalk.yellow("Creating template folders and downloading dependency files..."));
 
         await downloadSocketIO();
 
-        const templatesDir = path.resolve(__dirname, "..", "templates");
+        const skeletonDir = path.resolve(__dirname, "..", "..", "skeleton");
 
-        // Create templates directory
-        await fs.ensureDir(templatesDir);
+        // Create skeleton directory
+        await fs.ensureDir(skeletonDir);
 
         // Create variation template
-        const variationDir = path.join(templatesDir, "variation");
+        const variationDir = path.join(skeletonDir, "variation");
         await fs.ensureDir(variationDir);
         await fs.writeFile(path.join(variationDir, "index.js"), "// JavaScript file for variation logic");
         await fs.writeFile(path.join(variationDir, "style.scss"), "/* SCSS file for variation styling */");
         await fs.writeJson(path.join(variationDir, "info.json"), { name: "Variation Name" });
 
         // Create targeting folder structure
-        const targetingDir = path.join(templatesDir, "targeting");
+        const targetingDir = path.join(skeletonDir, "targeting");
         await fs.ensureDir(targetingDir);
 
         // elementChecker.json

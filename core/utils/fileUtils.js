@@ -32,4 +32,3 @@ export async function getTestInfo(website, test) {
     throw new Error(`Failed to get test info for ${test} in website ${website}: ${error.message}`)
   }
 }
-

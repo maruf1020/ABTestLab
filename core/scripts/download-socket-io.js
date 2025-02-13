@@ -2,6 +2,7 @@ import fs from "fs-extra"
 import path from "path"
 import https from "https"
 import { fileURLToPath } from "url"
+import chalk from "chalk";
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -25,7 +26,7 @@ export function downloadSocketIO() {
                                 console.error("Error saving Socket.IO client:", err)
                                 reject(err)
                             } else {
-                                console.log("Socket.IO client saved successfully!")
+                                console.log(chalk.green("Socket.IO client saved successfully!"));
                                 resolve()
                             }
                         })
