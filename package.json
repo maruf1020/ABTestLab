@@ -22,7 +22,8 @@
     "sass": "^1.69.5",
     "socket.io": "^4.7.2",
     "socket.io-client": "^4.7.2",
-    "chokidar": "^3.5.3"
+    "chokidar": "^3.5.3",
+    "cli-table3": "^0.6.3"
   },
   "devDependencies": {
     "rollup": "^4.6.1",
@@ -36,4 +37,3 @@
     "npm_version": "minimum npm version should be 6 but 9 - 10 is recommended"
   }
 }
-

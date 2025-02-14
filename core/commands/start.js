@@ -7,7 +7,7 @@ import { ROOT_DIR } from "../config.js"
 import { listWebsites, listTests } from "../utils/fileUtils.js"
 import { startTestServer } from "../utils/testServer.js"
 import debug from "debug"
-import { execSync } from "child_process"
+import Table from "cli-table3"
 
 const log = debug("ab-testing-cli:start")
 
@@ -17,96 +17,190 @@ export const startCommand = new Command("start")
     .option("-t, --test <name>", "Specify the test name")
     .action(async (options) => {
         try {
-            const websitesPath = path.join(ROOT_DIR)
+            const history = await loadHistory()
+            const settings = await loadSettings()
 
-            if (!fs.existsSync(websitesPath)) {
-                console.log(kleur.yellow("No websites directory found. You need to create a website first."));
-                return;
+            const initialChoices = [
+                { title: "Run a Single Test", value: "single" },
+                { title: "Run Multiple Tests", value: "multiple" },
+            ]
+
+            if (history.length > 0) {
+                initialChoices.unshift(
+                    { title: "Run Last Active Test", value: "last" },
+                    { title: "View Test History", value: "history" },
+                )
             }
 
-            let website = options.website
-            let test = options.test
-            const websites = await listWebsites()
+            const { action } = await prompts({
+                type: "select",
+                name: "action",
+                message: "What would you like to do?",
+                choices: initialChoices,
+            })
 
-            if (websites.length === 0) {
-                console.log(kleur.yellow("No websites found. Please create a website first."))
-
-                const createWebsiteResponse = await prompts({
-                    type: "confirm",
-                    name: "createWebsite",
-                    message: "Would you like to create a new website?",
-                    initial: true
-                })
-
-                if (createWebsiteResponse.createWebsite) {
-                    execSync("node ./commands/create.js", { stdio: "inherit" })
-                }
-                return
+            switch (action) {
+                case "last":
+                    await runLastActiveTest(history[0])
+                    break
+                case "history":
+                    await viewTestHistory(history)
+                    break
+                case "single":
+                    await runSingleTest(options)
+                    break
+                case "multiple":
+                    console.log(kleur.yellow("This feature is coming soon!"))
+                    break
             }
-
-            if (!website) {
-                const websiteResponse = await prompts({
-                    type: "autocomplete",
-                    name: "website",
-                    message: "Search & select a website:",
-                    choices: websites.map((w) => ({ title: w, value: w })),
-                    suggest: (input, choices) => {
-                        return Promise.resolve(
-                            choices.filter(choice => choice.title.toLowerCase().includes(input.toLowerCase()))
-                        )
-                    }
-                })
-                website = websiteResponse.website
-            }
-
-            const tests = await listTests(website)
-
-            if (tests.length === 0) {
-                console.log(kleur.yellow(`No tests found for website "${website}". Please create a test first.`))
-
-                const createTestResponse = await prompts({
-                    type: "confirm",
-                    name: "createTest",
-                    message: `Would you like to create a new test for website "${website}"?`,
-                    initial: true
-                })
-
-                if (createTestResponse.createTest) {
-                    execSync("node ./commands/create.js", { stdio: "inherit" })
-                }
-                return
-            }
-
-            if (!test) {
-                const testResponse = await prompts({
-                    type: "autocomplete",
-                    name: "test",
-                    message: "Search & select a test:",
-                    choices: tests.map((t) => ({ title: t, value: t })),
-                    suggest: (input, choices) => {
-                        return Promise.resolve(
-                            choices.filter(choice => choice.title.toLowerCase().includes(input.toLowerCase()))
-                        )
-                    }
-                })
-                test = testResponse.test
-            }
-
-            const testDir = path.join(ROOT_DIR, website, test)
-            const testInfo = await fs.readJson(path.join(testDir, "info.json"))
-
-            if (!testInfo.activeVariation) {
-                console.log(kleur.yellow(`No active variation for test "${test}". Please activate a variation first.`))
-                return
-            }
-
-            console.log(kleur.green(`Starting test "${test}" for website "${website}"...`))
-            log(`Test directory: ${testDir}`)
-            log(`Active variation: ${testInfo.activeVariation}`)
-
-            await startTestServer(website, test, testInfo.activeVariation)
         } catch (error) {
             console.error(kleur.red(`Error: ${error.message}`))
             log(`Stack trace: ${error.stack}`)
         }
     })
+
+async function loadHistory() {
+    const historyPath = path.join(process.cwd(), "history.json")
+    if (await fs.pathExists(historyPath)) {
+        return fs.readJson(historyPath)
+    }
+    return []
+}
+
+async function loadSettings() {
+    const settingsPath = path.join(process.cwd(), "settings.json")
+    if (await fs.pathExists(settingsPath)) {
+        return fs.readJson(settingsPath)
+    }
+    return { maxHistoryRecords: 10 }
+}
+
+async function saveHistory(history) {
+    const historyPath = path.join(process.cwd(), "history.json")
+    await fs.writeJson(historyPath, history, { spaces: 2 })
+}
+
+async function runLastActiveTest(lastTest) {
+    console.log(kleur.green(`Running last active test: ${lastTest.testName} for website ${lastTest.websiteName}`))
+    await startTestServer(lastTest.websiteName, lastTest.testName, lastTest.variationName)
+    await updateHistory(lastTest)
+}
+
+async function viewTestHistory(history) {
+    const table = new Table({
+        head: ["Website Name", "Test Name", "Variation Name", "Last Run"],
+    })
+
+    history.forEach((test) => {
+        table.push([test.websiteName, test.testName, test.variationName, new Date(test.lastRun).toLocaleString()])
+    })
+
+    console.log(table.toString())
+
+    const { selectedTest } = await prompts({
+        type: "select",
+        name: "selectedTest",
+        message: "Select a test to run:",
+        choices: [
+            ...history.map((test, index) => ({ title: `${test.websiteName} - ${test.testName}`, value: index })),
+            { title: "Go back", value: -1 },
+        ],
+    })
+
+    if (selectedTest !== -1) {
+        await runLastActiveTest(history[selectedTest])
+    }
+}
+
+async function runSingleTest(options) {
+    const websitesPath = path.join(ROOT_DIR)
+
+    if (!fs.existsSync(websitesPath)) {
+        console.log(kleur.yellow("No websites directory found. You need to create a website first."))
+        return
+    }
+
+    let website = options.website
+    let test = options.test
+    const websites = await listWebsites()
+
+    if (websites.length === 0) {
+        console.log(kleur.yellow("No websites found. Please create a website first."))
+        return
+    }
+
+    if (!website) {
+        const websiteResponse = await prompts({
+            type: "autocomplete",
+            name: "website",
+            message: "Search & select a website:",
+            choices: websites.map((w) => ({ title: w, value: w })),
+            suggest: (input, choices) => {
+                return Promise.resolve(choices.filter((choice) => choice.title.toLowerCase().includes(input.toLowerCase())))
+            },
+        })
+        website = websiteResponse.website
+    }
+
+    const tests = await listTests(website)
+
+    if (tests.length === 0) {
+        console.log(kleur.yellow(`No tests found for website "${website}". Please create a test first.`))
+        return
+    }
+
+    if (!test) {
+        const testResponse = await prompts({
+            type: "autocomplete",
+            name: "test",
+            message: "Search & select a test:",
+            choices: tests.map((t) => ({ title: t, value: t })),
+            suggest: (input, choices) => {
+                return Promise.resolve(choices.filter((choice) => choice.title.toLowerCase().includes(input.toLowerCase())))
+            },
+        })
+        test = testResponse.test
+    }
+
+    const testDir = path.join(ROOT_DIR, website, test)
+    const testInfo = await fs.readJson(path.join(testDir, "info.json"))
+
+    if (!testInfo.activeVariation) {
+        console.log(kleur.yellow(`No active variation for test "${test}". Please activate a variation first.`))
+        return
+    }
+
+    console.log(kleur.green(`Starting test "${test}" for website "${website}"...`))
+    log(`Test directory: ${testDir}`)
+    log(`Active variation: ${testInfo.activeVariation}`)
+
+    await startTestServer(website, test, testInfo.activeVariation)
+    await updateHistory({ websiteName: website, testName: test, variationName: testInfo.activeVariation })
+}
+
+async function updateHistory(testData) {
+    const history = await loadHistory()
+    const settings = await loadSettings()
+
+    // Remove the test if it already exists in history
+    const index = history.findIndex(
+        (item) => item.websiteName === testData.websiteName && item.testName === testData.testName,
+    )
+    if (index !== -1) {
+        history.splice(index, 1)
+    }
+
+    // Add the new test data to the beginning of the array
+    history.unshift({
+        ...testData,
+        lastRun: new Date().toISOString(),
+    })
+
+    // Trim the history to the maximum allowed records
+    if (history.length > settings.maxHistoryRecords) {
+        history.length = settings.maxHistoryRecords
+    }
+
+    await saveHistory(history)
+}
+
