@@ -1,1 +1,35 @@
-[]
+[
+  {
+    "lastRun": "2025-02-14T18:33:05.369Z",
+    "tests": [
+      {
+        "websiteName": "snocks",
+        "testName": "testing test",
+        "variationName": "v02",
+        "testType": "A/B"
+      }
+    ]
+  },
+  {
+    "lastRun": "2025-02-14T18:33:00.663Z",
+    "tests": [
+      {
+        "websiteName": "snocks",
+        "testName": "testing test",
+        "variationName": "v02",
+        "testType": "A/B"
+      }
+    ]
+  },
+  {
+    "lastRun": "2025-02-14T18:32:26.599Z",
+    "tests": [
+      {
+        "websiteName": "snocks",
+        "testName": "test AB",
+        "variationName": "v01",
+        "testType": "A/B"
+      }
+    ]
+  }
+]

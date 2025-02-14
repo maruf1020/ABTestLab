@@ -81,18 +81,40 @@ async function saveHistory(history) {
 }
 
 async function runLastActiveTest(lastTest) {
-    console.log(kleur.green(`Running last active test: ${lastTest.testName} for website ${lastTest.websiteName}`))
-    await startTestServer(lastTest.websiteName, lastTest.testName, lastTest.variationName)
-    await updateHistory(lastTest)
+    console.log(
+        kleur.green(`Running last active test: ${lastTest.tests[0].testName} for website ${lastTest.tests[0].websiteName}`),
+    )
+    await startTestServer(lastTest.tests[0].websiteName, lastTest.tests[0].testName, lastTest.tests[0].variationName)
+    await updateHistory([lastTest.tests[0]])
 }
 
 async function viewTestHistory(history) {
     const table = new Table({
-        head: ["Website Name", "Test Name", "Variation Name", "Last Run"],
+        head: ["Test type", "Test type", "Website Name", "Test Name", "Variation Name", "Last Run"],
+        colWidths: [14, 14, 14, 14, 16, 24],
     })
 
-    history.forEach((test) => {
-        table.push([test.websiteName, test.testName, test.variationName, new Date(test.lastRun).toLocaleString()])
+    history.forEach((entry) => {
+        if (entry.tests.length === 1) {
+            table.push([
+                "Single",
+                entry.tests[0].testType,
+                entry.tests[0].websiteName,
+                entry.tests[0].testName,
+                entry.tests[0].variationName,
+                new Date(entry.lastRun).toLocaleString(),
+            ])
+        } else {
+            const rows = entry.tests.map((test, index) => [
+                index === 0 ? "Multiple" : "",
+                test.testType,
+                test.websiteName,
+                test.testName,
+                test.variationName,
+                index === 0 ? new Date(entry.lastRun).toLocaleString() : "",
+            ])
+            table.push(...rows)
+        }
     })
 
     console.log(table.toString())
@@ -102,13 +124,21 @@ async function viewTestHistory(history) {
         name: "selectedTest",
         message: "Select a test to run:",
         choices: [
-            ...history.map((test, index) => ({ title: `${test.websiteName} - ${test.testName}`, value: index })),
+            ...history.flatMap((entry, index) =>
+                entry.tests.map((test, testIndex) => ({
+                    title: `${test.websiteName} - ${test.testName}`,
+                    value: { entryIndex: index, testIndex: testIndex },
+                })),
+            ),
             { title: "Go back", value: -1 },
         ],
     })
 
     if (selectedTest !== -1) {
-        await runLastActiveTest(history[selectedTest])
+        const selectedEntry = history[selectedTest.entryIndex]
+        const selectedTestData = selectedEntry.tests[selectedTest.testIndex]
+        await startTestServer(selectedTestData.websiteName, selectedTestData.testName, selectedTestData.variationName)
+        await updateHistory([selectedTestData])
     }
 }
 
@@ -175,25 +205,19 @@ async function runSingleTest(options) {
     log(`Active variation: ${testInfo.activeVariation}`)
 
     await startTestServer(website, test, testInfo.activeVariation)
-    await updateHistory({ websiteName: website, testName: test, variationName: testInfo.activeVariation })
+    await updateHistory([
+        { websiteName: website, testName: test, variationName: testInfo.activeVariation, testType: testInfo.type },
+    ])
 }
 
 async function updateHistory(testData) {
     const history = await loadHistory()
     const settings = await loadSettings()
 
-    // Remove the test if it already exists in history
-    const index = history.findIndex(
-        (item) => item.websiteName === testData.websiteName && item.testName === testData.testName,
-    )
-    if (index !== -1) {
-        history.splice(index, 1)
-    }
-
     // Add the new test data to the beginning of the array
     history.unshift({
-        ...testData,
         lastRun: new Date().toISOString(),
+        tests: testData,
     })
 
     // Trim the history to the maximum allowed records
