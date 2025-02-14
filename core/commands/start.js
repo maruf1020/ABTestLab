@@ -83,31 +83,62 @@ async function runLastActiveTest(lastTest) {
 }
 
 async function viewTestHistory(history) {
+    const hasMultiTouchTest = history.some((entry) => entry.tests.some((test) => test.testType === "Multi-touch"))
+
+    const tableHeaders = [
+        kleur.green("Test type"),
+        kleur.green("Website Name"),
+        kleur.green("Test Name"),
+        kleur.green("Variation Name"),
+        kleur.green("Last Run"),
+    ]
+    const columnWidths = [14, 14, 14, 16, 24]
+
+    if (hasMultiTouchTest) {
+        tableHeaders.splice(3, 0, kleur.green("Touch-point Name"))
+        columnWidths.splice(3, 0, 18)
+    }
+
     const table = new Table({
-        head: ["Test type", "Website Name", "Test Name", "Variation Name", "Last Run"],
-        colWidths: [14, 14, 14, 16, 24],
+        head: tableHeaders,
+        colWidths: columnWidths,
     })
 
-    history.forEach((entry) => {
-        if (entry.tests.length === 1) {
-            table.push([
-                entry.tests[0].testType,
-                entry.tests[0].websiteName,
-                entry.tests[0].testName,
-                entry.tests[0].variationName,
-                new Date(entry.lastRun).toLocaleString(),
-            ])
-        } else {
-            const rows = entry.tests.map((test, index) => [
-                index === 0 ? "Multiple" : "",
-                test.websiteName,
-                test.testName,
-                test.variationName,
-                index === 0 ? new Date(entry.lastRun).toLocaleString() : "",
-            ])
-            table.push(...rows)
+    for (const entry of history) {
+        for (const test of entry.tests) {
+            if (test.testType === "Multi-touch") {
+                const testDir = path.join(ROOT_DIR, test.websiteName, test.testName)
+                const testInfo = await fs.readJson(path.join(testDir, "info.json"))
+                const touchpoints = testInfo.touchpoints || []
+                touchpoints.forEach((touchpoint, index) => {
+                    const row = [
+                        index === 0 ? test.testType : "",
+                        index === 0 ? test.websiteName : "",
+                        index === 0 ? test.testName : "",
+                        touchpoint,
+                        test.variationName,
+                        index === 0 ? new Date(entry.lastRun).toLocaleString() : "",
+                    ]
+                    if (!hasMultiTouchTest) {
+                        row.splice(3, 1)
+                    }
+                    table.push(row)
+                })
+            } else {
+                const row = [
+                    test.testType,
+                    test.websiteName,
+                    test.testName,
+                    test.variationName,
+                    new Date(entry.lastRun).toLocaleString(),
+                ]
+                if (hasMultiTouchTest) {
+                    row.splice(3, 0, "-")
+                }
+                table.push(row)
+            }
         }
-    })
+    }
 
     console.log(table.toString())
 
@@ -202,18 +233,25 @@ async function startTest(website, test, variation, testType) {
     const testDir = path.join(ROOT_DIR, website, test)
     const testInfo = await fs.readJson(path.join(testDir, "info.json"))
 
-    if (testType === "Multi-touch") {
-        const table = new Table({
-            head: [
-                kleur.green("Test type"),
-                kleur.green("Website Name"),
-                kleur.green("Test Name"),
-                kleur.green("Touch-point Name"),
-                kleur.green("Variation Name"),
-            ],
-            colWidths: [14, 14, 14, 18, 16],
-        })
+    const tableHeaders = [
+        kleur.green("Test type"),
+        kleur.green("Website Name"),
+        kleur.green("Test Name"),
+        kleur.green("Variation Name"),
+    ]
+    const columnWidths = [14, 14, 14, 16]
 
+    if (testType === "Multi-touch") {
+        tableHeaders.splice(3, 0, kleur.green("Touch-point Name"))
+        columnWidths.splice(3, 0, 18)
+    }
+
+    const table = new Table({
+        head: tableHeaders,
+        colWidths: columnWidths,
+    })
+
+    if (testType === "Multi-touch") {
         const touchpoints = testInfo.touchpoints || []
         touchpoints.forEach((touchpoint, index) => {
             if (index === 0) {
@@ -222,22 +260,11 @@ async function startTest(website, test, variation, testType) {
                 table.push(["", "", "", touchpoint, variation])
             }
         })
-
-        console.log(table.toString())
     } else {
-        const table = new Table({
-            head: [
-                kleur.green("Test type"),
-                kleur.green("Website Name"),
-                kleur.green("Test Name"),
-                kleur.green("Variation Name"),
-            ],
-            colWidths: [14, 14, 14, 16],
-        })
-
         table.push([testType, website, test, variation])
-        console.log(table.toString())
     }
+
+    console.log(table.toString())
 
     console.log(kleur.green(`Starting test "${test}" for website "${website}" with variation "${variation}"...`))
     log(`Test directory: ${testDir}`)

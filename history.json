@@ -1,6 +1,28 @@
 [
   {
-    "lastRun": "2025-02-14T20:47:14.273Z",
+    "lastRun": "2025-02-14T21:09:45.357Z",
+    "tests": [
+      {
+        "websiteName": "snocks",
+        "testName": "ai",
+        "variationName": "v01",
+        "testType": "A/B"
+      }
+    ]
+  },
+  {
+    "lastRun": "2025-02-14T21:09:18.665Z",
+    "tests": [
+      {
+        "websiteName": "snocks",
+        "testName": "testing test",
+        "variationName": "v02",
+        "testType": "A/B"
+      }
+    ]
+  },
+  {
+    "lastRun": "2025-02-14T21:09:11.177Z",
     "tests": [
       {
         "websiteName": "snocks",
@@ -11,12 +33,23 @@
     ]
   },
   {
-    "lastRun": "2025-02-14T20:46:56.686Z",
+    "lastRun": "2025-02-14T21:07:25.215Z",
     "tests": [
       {
         "websiteName": "snocks",
         "testName": "t11",
         "variationName": "v1",
+        "testType": "A/B"
+      }
+    ]
+  },
+  {
+    "lastRun": "2025-02-14T21:00:39.448Z",
+    "tests": [
+      {
+        "websiteName": "snocks",
+        "testName": "AB test awat checking",
+        "variationName": "v01",
         "testType": "A/B"
       }
     ]
@@ -40,17 +73,6 @@
         "testName": "firt time big AA test",
         "variationName": "v01",
         "testType": "AA"
-      }
-    ]
-  },
-  {
-    "lastRun": "2025-02-14T19:10:59.362Z",
-    "tests": [
-      {
-        "websiteName": "snocks",
-        "testName": "testing test",
-        "variationName": "v02",
-        "testType": "A/B"
       }
     ]
   },
