@@ -1,7 +1,11 @@
 export default function checker(rulesConfig) {
   return new Promise((resolve) => {
     if (!rulesConfig.rules.length) {
-      resolve(true); // If no rules, run the test on all pages
+      resolve({
+        finalResult: true,
+        message: "No rules provided, test runs on all pages.",
+        details: []
+      });
       return;
     }
 
@@ -16,13 +20,23 @@ export default function checker(rulesConfig) {
 
           if (rule.is_matched === isMatched) {
             clearInterval(intervalId);
-            ruleResolve(true);
+            ruleResolve({
+              selector: rule.selector,
+              condition: `Expected ${rule.total_element_count} elements`,
+              result: true,
+              message: `Condition matched for selector: ${rule.selector}`
+            });
           }
 
           elapsedTime += intervalTime;
           if (elapsedTime >= rule.waiting_time) {
             clearInterval(intervalId);
-            ruleResolve(false);
+            ruleResolve({
+              selector: rule.selector,
+              condition: `Expected ${rule.total_element_count} elements`,
+              result: false,
+              message: `Condition not matched for selector: ${rule.selector}`
+            });
           }
         }, intervalTime);
       });
@@ -30,12 +44,15 @@ export default function checker(rulesConfig) {
 
     Promise.allSettled(checks).then((results) => {
       const outcomes = results.map((result) => result.value);
+      const finalResult = rulesConfig.multiple_rules_check_by_condition === "AND"
+        ? outcomes.every(outcome => outcome.result)
+        : outcomes.some(outcome => outcome.result);
 
-      if (rulesConfig.multiple_rules_check_by_condition === "AND") {
-        resolve(outcomes.every(Boolean)); // Pass only if all are true
-      } else {
-        resolve(outcomes.some(Boolean)); // Pass if any one is true
-      }
+      resolve({
+        finalResult,
+        message: finalResult ? "Conditions met with ${rulesConfig.multiple_rules_check_by_condition} condition" : "Some conditions not met",
+        details: outcomes
+      });
     });
   });
 }

@@ -1,4 +1,5 @@
-export default function checker(activator, checkingTimeOut) {
+export default function checker(info) {
+    const { activator, checkingTimeOut } = info;
     return new Promise((resolve) => {
         let isCompleted = false;
         let timeoutId;
@@ -14,6 +15,17 @@ export default function checker(activator, checkingTimeOut) {
         const result = activator(active);
         if (result === true) {
             active(true);
+            // resolve({
+            //     finalResult: value === true,
+            //     message: value === true ? "Condition met successfully." : "Condition not met.",
+            //     details: {
+            //         outcome: value === true ? "success" : "failure",
+            //         reason: value === true ? null : "Unexpected value received",
+            //         actualValue: value,
+            //         expectedValue: true,
+            //         error: null
+            //     }
+            // });
         }
 
         timeoutId = setTimeout(() => {
