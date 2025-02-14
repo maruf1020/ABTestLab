@@ -13,7 +13,7 @@ export async function initializeSkeleton() {
 
         await downloadSocketIO();
 
-        const skeletonDir = path.resolve(__dirname, "..", "..", "skeleton");
+        const skeletonDir = path.resolve(__dirname, "..", "..", "skeleton", "default");
 
         // Create skeleton directory
         await fs.ensureDir(skeletonDir);

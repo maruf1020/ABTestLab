@@ -9,7 +9,7 @@ import { convertScssToCSS } from "./cssUtils.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const SKELETON_DIR = path.resolve(__dirname, "..", "..", "skeleton")
+const SKELETON_DIR = path.resolve(__dirname, "..", "..", "skeleton", "default")
 
 function generateId(name) {
   const timestamp = Date.now()

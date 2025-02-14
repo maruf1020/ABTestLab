@@ -5,4 +5,4 @@ export default function activator(active) {
     //   active(true);
     // });
     return true;
-}  
+}   

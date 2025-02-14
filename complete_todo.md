@@ -1,4 +1,20 @@
 ## Complete TODO
+
+
+
+------------------------------------------------------------------------------------
+Date: 13-FEB-2025
+------------------------------------------------------------------------------------
+### Have to use ID instead of name.
+    - currently I am using name everywhere, like checking, comparing, or handle any kind of operation using the test name, variation name, touch point name, test name, website name etc but I should use an ID for each thing, like when I will create website, test, variation, touch point etc then with name I also need to include an ID and later everywhere for create start run server (clint side , server side) and everywhere I should handle operation not using name but IDs.  
+
+### Have to add a default skelton  
+
+### have to move the public and script folder inside the src folder and their code accordingly 
+
+### Have to create files for target met
+
+
 ------------------------------------------------------------------------------------
 Date: 11-FEB-2025
 ------------------------------------------------------------------------------------
