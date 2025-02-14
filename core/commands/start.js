@@ -6,6 +6,7 @@ import fs from "fs-extra"
 import { ROOT_DIR } from "../config.js"
 import { listWebsites, listTests } from "../utils/fileUtils.js"
 import { startTestServer } from "../utils/testServer.js"
+import { updateHistory } from "../utils/historyUtils.js"
 import debug from "debug"
 import Table from "cli-table3"
 
@@ -17,47 +18,56 @@ export const startCommand = new Command("start")
     .option("-t, --test <name>", "Specify the test name")
     .action(async (options) => {
         try {
-            const history = await loadHistory()
-            const settings = await loadSettings()
-
-            const initialChoices = [
-                { title: "Run a Single Test", value: "single" },
-                { title: "Run Multiple Tests", value: "multiple" },
-            ]
-
-            if (history.length > 0) {
-                initialChoices.unshift(
-                    { title: "Run Last Active Test", value: "last" },
-                    { title: "View Test History", value: "history" },
-                )
-            }
-
-            const { action } = await prompts({
-                type: "select",
-                name: "action",
-                message: "What would you like to do?",
-                choices: initialChoices,
-            })
-
-            switch (action) {
-                case "last":
-                    await runLastActiveTest(history[0])
-                    break
-                case "history":
-                    await viewTestHistory(history)
-                    break
-                case "single":
-                    await runSingleTest(options)
-                    break
-                case "multiple":
-                    console.log(kleur.yellow("This feature is coming soon!"))
-                    break
-            }
+            await mainMenu(options)
         } catch (error) {
             console.error(kleur.red(`Error: ${error.message}`))
             log(`Stack trace: ${error.stack}`)
         }
     })
+
+async function mainMenu(options) {
+    const history = await loadHistory()
+
+    const initialChoices = [
+        { title: "Run a Single Test", value: "single" },
+        { title: "Run Multiple Tests", value: "multiple" },
+        { title: "Exit", value: "exit" },
+    ]
+
+    if (history.length > 0) {
+        initialChoices.unshift(
+            { title: "Run Last Active Test", value: "last" },
+            { title: "View Test History", value: "history" },
+        )
+    }
+
+    while (true) {
+        const { action } = await prompts({
+            type: "select",
+            name: "action",
+            message: "What would you like to do?",
+            choices: initialChoices,
+        })
+
+        switch (action) {
+            case "last":
+                await runLastActiveTest(history[0])
+                return // Exit the menu after starting the test
+            case "history":
+                await viewTestHistory(history)
+                return // Exit the menu after starting the test from history
+            case "single":
+                await runSingleTest(options)
+                return // Exit the menu after starting the test
+            case "multiple":
+                console.log(kleur.yellow("This feature is coming soon!"))
+                break
+            case "exit":
+                console.log(kleur.blue("See you soon!"))
+                process.exit(0)
+        }
+    }
+}
 
 async function loadHistory() {
     const historyPath = path.join(process.cwd(), "history.json")
@@ -67,37 +77,20 @@ async function loadHistory() {
     return []
 }
 
-async function loadSettings() {
-    const settingsPath = path.join(process.cwd(), "settings.json")
-    if (await fs.pathExists(settingsPath)) {
-        return fs.readJson(settingsPath)
-    }
-    return { maxHistoryRecords: 10 }
-}
-
-async function saveHistory(history) {
-    const historyPath = path.join(process.cwd(), "history.json")
-    await fs.writeJson(historyPath, history, { spaces: 2 })
-}
-
 async function runLastActiveTest(lastTest) {
-    console.log(
-        kleur.green(`Running last active test: ${lastTest.tests[0].testName} for website ${lastTest.tests[0].websiteName}`),
-    )
-    await startTestServer(lastTest.tests[0].websiteName, lastTest.tests[0].testName, lastTest.tests[0].variationName)
-    await updateHistory([lastTest.tests[0]])
+    const testData = lastTest.tests[0]
+    await startTest(testData.websiteName, testData.testName, testData.variationName, testData.testType)
 }
 
 async function viewTestHistory(history) {
     const table = new Table({
-        head: ["Test type", "Test type", "Website Name", "Test Name", "Variation Name", "Last Run"],
-        colWidths: [14, 14, 14, 14, 16, 24],
+        head: ["Test type", "Website Name", "Test Name", "Variation Name", "Last Run"],
+        colWidths: [14, 14, 14, 16, 24],
     })
 
     history.forEach((entry) => {
         if (entry.tests.length === 1) {
             table.push([
-                "Single",
                 entry.tests[0].testType,
                 entry.tests[0].websiteName,
                 entry.tests[0].testName,
@@ -107,7 +100,6 @@ async function viewTestHistory(history) {
         } else {
             const rows = entry.tests.map((test, index) => [
                 index === 0 ? "Multiple" : "",
-                test.testType,
                 test.websiteName,
                 test.testName,
                 test.variationName,
@@ -119,27 +111,28 @@ async function viewTestHistory(history) {
 
     console.log(table.toString())
 
+    const choices = history.flatMap((entry, index) =>
+        entry.tests.map((test, testIndex) => ({
+            title: `${test.websiteName} - ${test.testName}`,
+            value: { entryIndex: index, testIndex: testIndex },
+        })),
+    )
+
     const { selectedTest } = await prompts({
         type: "select",
         name: "selectedTest",
         message: "Select a test to run:",
-        choices: [
-            ...history.flatMap((entry, index) =>
-                entry.tests.map((test, testIndex) => ({
-                    title: `${test.websiteName} - ${test.testName}`,
-                    value: { entryIndex: index, testIndex: testIndex },
-                })),
-            ),
-            { title: "Go back", value: -1 },
-        ],
+        choices: choices,
     })
 
-    if (selectedTest !== -1) {
-        const selectedEntry = history[selectedTest.entryIndex]
-        const selectedTestData = selectedEntry.tests[selectedTest.testIndex]
-        await startTestServer(selectedTestData.websiteName, selectedTestData.testName, selectedTestData.variationName)
-        await updateHistory([selectedTestData])
-    }
+    const selectedEntry = history[selectedTest.entryIndex]
+    const selectedTestData = selectedEntry.tests[selectedTest.testIndex]
+    await startTest(
+        selectedTestData.websiteName,
+        selectedTestData.testName,
+        selectedTestData.variationName,
+        selectedTestData.testType,
+    )
 }
 
 async function runSingleTest(options) {
@@ -195,36 +188,62 @@ async function runSingleTest(options) {
     const testDir = path.join(ROOT_DIR, website, test)
     const testInfo = await fs.readJson(path.join(testDir, "info.json"))
 
-    if (!testInfo.activeVariation) {
-        console.log(kleur.yellow(`No active variation for test "${test}". Please activate a variation first.`))
-        return
-    }
-
-    console.log(kleur.green(`Starting test "${test}" for website "${website}"...`))
-    log(`Test directory: ${testDir}`)
-    log(`Active variation: ${testInfo.activeVariation}`)
-
-    await startTestServer(website, test, testInfo.activeVariation)
-    await updateHistory([
-        { websiteName: website, testName: test, variationName: testInfo.activeVariation, testType: testInfo.type },
-    ])
-}
-
-async function updateHistory(testData) {
-    const history = await loadHistory()
-    const settings = await loadSettings()
-
-    // Add the new test data to the beginning of the array
-    history.unshift({
-        lastRun: new Date().toISOString(),
-        tests: testData,
+    const variationResponse = await prompts({
+        type: "select",
+        name: "variation",
+        message: "Select a variation to run:",
+        choices: testInfo.variations.map((v) => ({ title: v, value: v })),
     })
 
-    // Trim the history to the maximum allowed records
-    if (history.length > settings.maxHistoryRecords) {
-        history.length = settings.maxHistoryRecords
+    await startTest(website, test, variationResponse.variation, testInfo.type)
+}
+
+async function startTest(website, test, variation, testType) {
+    const testDir = path.join(ROOT_DIR, website, test)
+    const testInfo = await fs.readJson(path.join(testDir, "info.json"))
+
+    if (testType === "Multi-touch") {
+        const table = new Table({
+            head: [
+                kleur.green("Test type"),
+                kleur.green("Website Name"),
+                kleur.green("Test Name"),
+                kleur.green("Touch-point Name"),
+                kleur.green("Variation Name"),
+            ],
+            colWidths: [14, 14, 14, 18, 16],
+        })
+
+        const touchpoints = testInfo.touchpoints || []
+        touchpoints.forEach((touchpoint, index) => {
+            if (index === 0) {
+                table.push([testType, website, test, touchpoint, variation])
+            } else {
+                table.push(["", "", "", touchpoint, variation])
+            }
+        })
+
+        console.log(table.toString())
+    } else {
+        const table = new Table({
+            head: [
+                kleur.green("Test type"),
+                kleur.green("Website Name"),
+                kleur.green("Test Name"),
+                kleur.green("Variation Name"),
+            ],
+            colWidths: [14, 14, 14, 16],
+        })
+
+        table.push([testType, website, test, variation])
+        console.log(table.toString())
     }
 
-    await saveHistory(history)
+    console.log(kleur.green(`Starting test "${test}" for website "${website}" with variation "${variation}"...`))
+    log(`Test directory: ${testDir}`)
+    log(`Active variation: ${variation}`)
+
+    await startTestServer(website, test, variation)
+    await updateHistory([{ websiteName: website, testName: test, variationName: variation, testType }])
 }
 

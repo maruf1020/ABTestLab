@@ -1,17 +1,50 @@
 [
   {
-    "lastRun": "2025-02-14T18:33:05.369Z",
+    "lastRun": "2025-02-14T20:47:14.273Z",
     "tests": [
       {
         "websiteName": "snocks",
-        "testName": "testing test",
-        "variationName": "v02",
+        "testName": "multi page cart and home",
+        "variationName": "v01",
+        "testType": "Multi-touch"
+      }
+    ]
+  },
+  {
+    "lastRun": "2025-02-14T20:46:56.686Z",
+    "tests": [
+      {
+        "websiteName": "snocks",
+        "testName": "t11",
+        "variationName": "v1",
         "testType": "A/B"
       }
     ]
   },
   {
-    "lastRun": "2025-02-14T18:33:00.663Z",
+    "lastRun": "2025-02-14T20:25:50.344Z",
+    "tests": [
+      {
+        "websiteName": "snocks",
+        "testName": "fully new test and its big",
+        "variationName": "v01",
+        "testType": "A/B"
+      }
+    ]
+  },
+  {
+    "lastRun": "2025-02-14T20:25:22.477Z",
+    "tests": [
+      {
+        "websiteName": "snocks",
+        "testName": "firt time big AA test",
+        "variationName": "v01",
+        "testType": "AA"
+      }
+    ]
+  },
+  {
+    "lastRun": "2025-02-14T19:10:59.362Z",
     "tests": [
       {
         "websiteName": "snocks",

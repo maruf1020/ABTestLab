@@ -117,4 +117,3 @@ async function promptAndCreateTest(website) {
     console.error(chalk.red(`Failed to create test: ${error.message}`))
   }
 }
-
