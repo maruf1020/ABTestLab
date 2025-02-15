@@ -1,7 +1,7 @@
 {
+    "maxHistoryRecords": 10,
     "cssReload": false,
     "jsReload": true,
-    "maxHistoryRecords": 10,
     "_comments": {
         "cssReload": "If true, the page will reload when CSS changes are detected. If false, CSS changes will be applied without reloading.",
         "jsReload": "If true, the page will reload when CSS changes are detected. If false, CSS changes will be applied without reloading.",

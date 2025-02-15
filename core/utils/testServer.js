@@ -43,18 +43,16 @@ export async function startTestServer(website, test, activeVariation) {
     const isMultiTouch = testInfo.type === "Multi-touch"
 
     const watchPaths = []
-    const touchpoints = {}
+    const touchPoints = {}
 
     if (isMultiTouch) {
         const touchpointDirs = await fs.readdir(testDir)
         for (const touchpoint of touchpointDirs) {
             const touchpointDir = path.join(testDir, touchpoint)
             if ((await fs.stat(touchpointDir)).isDirectory() && touchpoint !== "targeting") {
-                const touchpointInfo = await fs.readJson(path.join(touchpointDir, "info.json"))
-                const activeVariation = touchpointInfo.activeVariation || "Control"
                 const variationDir = path.join(touchpointDir, activeVariation)
                 watchPaths.push(variationDir)
-                touchpoints[touchpoint] = { dir: variationDir, activeVariation }
+                touchPoints[touchpoint] = { dir: variationDir, activeVariation }
             }
         }
     } else {
@@ -75,17 +73,9 @@ export async function startTestServer(website, test, activeVariation) {
             let variationDir = null
 
             if (isMultiTouch) {
-                touchpoint = Object.keys(touchpoints).find((tp) => filePath.startsWith(path.join(testDir, tp)))
+                touchpoint = Object.keys(touchPoints).find((tp) => filePath.startsWith(path.join(testDir, tp)))
                 if (touchpoint) {
                     const touchpointDir = path.join(testDir, touchpoint)
-                    const touchpointInfoPath = path.join(touchpointDir, "info.json")
-                    let activeVariation = "Control"
-
-                    if (await fs.pathExists(touchpointInfoPath)) {
-                        const touchpointInfo = await fs.readJson(touchpointInfoPath)
-                        activeVariation = touchpointInfo.activeVariation || "Control"
-                    }
-
                     variationDir = path.join(touchpointDir, activeVariation)
                 }
             } else {
@@ -116,7 +106,7 @@ export async function startTestServer(website, test, activeVariation) {
         log("Browser connected")
 
         socket.on("checkWebsite", async (data, callback) => {
-            const { testId, url } = data
+            const { url } = data
             const websiteInfo = await fs.readJson(path.join(ROOT_DIR, website, "info.json"))
             const match = websiteInfo.hostnames.some((hostname) => url.includes(hostname))
             callback({ match, websiteName: websiteInfo.name })
@@ -124,7 +114,7 @@ export async function startTestServer(website, test, activeVariation) {
 
         socket.on("getConfig", async (callback) => {
             try {
-                const config = await fs.readJson(path.join(__dirname, "..", "config.json"))
+                const config = await fs.readJson(path.join(process.cwd(), "settings.json"))
                 log("Config sent to client:", config)
                 callback(config)
             } catch (error) {
@@ -137,9 +127,10 @@ export async function startTestServer(website, test, activeVariation) {
             try {
                 let testData
                 if (isMultiTouch) {
-                    testData = await getMultiTouchTestData(testDir)
+                    testData = await getMultiTouchTestData(testDir, activeVariation)
                 } else {
-                    testData = await getTestData(path.join(testDir, activeVariation))
+                    const variationDir = path.join(testDir, activeVariation);
+                    testData = await getTestData(variationDir);
                 }
                 log("Sending test data:", testData)
                 socket.emit("testData", { testId, data: testData, isMultiTouch })
@@ -177,21 +168,13 @@ async function getTestData(variationDir) {
     return testData
 }
 
-async function getMultiTouchTestData(testDir) {
+async function getMultiTouchTestData(testDir, activeVariation) {
     const testData = {}
     const touchpointDirs = await fs.readdir(testDir)
 
     for (const touchpoint of touchpointDirs) {
         const touchpointDir = path.join(testDir, touchpoint)
         if ((await fs.stat(touchpointDir)).isDirectory() && touchpoint !== "targeting") {
-            const touchpointInfoPath = path.join(touchpointDir, "info.json")
-            let activeVariation = "Control"
-
-            if (await fs.pathExists(touchpointInfoPath)) {
-                const touchpointInfo = await fs.readJson(touchpointInfoPath)
-                activeVariation = touchpointInfo.activeVariation || "Control"
-            }
-
             const variationDir = path.join(touchpointDir, activeVariation)
             testData[touchpoint] = await getTestData(variationDir)
         }

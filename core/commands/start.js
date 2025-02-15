@@ -6,7 +6,7 @@ import fs from "fs-extra"
 import { ROOT_DIR } from "../config.js"
 import { listWebsites, listTests } from "../utils/fileUtils.js"
 import { startTestServer } from "../utils/testServer.js"
-import { updateHistory } from "../utils/historyUtils.js"
+import { updateHistory, loadHistory } from "../utils/historyUtils.js"
 import debug from "debug"
 import Table from "cli-table3"
 
@@ -35,10 +35,7 @@ async function mainMenu(options) {
     ]
 
     if (history.length > 0) {
-        initialChoices.unshift(
-            { title: "Run Last Active Test", value: "last" },
-            { title: "View Test History", value: "history" },
-        )
+        initialChoices.unshift({ title: "Latest test", value: "latest" }, { title: "View Test History", value: "history" })
     }
 
     while (true) {
@@ -50,9 +47,9 @@ async function mainMenu(options) {
         })
 
         switch (action) {
-            case "last":
-                await runLastActiveTest(history[0])
-                return // Exit the menu after starting the test
+            case "latest":
+                await handleLatestTest(history[0])
+                return // Exit the menu after handling the latest test
             case "history":
                 await viewTestHistory(history)
                 return // Exit the menu after starting the test from history
@@ -69,17 +66,78 @@ async function mainMenu(options) {
     }
 }
 
-async function loadHistory() {
-    const historyPath = path.join(process.cwd(), "history.json")
-    if (await fs.pathExists(historyPath)) {
-        return fs.readJson(historyPath)
+async function handleLatestTest(lastTest) {
+    if (lastTest.tests.length === 1) {
+        const { action } = await prompts({
+            type: "select",
+            name: "action",
+            message: "What would you like to do with the latest test?",
+            choices: [
+                { title: "Run Latest test", value: "run" },
+                { title: "Change variation", value: "changeVariation" },
+                { title: "Change test", value: "changeTest" },
+            ],
+        })
+
+        const testData = lastTest.tests[0]
+
+        switch (action) {
+            case "run":
+                await startTest(testData.websiteName, testData.testName, testData.variationName, testData.testType)
+                break
+            case "changeVariation":
+                await changeVariation(testData.websiteName, testData.testName, testData.testType)
+                break
+            case "changeTest":
+                await changeTest(testData.websiteName)
+                break
+        }
+    } else {
+        console.log(kleur.yellow("Running last active tests..."))
+        for (const testData of lastTest.tests) {
+            await startTest(testData.websiteName, testData.testName, testData.variationName, testData.testType)
+        }
     }
-    return []
 }
 
-async function runLastActiveTest(lastTest) {
-    const testData = lastTest.tests[0]
-    await startTest(testData.websiteName, testData.testName, testData.variationName, testData.testType)
+async function changeVariation(website, test, testType) {
+    const testDir = path.join(ROOT_DIR, website, test)
+    const testInfo = await fs.readJson(path.join(testDir, "info.json"))
+
+    const { variation } = await prompts({
+        type: "select",
+        name: "variation",
+        message: "Select a new variation to run:",
+        choices: testInfo.variations.map((v) => ({ title: v, value: v })),
+    })
+
+    await startTest(website, test, variation, testType)
+}
+
+async function changeTest(website) {
+    const tests = await listTests(website)
+
+    const { test } = await prompts({
+        type: "autocomplete",
+        name: "test",
+        message: "Search & select a new test:",
+        choices: tests.map((t) => ({ title: t, value: t })),
+        suggest: (input, choices) => {
+            return Promise.resolve(choices.filter((choice) => choice.title.toLowerCase().includes(input.toLowerCase())))
+        },
+    })
+
+    const testDir = path.join(ROOT_DIR, website, test)
+    const testInfo = await fs.readJson(path.join(testDir, "info.json"))
+
+    const { variation } = await prompts({
+        type: "select",
+        name: "variation",
+        message: "Select a variation to run:",
+        choices: testInfo.variations.map((v) => ({ title: v, value: v })),
+    })
+
+    await startTest(website, test, variation, testInfo.type)
 }
 
 async function viewTestHistory(history) {

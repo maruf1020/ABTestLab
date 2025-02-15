@@ -2,19 +2,19 @@ import fs from "fs-extra"
 import path from "path"
 
 const historyPath = path.join(process.cwd(), "history.json")
-const MAX_HISTORY_LENGTH = 10
+const settingsPath = path.join(process.cwd(), "settings.json")
+
+export async function loadHistory() {
+    if (await fs.pathExists(historyPath)) {
+        return fs.readJson(historyPath)
+    }
+    return []
+}
 
 export async function updateHistory(newTests) {
-    let history = []
-
-    // Check if the file exists and has data
-    if (await fs.pathExists(historyPath)) {
-        try {
-            history = await fs.readJson(historyPath)
-        } catch (error) {
-            console.error("Error reading history file:", error)
-        }
-    }
+    let history = await loadHistory()
+    const settings = await fs.readJson(settingsPath)
+    const MAX_HISTORY_LENGTH = settings.maxHistoryRecords
 
     // Create a new entry
     const newEntry = {
@@ -55,4 +55,3 @@ function isDuplicate(existingEntry, newEntry) {
         )
     })
 }
-
