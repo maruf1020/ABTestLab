@@ -1,6 +1,6 @@
 #TODO
 ### Update "view test history" 
-    - there will be a back and exit button on view test history
+    - with history list there will be a back and exit button on view test history 
     - when come to this command then table will be look like this
         ┌──────────────┬──────────────┬──────────────┬──────────────┬──────────────────┬────────────────┬────────────────────────┐
         │ Group Test   │ Test type    │ Website Name │ Test Name    │ Touch-point Name │ Variation Name │ Last Run               │
@@ -23,8 +23,8 @@
         ├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤
         │ NO           │ Patch        │ snocks       │ full live c… │ -                │ v01            │ 16/2/2025, 7:44:09 pm  │
         └──────────────┴──────────────┴──────────────┴──────────────┴──────────────────┴────────────────┴────────────────────────┘
+    - change the name "Run Multiple Tests" to "Run Group Tests"
     - Also provide option to select a group selection and run tests as a group accordingly.
-    - change the bane "Run Multiple Tests" to "Run Group Tests"
     - if last test is a group test then give user provide ad ability to run group wise again.
     - on "Run Group Tests" which is currently named as "Run Multiple Tests", there will be 3 options:
         - create group test
