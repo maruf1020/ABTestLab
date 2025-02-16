@@ -5,7 +5,8 @@ import path from "path"
 import fs from "fs-extra"
 import { ROOT_DIR } from "../config.js"
 import { listWebsites, listTests } from "../utils/fileUtils.js"
-import { startTestServer } from "../utils/testServer.js"
+import { initSingleTestServer } from "../utils/testServer.js"
+import { initMultipleTestServer } from "../utils/testServer.js"
 import { updateHistory, loadHistory } from "../utils/historyUtils.js"
 import debug from "debug"
 import Table from "cli-table3"
@@ -42,23 +43,23 @@ async function mainMenu(options) {
         const { action } = await prompts({
             type: "select",
             name: "action",
-            message: "What would you like to do?",
+            message: kleur.magenta("What would you like to do?"),
             choices: initialChoices,
         })
 
         switch (action) {
             case "latest":
                 await handleLatestTest(history[0])
-                return // Exit the menu after handling the latest test
+                return
             case "history":
                 await viewTestHistory(history)
-                return // Exit the menu after starting the test from history
+                return
             case "single":
                 await runSingleTest(options)
-                return // Exit the menu after starting the test
+                return
             case "multiple":
-                console.log(kleur.yellow("This feature is coming soon!"))
-                break
+                await runMultipleTests()
+                return
             case "exit":
                 console.log(kleur.blue("See you soon!"))
                 process.exit(0)
@@ -287,6 +288,93 @@ async function runSingleTest(options) {
     await startTest(website, test, variationResponse.variation, testInfo.type)
 }
 
+async function runMultipleTests() {
+    const selectedWebsites = await selectMultipleWebsites()
+    if (selectedWebsites.length === 0) {
+        console.log(kleur.yellow("No websites selected. Returning to main menu."))
+        return
+    }
+
+    const selectedTests = await selectMultipleTests(selectedWebsites)
+    if (selectedTests.length === 0) {
+        console.log(kleur.yellow("No tests selected. Returning to main menu."))
+        return
+    }
+
+    const selectedVariations = await selectMultipleVariations(selectedTests)
+    if (selectedVariations.length === 0) {
+        console.log(kleur.yellow("No variations selected. Returning to main menu."))
+        return
+    }
+
+    await startMultipleTest(selectedVariations)
+}
+
+async function selectMultipleWebsites() {
+    const websites = await listWebsites()
+    if (websites.length === 0) {
+        console.log(kleur.yellow("No websites found. Please create a website first."))
+        return []
+    }
+
+    const { selectedWebsites } = await prompts({
+        type: "multiselect",
+        name: "selectedWebsites",
+        message: "Select websites to run tests on:",
+        choices: websites.map((website) => ({ title: website, value: website })),
+        min: 1,
+    })
+
+    return selectedWebsites
+}
+
+async function selectMultipleTests(websites) {
+    const allTests = []
+    for (const website of websites) {
+        const tests = await listTests(website)
+        allTests.push(...tests.map((test) => ({ website, test })))
+    }
+
+    const { selectedTests } = await prompts({
+        type: "multiselect",
+        name: "selectedTests",
+        message: "Select tests to run:",
+        choices: allTests.map(({ website, test }) => ({ title: `${website} - ${test}`, value: { website, test } })),
+        min: 1,
+    })
+
+    return selectedTests
+}
+
+async function selectMultipleVariations(tests) {
+    const allVariations = []
+    for (const { website, test } of tests) {
+        const testDir = path.join(ROOT_DIR, website, test)
+        const testInfo = await fs.readJson(path.join(testDir, "info.json"))
+        allVariations.push(
+            ...testInfo.variations.map((variation) => ({
+                website,
+                test,
+                variation,
+                testType: testInfo.type,
+            })),
+        )
+    }
+
+    const { selectedVariations } = await prompts({
+        type: "multiselect",
+        name: "selectedVariations",
+        message: "Select variations to run:",
+        choices: allVariations.map(({ website, test, variation, testType }) => ({
+            title: `${website} - ${test} - ${variation} (${testType})`,
+            value: { website, test, variation, testType },
+        })),
+        min: 1,
+    })
+
+    return selectedVariations
+}
+
 async function startTest(website, test, variation, testType) {
     const testDir = path.join(ROOT_DIR, website, test)
     const testInfo = await fs.readJson(path.join(testDir, "info.json"))
@@ -328,7 +416,55 @@ async function startTest(website, test, variation, testType) {
     log(`Test directory: ${testDir}`)
     log(`Active variation: ${variation}`)
 
-    await startTestServer(website, test, variation)
+    await initSingleTestServer(website, test, variation)
     await updateHistory([{ websiteName: website, testName: test, variationName: variation, testType }])
+}
+async function startMultipleTest(selectedVariations) {
+    const testDirList = selectedVariations.map((v) => path.join(ROOT_DIR, v.website, v.test))
+    const testInfoList = await Promise.all(testDirList.map((testDir) => fs.readJson(path.join(testDir, "info.json"))))
+
+    const tableHeaders = [
+        kleur.green("Test type"),
+        kleur.green("Website Name"),
+        kleur.green("Test Name"),
+        kleur.green("Variation Name"),
+    ]
+    const columnWidths = [14, 14, 14, 16]
+
+    if (selectedVariations.some((v) => v.testType === "Multi-touch")) {
+        tableHeaders.splice(3, 0, kleur.green("Touch-point Name"))
+        columnWidths.splice(3, 0, 18)
+    }
+
+    const table = new Table({
+        head: tableHeaders,
+        colWidths: columnWidths,
+    })
+
+    selectedVariations.forEach((v) => {
+        if (v.testType === "Multi-touch") {
+            const touchpoints = testInfoList.find((t) => t.name === v.test).touchpoints || []
+            touchpoints.forEach((touchpoint, index) => {
+                if (index === 0) {
+                    table.push([v.testType, v.website, v.test, touchpoint, v.variation])
+                } else {
+                    table.push(["", "", "", touchpoint, v.variation])
+                }
+            })
+        } else {
+            table.push([v.testType, v.website, v.test, "-", v.variation])
+        }
+    })
+
+    console.log(table.toString())
+
+    console.log(kleur.green(`Starting test "${selectedVariations.map((v) => "website: " + v.website + " - test: " + v.test + " - variation: " + v.variation).join(", ")}" ...`))
+
+
+    log(`Test directories: ${testDirList}`)
+    log(`Active variations: ${selectedVariations.map((v) => "website: " + v.website + " test: " + v.test + " variation: " + v.variation).join(", ")}`)
+
+    await initMultipleTestServer(selectedVariations)
+    await updateHistory(selectedVariations.map((v) => ({ websiteName: v.website, testName: v.test, variationName: v.variation, testType: v.testType })))
 }
 

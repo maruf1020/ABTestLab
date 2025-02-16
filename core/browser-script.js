@@ -16,35 +16,46 @@
             console.log("Connected to A/B testing server")
             socket.emit("getConfig", (serverConfig) => {
                 config = serverConfig
-                loadTest("test1") // Example: load test with ID 'test1'
+                loadTest() // Example: load test with ID 'test1'
             })
         })
 
         function loadTest(testId) {
-            if (activeTests[testId]) {
+            if (testId && activeTests[testId]) {
                 console.log(`Test ${testId} is already active`)
                 return
             }
 
-            socket.emit("checkWebsite", { testId, url: window.location.href }, (response) => {
+            socket.emit("checkWebsite", { url: window.location.href }, (response) => {
                 if (response.match) {
                     isWebsiteMatch = true
-                    console.log(`Loading test ${testId} for ${response.websiteName}`)
-                    activeTests[testId] = { js: null }
-                    socket.emit("requestTestData", testId)
+                    // console.log(`Loading test ${testId} for ${response.websiteName}`)
+                    console.log(`Loading test for ${response.testInfo.map(test => "test " + test.test + " - " + test.variation).join(", ")}`)
+                    // activeTests[testId] = { js: null }
+                    response.testInfo.forEach(test => {
+                        activeTests[test.website.replace(/[^a-zA-Z0-9]/g, '_')] = { js: null }
+                    })
+                    // socket.emit("requestTestData", testId)
+                    socket.emit("requestTestData", response.testInfo)
                 } else {
-                    console.log(`Test ${testId} is not applicable for this website`)
+                    console.log(`No test found for this website`)
                 }
             })
         }
 
-        socket.on("testData", ({ testId, data, isMultiTouch }) => {
-            console.log(`Received initial test data for ${testId}:`, data)
-            if (isMultiTouch) {
-                applyMultiTouchTestData(testId, data)
-            } else {
-                applyTestData(testId, data)
-            }
+        // socket.on("testData", ({ testId, data, isMultiTouch }) => {
+        socket.on("testData", ({ data }) => {
+            console.log(`Received initial test data`)
+            data.forEach(test => {
+                const { testInfo, files, isMultiTouch } = test;
+                const testId = testInfo.website.replace(/[^a-zA-Z0-9]/g, '_')
+
+                if (isMultiTouch) {
+                    applyMultiTouchTestData(testId, files)
+                } else {
+                    applyTestData(testId, files)
+                }
+            })
         })
 
         socket.on("update", (data) => {
@@ -121,7 +132,7 @@
             console.log(`Updated script for ${touchpoint ? `touchpoint ${touchpoint}` : "test"}:`, content)
         }
 
-        // Expose a method to load additional tests
-        window.loadABTest = loadTest
+        // // Expose a method to load additional tests
+        // window.loadABTest = loadTest
     }
 })()

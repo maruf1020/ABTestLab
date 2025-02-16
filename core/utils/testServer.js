@@ -7,143 +7,246 @@ import { ROOT_DIR } from "../config.js"
 import { convertScssToCSS } from "./cssUtils.js"
 import debug from "debug"
 import { fileURLToPath } from "url"
+import kleur from "kleur"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const log = debug("ab-testing-cli:testServer")
 
-export async function startTestServer(website, test, activeVariation) {
+// export async function startTestServer(website, test, activeVariation) {
+async function startTestServer(selectedVariations) {
     const server = http.createServer(async (req, res) => {
         if (req.url === "/ab-test-script.js") {
-            const scriptPath = path.join(__dirname, "..", "browser-script.js")
-            const content = await fs.readFile(scriptPath, "utf-8")
-            res.writeHead(200, { "Content-Type": "application/javascript" })
-            res.end(content)
+            const scriptPath = path.join(__dirname, "..", "browser-script.js");
+            const content = await fs.readFile(scriptPath, "utf-8");
+            res.writeHead(200, { "Content-Type": "application/javascript" });
+            res.end(content);
         } else if (req.url === "/socket-io-client.js") {
-            const socketIoClientPath = path.join(__dirname, "..", "public", "js", "vendor", "socket-io-client.js")
-            const content = await fs.readFile(socketIoClientPath, "utf-8")
-            res.writeHead(200, { "Content-Type": "application/javascript" })
-            res.end(content)
+            const socketIoClientPath = path.join(__dirname, "..", "public", "js", "vendor", "socket-io-client.js");
+            const content = await fs.readFile(socketIoClientPath, "utf-8");
+            res.writeHead(200, { "Content-Type": "application/javascript" });
+            res.end(content);
         } else {
-            res.writeHead(404)
-            res.end("Not Found")
+            res.writeHead(404);
+            res.end("Not Found");
         }
-    })
+    });
 
     const io = new Server(server, {
         cors: {
             origin: "*",
             methods: ["GET", "POST"],
         },
-    })
+    });
 
-    const testDir = path.join(ROOT_DIR, website, test)
-    const testInfo = await fs.readJson(path.join(testDir, "info.json"))
-    const isMultiTouch = testInfo.type === "Multi-touch"
+    //find the website directory then get the info.json file and get the hostnames
+    const webSiteList = selectedVariations.map((selectedVariation) => selectedVariation.website);
+    const webSiteInfoList = await Promise.all(webSiteList.map(async (webSite) => {
+        return await fs.readJson(path.join(ROOT_DIR, webSite, "info.json"));
+    }));
+    const hostnamesList = webSiteInfoList.map((webSiteInfo) => webSiteInfo.hostnames).flat().filter((hostname, index, self) => self.indexOf(hostname) === index);
 
-    const watchPaths = []
-    const touchPoints = {}
+    const testDirList = selectedVariations.map((selectedVariation) =>
+        path.join(ROOT_DIR, selectedVariation.website, selectedVariation.test)
+    );
+    const testInfoList = await Promise.all(testDirList.map(async (testDir) =>
+        await fs.readJson(path.join(testDir, "info.json"))
+    ));
+    const testTypeList = testInfoList.map((testInfo) => testInfo.type);
 
-    if (isMultiTouch) {
-        const touchpointDirs = await fs.readdir(testDir)
-        for (const touchpoint of touchpointDirs) {
-            const touchpointDir = path.join(testDir, touchpoint)
-            if ((await fs.stat(touchpointDir)).isDirectory() && touchpoint !== "targeting") {
-                const variationDir = path.join(touchpointDir, activeVariation)
-                watchPaths.push(variationDir)
-                touchPoints[touchpoint] = { dir: variationDir, activeVariation }
+    const watchPaths = [];
+    const touchPoints = {};
+
+    for (let i = 0; i < selectedVariations.length; i++) {
+        const selectedVariation = selectedVariations[i];
+        const testDir = testDirList[i];
+        const testInfo = testInfoList[i];
+        const testType = testTypeList[i];
+        const isMultiTouch = testType === "Multi-touch";
+
+        if (isMultiTouch) {
+            const touchpointDirs = await fs.readdir(testDir);
+            for (const touchpoint of touchpointDirs) {
+                const touchpointDir = path.join(testDir, touchpoint);
+                if ((await fs.stat(touchpointDir)).isDirectory() && touchpoint !== "targeting") {
+                    const variationDir = path.join(touchpointDir, selectedVariation.variation);
+                    watchPaths.push(variationDir);
+                    touchPoints[touchpoint] = {
+                        dir: variationDir,
+                        variation: selectedVariation.variation,
+                        testId: selectedVariation.testId // Use testId here
+                    };
+                }
             }
+        } else {
+            const variationDir = path.join(testDir, selectedVariation.variation);
+            watchPaths.push(variationDir);
         }
-    } else {
-        const variationDir = path.join(testDir, activeVariation)
-        watchPaths.push(variationDir)
     }
 
-    // Watch for file changes
     const watcher = chokidar.watch(watchPaths, {
-        ignored: /(^|[/\\])\../, // ignore dotfiles
+        ignored: /(^|[/\\])\../,
         persistent: true,
-    })
+    });
 
-    watcher
-        .on("change", async (filePath) => {
-            log(`File ${filePath} has been changed`)
-            let touchpoint = null
-            let variationDir = null
+    watcher.on("change", async (filePath) => {
+        log(`File ${filePath} has been changed`);
+        let touchpointData = null;
+        let variationDir = null;
 
-            if (isMultiTouch) {
-                touchpoint = Object.keys(touchPoints).find((tp) => filePath.startsWith(path.join(testDir, tp)))
-                if (touchpoint) {
-                    const touchpointDir = path.join(testDir, touchpoint)
-                    variationDir = path.join(touchpointDir, activeVariation)
-                }
-            } else {
-                variationDir = path.join(testDir, activeVariation)
-            }
+        const matchingTouchpoint = Object.values(touchPoints).find((tp) =>
+            filePath.startsWith(tp.dir)
+        );
 
-            if (!variationDir) {
-                log(`Unable to determine variation directory for changed file: ${filePath}`)
-                return
-            }
+        if (matchingTouchpoint) {
+            variationDir = matchingTouchpoint.dir;
+            touchpointData = {
+                touchpoint: Object.keys(touchPoints).find((key) =>
+                    touchPoints[key].dir === variationDir
+                ),
+                testId: matchingTouchpoint.testId
+            };
+        }
 
-            const relativePath = path.relative(variationDir, filePath)
-            const fileContent = await fs.readFile(filePath, "utf-8")
+        if (!variationDir) {
+            log(`Unable to determine variation directory for changed file: ${filePath}`);
+            return;
+        }
 
-            if (path.extname(filePath) === ".scss") {
-                const cssFile = path.join(path.dirname(filePath), "style.css")
-                await convertScssToCSS(filePath, cssFile)
-                const css = await fs.readFile(cssFile, "utf-8")
-                io.emit("update", { type: "css", path: "style.css", content: css, touchpoint })
-            } else if (path.extname(filePath) === ".js") {
-                log(`JavaScript file changed: ${filePath}`)
-                io.emit("update", { type: "js", path: relativePath, content: fileContent, touchpoint })
-            }
-        })
-        .on("error", (error) => log(`Watcher error: ${error}`))
+        const relativePath = path.relative(variationDir, filePath);
+        const fileContent = await fs.readFile(filePath, "utf-8");
+
+        if (path.extname(filePath) === ".scss") {
+            const cssFile = path.join(path.dirname(filePath), "style.css");
+            await convertScssToCSS(filePath, cssFile);
+            const css = await fs.readFile(cssFile, "utf-8");
+            io.emit("update", {
+                type: "css",
+                path: "style.css",
+                content: css,
+                touchpoint: touchpointData?.touchpoint,
+                testId: touchpointData?.testId
+            });
+        } else if (path.extname(filePath) === ".js") {
+            log(`JavaScript file changed: ${filePath}`);
+            io.emit("update", {
+                type: "js",
+                path: relativePath,
+                content: fileContent,
+                touchpoint: touchpointData?.touchpoint,
+                testId: touchpointData?.testId
+            });
+        }
+    }).on("error", (error) => log(`Watcher error: ${error}`));
 
     io.on("connection", (socket) => {
-        log("Browser connected")
+        log("Browser connected");
 
         socket.on("checkWebsite", async (data, callback) => {
-            const { url } = data
-            const websiteInfo = await fs.readJson(path.join(ROOT_DIR, website, "info.json"))
-            const match = websiteInfo.hostnames.some((hostname) => url.includes(hostname))
-            callback({ match, websiteName: websiteInfo.name })
-        })
+            const { url } = data;
+            try {
+                // const selectedVariation = selectedVariations.find(v => v.testId === testId);
+                const applicableVariations = selectedVariations.filter((selectedVariation) => {
+                    return hostnamesList.some((hostname) => {
+                        return url.replace(/\/$/, "").includes(hostname) &&
+                            webSiteInfoList.find((webSiteInfo) => webSiteInfo.name === selectedVariation.website);
+                    });
+                });
+                // if (!selectedVariation) {
+                //     log(`No variation found for test ID: ${testId}`);
+                //     callback({ match: false });
+                //     return;
+                // }
+                if (applicableVariations.length === 0) {
+                    log(`No applicable variation found for URL: ${url}`);
+                    callback({ match: false });
+                    return;
+                }
+
+                // const websiteInfo = await fs.readJson(path.join(ROOT_DIR, selectedVariation.website, "info.json"));
+                // const match = websiteInfo.hostnames.some((hostname) => url.includes(hostname));
+                // callback({
+                //     match,
+                //     websiteName: websiteInfo.name,
+                //     testId
+                // });
+
+                callback({
+                    match: true,
+                    testInfo: applicableVariations
+                });
+            } catch (error) {
+                log(`Error checking website: ${error.message}`);
+                callback({ match: false });
+            }
+        });
 
         socket.on("getConfig", async (callback) => {
             try {
-                const config = await fs.readJson(path.join(process.cwd(), "settings.json"))
-                log("Config sent to client:", config)
-                callback(config)
+                const config = await fs.readJson(path.join(process.cwd(), "settings.json"));
+                log("Config sent to client:", config);
+                callback(config);
             } catch (error) {
-                log(`Error reading config: ${error.message}`)
-                callback({})
+                log(`Error reading config: ${error.message}`);
+                callback({});
             }
-        })
+        });
 
-        socket.on("requestTestData", async (testId) => {
+        socket.on("requestTestData", async (testInfoList) => {
             try {
-                let testData
-                if (isMultiTouch) {
-                    testData = await getMultiTouchTestData(testDir, activeVariation)
-                } else {
-                    const variationDir = path.join(testDir, activeVariation);
-                    testData = await getTestData(variationDir);
-                }
-                log("Sending test data:", testData)
-                socket.emit("testData", { testId, data: testData, isMultiTouch })
-            } catch (error) {
-                log(`Error sending test data: ${error.message}`)
-            }
-        })
-    })
+                let testData = [];
+                const requestedVariations = selectedVariations.filter((selectedVariation) => {
+                    return testInfoList.some((testInfo) => testInfo.website === selectedVariation.website && testInfo.test === selectedVariation.test && testInfo.variation === selectedVariation.variation);
+                });
 
-    const port = process.env.PORT || 3000
+                if (requestedVariations.length === 0) {
+                    log(`No requested variations found`);
+                    return;
+                }
+
+                for (const selectedVariation of requestedVariations) {
+                    const testDir = path.join(ROOT_DIR, selectedVariation.website, selectedVariation.test);
+                    const isMultiTouch = testTypeList[selectedVariations.indexOf(selectedVariation)] === "Multi-touch";
+
+                    if (isMultiTouch) {
+                        testData.push({
+                            files: await getMultiTouchTestData(testDir, selectedVariation.variation),
+                            testInfo: selectedVariation,
+                            isMultiTouch: true
+                        });
+                    } else {
+                        const variationDir = path.join(testDir, selectedVariation.variation);
+                        testData.push({
+                            files: await getTestData(variationDir),
+                            testInfo: selectedVariation,
+                            isMultiTouch: false
+                        });
+                    }
+                }
+
+                socket.emit("testData", {
+                    data: testData,
+                });
+
+            } catch (error) {
+                log(`Error sending test data: ${error.message}`);
+            }
+        });
+    });
+
+    const port = process.env.PORT || 3000;
     server.listen(port, () => {
-        log(`Test server running on http://localhost:${port}`)
-    })
+        log(`Test server running on http://localhost:${port}`);
+    });
+}
+
+export async function initSingleTestServer(website, test, activeVariation) {
+    await startTestServer([{ website, test, variation: activeVariation }])
+}
+
+export async function initMultipleTestServer(selectedVariations) {
+    await startTestServer(selectedVariations);
 }
 
 async function getTestData(variationDir) {
