@@ -33,7 +33,8 @@
                     console.log(`Loading test for ${response.testInfo.map(test => "test " + test.test + " - " + test.variation).join(", ")}`)
                     // activeTests[testId] = { js: null }
                     response.testInfo.forEach(test => {
-                        activeTests[test.website.replace(/[^a-zA-Z0-9]/g, '_')] = { js: null }
+                        const id = `ab-test-pilot-${test.website.replace(/[^a-zA-Z0-9]/g, '_') + "_" + test.test.replace(/[^a-zA-Z0-9]/g, '_') + "_" + test.variation.replace(/[^a-zA-Z0-9]/g, '_')}`
+                        activeTests[id] = { js: null }
                     })
                     // socket.emit("requestTestData", testId)
                     socket.emit("requestTestData", response.testInfo)
@@ -48,51 +49,63 @@
             console.log(`Received initial test data`)
             data.forEach(test => {
                 const { testInfo, files, isMultiTouch } = test;
-                const testId = testInfo.website.replace(/[^a-zA-Z0-9]/g, '_')
 
                 if (isMultiTouch) {
-                    applyMultiTouchTestData(testId, files)
+                    applyMultiTouchTestData(testInfo, files)
                 } else {
-                    applyTestData(testId, files)
+                    applyTestData(testInfo, files)
                 }
             })
         })
 
-        socket.on("update", (data) => {
-            if (!isWebsiteMatch) return
-            console.log(`Update received:`, data)
-            if (data.type === "css") {
-                updateStyle(data.path, data.content, data.touchpoint)
-            } else if (data.type === "js") {
-                updateScript(data.path, data.content, data.touchpoint)
+        socket.on("update", ({ type, path, content, touchPoint, testInfo }) => {
+            if (!isWebsiteMatch) return;
+            const { website, test, touchPoint: infoTouchPoint, variation } = testInfo;
+            const id = infoTouchPoint ? `ab-test-pilot-${website.replace(/[^a-zA-Z0-9]/g, '_') + "_" + test.replace(/[^a-zA-Z0-9]/g, '_') + "_" + touchPoint.replace(/[^a-zA-Z0-9]/g, '_') + "_" + variation.replace(/[^a-zA-Z0-9]/g, '_')}` : `ab-test-pilot-${website.replace(/[^a-zA-Z0-9]/g, '_') + "_" + test.replace(/[^a-zA-Z0-9]/g, '_') + "_" + variation.replace(/[^a-zA-Z0-9]/g, '_')}`
+            if (type === "css") {
+                updateStyle(path, content, id, touchPoint)
+            } else if (type === "js") {
+                updateScript(path, content, id, touchPoint)
             }
-        })
+        });
 
-        function applyTestData(testId, data) {
+        function applyTestData(testInfo, data) {
             if (data.css && data.css["style.css"]) {
-                updateStyle("style.css", data.css["style.css"])
+                console.log("testInfo", testInfo)
+                const id = `ab-test-pilot-${testInfo.website.replace(/[^a-zA-Z0-9]/g, '_') + "_" + testInfo.test.replace(/[^a-zA-Z0-9]/g, '_') + "_" + testInfo.variation.replace(/[^a-zA-Z0-9]/g, '_')}`
+                updateStyle("style.css", data.css["style.css"], id)
             }
 
-            Object.entries(data.js || {}).forEach(([file, content]) => {
-                updateScript(file, content)
-            })
+            // Object.entries(data.js || {}).forEach(([file, content]) => {
+            //     updateScript(file, content, testInfo)
+            // })
+
+            if (data.js && data.js["index.js"]) {
+                const id = `ab-test-pilot-${testInfo.website.replace(/[^a-zA-Z0-9]/g, '_') + "_" + testInfo.test.replace(/[^a-zA-Z0-9]/g, '_') + "_" + testInfo.variation.replace(/[^a-zA-Z0-9]/g, '_')}`
+                updateScript("index.js", data.js["index.js"], id)
+            }
         }
 
-        function applyMultiTouchTestData(testId, data) {
-            console.log("Applying multi-touch test data:", data)
-            Object.entries(data).forEach(([touchpoint, touchpointData]) => {
-                if (touchpointData.css && touchpointData.css["style.css"]) {
-                    updateStyle("style.css", touchpointData.css["style.css"], touchpoint)
+        function applyMultiTouchTestData(testInfo, data) {
+            console.log("Applying multi-touch test data: ---", data)
+            Object.entries(data).forEach(([touchPoint, touchPointData]) => {
+                if (touchPointData.css && touchPointData.css["style.css"]) {
+                    const id = `ab-test-pilot-${testInfo.website.replace(/[^a-zA-Z0-9]/g, '_') + "_" + testInfo.test.replace(/[^a-zA-Z0-9]/g, '_') + "_" + touchPoint.replace(/[^a-zA-Z0-9]/g, '_') + "_" + testInfo.variation.replace(/[^a-zA-Z0-9]/g, '_')}`
+                    updateStyle("style.css", touchPointData.css["style.css"], id, touchPoint)
                 }
 
-                Object.entries(touchpointData.js || {}).forEach(([file, content]) => {
-                    updateScript(file, content, touchpoint)
-                })
+                // Object.entries(touchPointData.js || {}).forEach(([file, content]) => {
+                //     updateScript(file, content, touchPoint)
+                // })
+
+                if (touchPointData.js && touchPointData.js["index.js"]) {
+                    const id = `ab-test-pilot-${testInfo.website.replace(/[^a-zA-Z0-9]/g, '_') + "_" + testInfo.test.replace(/[^a-zA-Z0-9]/g, '_') + "_" + touchPoint.replace(/[^a-zA-Z0-9]/g, '_') + "_" + testInfo.variation.replace(/[^a-zA-Z0-9]/g, '_')}`
+                    updateScript("index.js", touchPointData.js["index.js"], id, touchPoint)
+                }
             })
         }
 
-        function updateStyle(file, content, touchpoint = null) {
-            const id = touchpoint ? `ab-test-style-${touchpoint}-${file}` : `ab-test-style-${file}`
+        function updateStyle(file, content, id, touchPoint = null) {
             let style = document.getElementById(id)
             if (!style) {
                 style = document.createElement("style")
@@ -104,13 +117,10 @@
                     return
                 }
             }
-            style.textContent = content
-            console.log(`Updated style for ${touchpoint ? `touchpoint ${touchpoint}` : "test"}:`, content)
+            style.textContent = content;
         }
 
-        function updateScript(file, content, touchpoint = null) {
-            const id = touchpoint ? `ab-test-script-${touchpoint}-${file}` : `ab-test-script-${file}`
-            console.log(`Updating script: ${file} for ${touchpoint ? `touchpoint ${touchpoint}` : "test"}`)
+        function updateScript(file, content, id, touchPoint = null) {
             const existingScript = document.querySelector(`script[data-ab-test-file="${id}"]`)
             if (existingScript) {
                 if (config.jsReload == true) {
@@ -129,7 +139,6 @@
               })();
           `
             document.body.appendChild(script)
-            console.log(`Updated script for ${touchpoint ? `touchpoint ${touchpoint}` : "test"}:`, content)
         }
 
         // // Expose a method to load additional tests

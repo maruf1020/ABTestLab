@@ -90,55 +90,59 @@ async function startTestServer(selectedVariations) {
         persistent: true,
     });
 
-    watcher.on("change", async (filePath) => {
-        log(`File ${filePath} has been changed`);
-        let touchpointData = null;
-        let variationDir = null;
+    watcher
+        .on("change", async (filePath) => {
+            log(`File ${filePath} has been changed`)
+            console.log(kleur.yellow(`File has been changed: ${filePath}`))
+            let touchPoint = null
+            let variationDir = null
 
-        const matchingTouchpoint = Object.values(touchPoints).find((tp) =>
-            filePath.startsWith(tp.dir)
-        );
+            const dir = path.dirname(filePath)
+            const activeVariation = path.basename(dir)
 
-        if (matchingTouchpoint) {
-            variationDir = matchingTouchpoint.dir;
-            touchpointData = {
-                touchpoint: Object.keys(touchPoints).find((key) =>
-                    touchPoints[key].dir === variationDir
-                ),
-                testId: matchingTouchpoint.testId
-            };
-        }
+            const base = path.basename(process.cwd());
+            const baseFromFilePath = dir.split(path.sep).slice(-6)[0]
+            const isMultiTouch = base === baseFromFilePath;
+            const testDir = isMultiTouch ? path.join(dir, "..", "..") : path.join(dir, "..")
+            const testInfo = {
+                website: isMultiTouch ? path.basename(testDir) : path.basename(path.dirname(testDir)),
+                test: isMultiTouch ? path.basename(path.dirname(testDir)) : path.basename(testDir),
+                touchPoint: isMultiTouch ? dir.split(path.sep).slice(-2)[0] : null,
+                variation: activeVariation
+            }
 
-        if (!variationDir) {
-            log(`Unable to determine variation directory for changed file: ${filePath}`);
-            return;
-        }
+            if (isMultiTouch) {
+                touchPoint = dir.split(path.sep).slice(-2)[0]
+                if (touchPoint) {
+                    const touchpointDir = path.join(testDir, touchPoint)
+                    variationDir = path.join(touchpointDir, activeVariation)
+                }
+            } else {
+                variationDir = path.join(testDir, activeVariation)
+            }
 
-        const relativePath = path.relative(variationDir, filePath);
-        const fileContent = await fs.readFile(filePath, "utf-8");
+            if (!variationDir) {
+                console.log(kleur.red("Unable to determine variation directory for changed file: ", filePath))
+                log(`Unable to determine variation directory for changed file: ${filePath}`)
+                return
+            }
 
-        if (path.extname(filePath) === ".scss") {
-            const cssFile = path.join(path.dirname(filePath), "style.css");
-            await convertScssToCSS(filePath, cssFile);
-            const css = await fs.readFile(cssFile, "utf-8");
-            io.emit("update", {
-                type: "css",
-                path: "style.css",
-                content: css,
-                touchpoint: touchpointData?.touchpoint,
-                testId: touchpointData?.testId
-            });
-        } else if (path.extname(filePath) === ".js") {
-            log(`JavaScript file changed: ${filePath}`);
-            io.emit("update", {
-                type: "js",
-                path: relativePath,
-                content: fileContent,
-                touchpoint: touchpointData?.touchpoint,
-                testId: touchpointData?.testId
-            });
-        }
-    }).on("error", (error) => log(`Watcher error: ${error}`));
+            const relativePath = path.relative(variationDir, filePath)
+            const fileContent = await fs.readFile(filePath, "utf-8")
+
+            if (path.extname(filePath) === ".scss" || path.extname(filePath) === ".css") {
+                const cssFile = path.join(path.dirname(filePath), "style.css")
+                await convertScssToCSS(filePath, cssFile)
+                const css = await fs.readFile(cssFile, "utf-8")
+                io.emit("update", { type: "css", path: "style.css", content: css, touchPoint, testInfo })
+            } else if (path.extname(filePath) === ".js") {
+                log(`JavaScript file changed: ${filePath}`)
+                io.emit("update", { type: "js", path: relativePath, content: fileContent, touchPoint, testInfo })
+            }
+
+            console.log(kleur.green(`File has been changed for ${testInfo.website} - ${testInfo.test} -  ${testInfo.touchPoint ? testInfo.touchPoint + " - " : ""} ${testInfo.variation} - ${(path.extname(filePath) === ".scss" || path.extname(filePath) === ".css") ? "CSS" : "JS"}`))
+        })
+        .on("error", (error) => log(`Watcher error: ${error}`))
 
     io.on("connection", (socket) => {
         log("Browser connected");
@@ -267,7 +271,6 @@ async function getTestData(variationDir) {
             }
         }
     }
-
     return testData
 }
 
