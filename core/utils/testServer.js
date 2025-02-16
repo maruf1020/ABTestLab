@@ -15,7 +15,7 @@ const __dirname = path.dirname(__filename)
 const log = debug("ab-testing-cli:testServer")
 
 // export async function startTestServer(website, test, activeVariation) {
-async function startTestServer(selectedVariations) {
+export async function startTestServer(selectedVariations) {
     const server = http.createServer(async (req, res) => {
         if (req.url === "/ab-test-script.js") {
             const scriptPath = path.join(__dirname, "..", "browser-script.js");
@@ -247,14 +247,6 @@ async function startTestServer(selectedVariations) {
     server.listen(port, () => {
         log(`Test server running on http://localhost:${port}`);
     });
-}
-
-export async function initSingleTestServer(website, test, activeVariation) {
-    await startTestServer([{ website, test, variation: activeVariation }])
-}
-
-export async function initMultipleTestServer(selectedVariations) {
-    await startTestServer(selectedVariations);
 }
 
 async function getTestData(variationDir) {

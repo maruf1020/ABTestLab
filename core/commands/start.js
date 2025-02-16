@@ -5,8 +5,7 @@ import path from "path"
 import fs from "fs-extra"
 import { ROOT_DIR } from "../config.js"
 import { listWebsites, listTests } from "../utils/fileUtils.js"
-import { initSingleTestServer } from "../utils/testServer.js"
-import { initMultipleTestServer } from "../utils/testServer.js"
+import { startTestServer } from "../utils/testServer.js"
 import { updateHistory, loadHistory } from "../utils/historyUtils.js"
 import debug from "debug"
 import Table from "cli-table3"
@@ -416,7 +415,7 @@ async function startTest(website, test, variation, testType) {
     log(`Test directory: ${testDir}`)
     log(`Active variation: ${variation}`)
 
-    await initSingleTestServer(website, test, variation)
+    await startTestServer([{ website, test, variation }])
     await updateHistory([{ websiteName: website, testName: test, variationName: variation, testType }])
 }
 async function startMultipleTest(selectedVariations) {
@@ -464,7 +463,7 @@ async function startMultipleTest(selectedVariations) {
     log(`Test directories: ${testDirList}`)
     log(`Active variations: ${selectedVariations.map((v) => "website: " + v.website + " test: " + v.test + " variation: " + v.variation).join(", ")}`)
 
-    await initMultipleTestServer(selectedVariations)
+    await startTestServer(selectedVariations)
     await updateHistory(selectedVariations.map((v) => ({ websiteName: v.website, testName: v.test, variationName: v.variation, testType: v.testType })))
 }
 
