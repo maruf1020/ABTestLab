@@ -58,8 +58,9 @@
             })
         })
 
-        socket.on("update", ({ type, path, content, touchPoint, testInfo }) => {
-            if (!isWebsiteMatch) return;
+        socket.on("update", ({ type, path, content, touchPoint, hostnames, testInfo }) => {
+            // remove last slash from path
+            if (!hostnames || hostnames.length <= 0 || !hostnames.some(hostname => window.location.href.replace(/\/$/, "").endsWith(hostname.replace(/\/$/, "")))) return;
             const { website, test, touchPoint: infoTouchPoint, variation } = testInfo;
             const id = infoTouchPoint ? `ab-test-pilot-${website.replace(/[^a-zA-Z0-9]/g, '_') + "_" + test.replace(/[^a-zA-Z0-9]/g, '_') + "_" + touchPoint.replace(/[^a-zA-Z0-9]/g, '_') + "_" + variation.replace(/[^a-zA-Z0-9]/g, '_')}` : `ab-test-pilot-${website.replace(/[^a-zA-Z0-9]/g, '_') + "_" + test.replace(/[^a-zA-Z0-9]/g, '_') + "_" + variation.replace(/[^a-zA-Z0-9]/g, '_')}`
             if (type === "css") {

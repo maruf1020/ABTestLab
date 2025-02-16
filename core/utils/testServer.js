@@ -104,6 +104,10 @@ async function startTestServer(selectedVariations) {
             const baseFromFilePath = dir.split(path.sep).slice(-6)[0]
             const isMultiTouch = base === baseFromFilePath;
             const testDir = isMultiTouch ? path.join(dir, "..", "..") : path.join(dir, "..")
+            const webSiteDir = path.dirname(testDir)
+            const webSiteInfo = await fs.readJson(path.join(webSiteDir, "info.json"))
+            const hostnames = webSiteInfo.hostnames;
+            console.log("hostnames", hostnames)
             const testInfo = {
                 website: isMultiTouch ? path.basename(testDir) : path.basename(path.dirname(testDir)),
                 test: isMultiTouch ? path.basename(path.dirname(testDir)) : path.basename(testDir),
@@ -134,10 +138,10 @@ async function startTestServer(selectedVariations) {
                 const cssFile = path.join(path.dirname(filePath), "style.css")
                 await convertScssToCSS(filePath, cssFile)
                 const css = await fs.readFile(cssFile, "utf-8")
-                io.emit("update", { type: "css", path: "style.css", content: css, touchPoint, testInfo })
+                io.emit("update", { type: "css", path: "style.css", content: css, touchPoint, hostnames, testInfo })
             } else if (path.extname(filePath) === ".js") {
                 log(`JavaScript file changed: ${filePath}`)
-                io.emit("update", { type: "js", path: relativePath, content: fileContent, touchPoint, testInfo })
+                io.emit("update", { type: "js", path: relativePath, content: fileContent, touchPoint, hostnames, testInfo })
             }
 
             console.log(kleur.green(`File has been changed for ${testInfo.website} - ${testInfo.test} -  ${testInfo.touchPoint ? testInfo.touchPoint + " - " : ""} ${testInfo.variation} - ${(path.extname(filePath) === ".scss" || path.extname(filePath) === ".css") ? "CSS" : "JS"}`))
