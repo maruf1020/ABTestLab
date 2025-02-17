@@ -13,6 +13,13 @@ Date: 16-FEB-2025
     - change the name "Run Multiple Tests" to "Run Group Tests"
     - Also provide option to select a group selection and run tests as a group accordingly.
     - if last test is a group test then give user provide ad ability to run group wise again.
+    - on "Run Group Tests" there will be 3 options:
+        - create group test
+            - Allow user to choose and run the test. which feature is currently available directly under the "Run Multiple Tests" options.
+        - run from History
+            - Here user will see the list of single run test from history array and later user can multiselect them and create a group. And run that group of test.
+        - View group test History
+            - here user will see the list of group wise running test history and can run that again.
 
 ------------------------------------------------------------------------------------
 Date: 16-FEB-2025

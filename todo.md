@@ -1,13 +1,4 @@
 #TODO
-### Update "view test history"        
-    - on "Run Group Tests" there will be 3 options:
-        - create group test
-            - Allow user to choose and run the test. which feature is currently available directly under the "Run Multiple Tests" options.
-        - run from History
-            - Here user will see the list of single run test from history array and later user can multiselect them and create a group. And run that group of test.
-        - View group test History
-            - here user will see the list of group wise running test history and can run that again.
-
 ### Allow user to import from different files to work with on any variation. (work with bundler )
     - user will be able to import any module for scss or js file.
     - We will no longer include any css file inside the variation. 

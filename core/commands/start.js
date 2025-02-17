@@ -75,45 +75,56 @@ async function mainMenu(options) {
 }
 
 async function handleLatestTest(lastTest) {
-    if (lastTest.tests.length === 1) {
-        const { action } = await prompts({
-            type: "autocomplete",
-            name: "action",
-            message: "What would you like to do with the latest test?",
-            choices: [
-                { title: "Run Latest test", value: "run" },
-                { title: "Change variation", value: "changeVariation" },
-                { title: "Change test", value: "changeTest" },
-                { title: kleur.yellow("← Back"), value: "back" },
-                { title: kleur.red("Exit"), value: "exit" },
-            ],
-        })
+    const isGroupTest = lastTest.tests.length > 1;
+    const choices = [
+        { title: "Run Latest test", value: "run" },
+        { title: kleur.yellow("← Back"), value: "back" },
+        { title: kleur.red("Exit"), value: "exit" },
+    ];
 
-        const testData = lastTest.tests[0]
-
-        switch (action) {
-            case "run":
-                await startTest(testData.websiteName, testData.testName, testData.variationName, testData.testType)
-                break
-            case "changeVariation":
-                await changeVariation(testData.websiteName, testData.testName, testData.testType, () => handleLatestTest(lastTest))
-                break
-            case "changeTest":
-                await changeTest(testData.websiteName, () => handleLatestTest(lastTest))
-                break
-            case "back":
-                return mainMenu()
-            case "exit":
-                console.log(kleur.blue("See you soon!"))
-                process.exit(0)
-
-        }
-    } else {
-        console.log(kleur.yellow("Running last active tests..."))
-        for (const testData of lastTest.tests) {
-            await startTest(testData.websiteName, testData.testName, testData.variationName, testData.testType)
-        }
+    if (!isGroupTest) {
+        choices.splice(1, 0, { title: "Change variation", value: "changeVariation" });
+        choices.splice(2, 0, { title: "Change test", value: "changeTest" });
     }
+
+    const { action } = await prompts({
+        type: "autocomplete",
+        name: "action",
+        message: "What would you like to do with the latest test?",
+        choices: choices,
+    });
+
+    const testData = lastTest.tests[0]
+
+    switch (action) {
+        case "run":
+            if (lastTest.tests.length > 1) {
+                console.log(kleur.yellow("Running last active tests (group)..."))
+                await startMultipleTest(lastTest.tests.map((test) => ({
+                    website: test.websiteName,
+                    test: test.testName,
+                    variation: test.variationName,
+                    testType: test.testType
+                })))
+            } else {
+                console.log(kleur.yellow("Running last active test..."))
+                await startTest(testData.websiteName, testData.testName, testData.variationName, testData.testType)
+            }
+            break
+        case "changeVariation":
+            await changeVariation(testData.websiteName, testData.testName, testData.testType, () => handleLatestTest(lastTest))
+            break
+        case "changeTest":
+            await changeTest(testData.websiteName, () => handleLatestTest(lastTest))
+            break
+        case "back":
+            return mainMenu()
+        case "exit":
+            console.log(kleur.blue("See you soon!"))
+            process.exit(0)
+
+    }
+
 }
 
 async function changeVariation(website, test, testType, callingFunction) {
