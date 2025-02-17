@@ -40,7 +40,7 @@ async function mainMenu(options) {
 
     while (true) {
         const { action } = await prompts({
-            type: "select",
+            type: "autocomplete",
             name: "action",
             message: kleur.magenta("What would you like to do?"),
             choices: initialChoices,
@@ -69,7 +69,7 @@ async function mainMenu(options) {
 async function handleLatestTest(lastTest) {
     if (lastTest.tests.length === 1) {
         const { action } = await prompts({
-            type: "select",
+            type: "autocomplete",
             name: "action",
             message: "What would you like to do with the latest test?",
             choices: [
@@ -171,7 +171,7 @@ async function changeTest(website, callingFunction) {
     ];
 
     const { variation } = await prompts({
-        type: "select",
+        type: "autocomplete",
         name: "variation",
         message: "Select a variation to run:",
         choices: variationChoices,
@@ -314,7 +314,7 @@ async function viewTestHistory(history) {
     const allChoices = [...choices, ...menuOptions];
 
     const { selectedTest } = await prompts({
-        type: "select",
+        type: "autocomplete",
         name: "selectedTest",
         message: "Select a test to run:",
         choices: allChoices,
@@ -404,7 +404,7 @@ async function runSingleTest(options) {
     const testInfo = await fs.readJson(path.join(testDir, "info.json"))
 
     const variationResponse = await prompts({
-        type: "select",
+        type: "autocomplete",
         name: "variation",
         message: "Select a variation to run:",
         choices: testInfo.variations.map((v) => ({ title: v, value: v })),
@@ -443,7 +443,7 @@ async function selectMultipleWebsites() {
     }
 
     const { selectedWebsites } = await prompts({
-        type: "multiselect",
+        type: "autocompleteMultiselect",
         name: "selectedWebsites",
         message: "Select websites to run tests on:",
         choices: websites.map((website) => ({ title: website, value: website })),
@@ -461,7 +461,7 @@ async function selectMultipleTests(websites) {
     }
 
     const { selectedTests } = await prompts({
-        type: "multiselect",
+        type: "autocompleteMultiselect",
         name: "selectedTests",
         message: "Select tests to run:",
         choices: allTests.map(({ website, test }) => ({ title: `${website} - ${test}`, value: { website, test } })),
@@ -487,7 +487,7 @@ async function selectMultipleVariations(tests) {
     }
 
     const { selectedVariations } = await prompts({
-        type: "multiselect",
+        type: "autocompleteMultiselect",
         name: "selectedVariations",
         message: "Select variations to run:",
         choices: allVariations.map(({ website, test, variation, testType }) => ({
