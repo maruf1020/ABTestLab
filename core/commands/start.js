@@ -30,7 +30,15 @@ async function mainMenu(options) {
 
     const initialChoices = [
         { title: "Run a Single Test", value: "single" },
-        { title: "Run Group Tests", value: "group" },
+        {
+            title: "Run Group Tests",
+            value: "group",
+            submenu: [
+                { title: "Create Group Test", value: "create" },
+                { title: "Run from History", value: "history" },
+                { title: "View Group Test History", value: "viewHistory" }
+            ]
+        },
         { title: kleur.red("Exit"), value: "exit" },
     ]
 
@@ -51,13 +59,13 @@ async function mainMenu(options) {
                 await handleLatestTest(history[0])
                 return
             case "history":
-                await viewTestHistory(history)
+                await viewTestHistory(history, "allTest", () => mainMenu())
                 return
             case "single":
                 await runSingleTest(options)
                 return
             case "group":
-                await runMultipleTests()
+                await groupTestMenu(history)
                 return
             case "exit":
                 console.log(kleur.blue("See you soon!"))
@@ -187,9 +195,14 @@ async function changeTest(website, callingFunction) {
     }
 }
 
-async function viewTestHistory(history) {
-    const hasMultiTouchTest = history.some((entry) => entry.tests.some((test) => test.testType === "Multi-touch"));
-    const hasGroupTest = history.some((entry) => entry.tests.length > 1);
+async function viewTestHistory(history, viewType, callingFunction) {
+    // Filter history based on viewType
+    const filteredHistory = viewType === "groupTest"
+        ? history.filter(entry => entry.tests.length > 1)
+        : history;
+
+    const hasMultiTouchTest = filteredHistory.some((entry) => entry.tests.some((test) => test.testType === "Multi-touch"));
+    const hasGroupTest = filteredHistory.some((entry) => entry.tests.length > 1);
 
     const tableHeaders = [];
     const columnWidths = [];
@@ -222,7 +235,7 @@ async function viewTestHistory(history) {
         colWidths: columnWidths,
     });
 
-    for (const entry of history) {
+    for (const entry of filteredHistory) {
         const groupTestIndicator = entry.tests.length > 1 ? "YES" : "NO";
         let isFirstTestInGroup = true;
 
@@ -293,7 +306,7 @@ async function viewTestHistory(history) {
         },
     ]
 
-    const choices = history.map((entry, index) => {
+    const choices = filteredHistory.map((entry, index) => {
         if (entry.tests.length > 1) {
             const groupTitle = entry.tests.map((test, i) =>
                 `${i === 0 ? "┌" : i === (entry.tests.length - 1) ? "    └" : i === 1 ? "    │" : "    │"} ${test.websiteName} - ${test.testName} - ${test.variationName} (${test.testType})`
@@ -323,7 +336,7 @@ async function viewTestHistory(history) {
     if (selectedTest.action) {
         if (selectedTest.action === "back") {
             // Show previous menu
-            return mainMenu();
+            return callingFunction();
         } else if (selectedTest.action === "exit") {
             // Exit the command
             console.log(kleur.blue("See you soon!"));
@@ -349,7 +362,6 @@ async function viewTestHistory(history) {
         }
     }
 }
-
 async function runSingleTest(options) {
     const websitesPath = path.join(ROOT_DIR)
 
@@ -413,20 +425,88 @@ async function runSingleTest(options) {
     await startTest(website, test, variationResponse.variation, testInfo.type)
 }
 
-async function runMultipleTests() {
-    const selectedWebsites = await selectMultipleWebsites()
+async function groupTestMenu(history) {
+    const choices = [
+        { title: "Create Group Test", value: "create" },
+        { title: "Create From History", value: "history" },
+        { title: "Run Group Test From History", value: "runHistory" },
+        { title: kleur.yellow("← Back"), value: "back" },
+        { title: kleur.red("Exit"), value: "exit" },
+    ]
+
+    const { action } = await prompts({
+        type: "select",
+        name: "action",
+        message: "What would you like to do with group tests?",
+        choices: choices,
+    })
+
+    switch (action) {
+        case "create":
+            await runMultipleTests(() => groupTestMenu(history))
+            return
+        case "history":
+            await runGroupFromHistory(history)
+            return
+        case "runHistory":
+            await viewTestHistory(history, "groupTest", () => groupTestMenu(history))
+            return
+        case "back":
+            return mainMenu()
+        case "exit":
+            console.log(kleur.blue("See you soon!"))
+            process.exit(0)
+    }
+}
+
+async function runGroupFromHistory(history) {
+    // Filter history to show only single tests
+    const singleTestHistory = history.filter(entry => entry.tests.length === 1)
+
+    if (singleTestHistory.length === 0) {
+        console.log(kleur.yellow("No single tests found in history."))
+        return
+    }
+
+    const choices = singleTestHistory.map((entry, index) => ({
+        title: `${index + 1}. ${entry.tests[0].websiteName} - ${entry.tests[0].testName} - ${entry.tests[0].variationName}`,
+        value: entry,
+    }))
+
+    const { selectedTests } = await prompts({
+        type: "autocompleteMultiselect",
+        name: "selectedTests",
+        message: "Select tests to add to your group:",
+        choices: choices,
+        min: 1,
+    })
+
+    // Create a group of selected tests
+    const selectedVariations = selectedTests.flatMap(entry => ({
+        website: entry.tests[0].websiteName,
+        test: entry.tests[0].testName,
+        variation: entry.tests[0].variationName,
+        testType: entry.tests[0].testType,
+    }))
+
+    // Run the selected group
+    await startMultipleTest(selectedVariations)
+}
+
+async function runMultipleTests(callingFunction) {
+    const selectedWebsites = await selectMultipleWebsites(callingFunction)
     if (selectedWebsites.length === 0) {
         console.log(kleur.yellow("No websites selected. Returning to main menu."))
         return
     }
 
-    const selectedTests = await selectMultipleTests(selectedWebsites)
+    const selectedTests = await selectMultipleTests(selectedWebsites, callingFunction)
     if (selectedTests.length === 0) {
         console.log(kleur.yellow("No tests selected. Returning to main menu."))
         return
     }
 
-    const selectedVariations = await selectMultipleVariations(selectedTests)
+    const selectedVariations = await selectMultipleVariations(selectedTests, callingFunction)
     if (selectedVariations.length === 0) {
         console.log(kleur.yellow("No variations selected. Returning to main menu."))
         return
@@ -435,71 +515,109 @@ async function runMultipleTests() {
     await startMultipleTest(selectedVariations)
 }
 
-async function selectMultipleWebsites() {
-    const websites = await listWebsites()
+async function selectMultipleWebsites(callingFunction) {
+    const websites = await listWebsites();
     if (websites.length === 0) {
-        console.log(kleur.yellow("No websites found. Please create a website first."))
-        return []
+        console.log(kleur.yellow("No websites found. Please create a website first."));
+        return [];
     }
+
+    const choices = [
+        ...websites.map((website) => ({ title: website, value: website })),
+        { title: kleur.yellow("← Back"), value: "back" },
+        { title: kleur.red("Exit"), value: "exit" },
+    ];
 
     const { selectedWebsites } = await prompts({
         type: "autocompleteMultiselect",
         name: "selectedWebsites",
         message: "Select websites to run tests on:",
-        choices: websites.map((website) => ({ title: website, value: website })),
+        choices: choices,
         min: 1,
-    })
+    });
 
-    return selectedWebsites
+    if (selectedWebsites.includes("back")) {
+        return callingFunction();
+    } else if (selectedWebsites.includes("exit")) {
+        console.log(kleur.blue("See you soon!"));
+        process.exit(0);
+    }
+
+    return selectedWebsites.filter((website) => website !== "back" && website !== "exit");
 }
 
-async function selectMultipleTests(websites) {
-    const allTests = []
+async function selectMultipleTests(websites, callingFunction) {
+    const allTests = [];
     for (const website of websites) {
-        const tests = await listTests(website)
-        allTests.push(...tests.map((test) => ({ website, test })))
+        const tests = await listTests(website);
+        allTests.push(...tests.map((test) => ({ website, test })));
     }
+
+    const choices = [
+        ...allTests.map(({ website, test }) => ({ title: `${website} - ${test}`, value: { website, test } })),
+        { title: kleur.yellow("← Back"), value: "back" },
+        { title: kleur.red("Exit"), value: "exit" },
+    ];
 
     const { selectedTests } = await prompts({
         type: "autocompleteMultiselect",
         name: "selectedTests",
         message: "Select tests to run:",
-        choices: allTests.map(({ website, test }) => ({ title: `${website} - ${test}`, value: { website, test } })),
+        choices: choices,
         min: 1,
-    })
+    });
 
-    return selectedTests
+    if (selectedTests.includes("back")) {
+        return callingFunction();
+    } else if (selectedTests.includes("exit")) {
+        console.log(kleur.blue("See you soon!"));
+        process.exit(0);
+    }
+
+    return selectedTests.filter((test) => test !== "back" && test !== "exit");
 }
 
-async function selectMultipleVariations(tests) {
-    const allVariations = []
+async function selectMultipleVariations(tests, callingFunction) {
+    const allVariations = [];
     for (const { website, test } of tests) {
-        const testDir = path.join(ROOT_DIR, website, test)
-        const testInfo = await fs.readJson(path.join(testDir, "info.json"))
+        const testDir = path.join(ROOT_DIR, website, test);
+        const testInfo = await fs.readJson(path.join(testDir, "info.json"));
         allVariations.push(
             ...testInfo.variations.map((variation) => ({
                 website,
                 test,
                 variation,
                 testType: testInfo.type,
-            })),
-        )
+            }))
+        );
     }
+
+    const choices = [
+        ...allVariations.map(({ website, test, variation, testType }) => ({
+            title: `${website} - ${test} - ${variation} (${testType})`,
+            value: { website, test, variation, testType },
+        })),
+        { title: kleur.yellow("← Back"), value: "back" },
+        { title: kleur.red("Exit"), value: "exit" },
+    ];
 
     const { selectedVariations } = await prompts({
         type: "autocompleteMultiselect",
         name: "selectedVariations",
         message: "Select variations to run:",
-        choices: allVariations.map(({ website, test, variation, testType }) => ({
-            title: `${website} - ${test} - ${variation} (${testType})`,
-            value: { website, test, variation, testType },
-        })),
+        choices: choices,
         min: 1,
-    })
+    });
 
-    return selectedVariations
+    if (selectedVariations.includes("back")) {
+        return callingFunction();
+    } else if (selectedVariations.includes("exit")) {
+        console.log(kleur.blue("See you soon!"));
+        process.exit(0);
+    }
+
+    return selectedVariations.filter((variation) => variation !== "back" && variation !== "exit");
 }
-
 async function startTest(website, test, variation, testType) {
     const testDir = path.join(ROOT_DIR, website, test)
     const testInfo = await fs.readJson(path.join(testDir, "info.json"))
