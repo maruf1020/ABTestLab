@@ -76,6 +76,8 @@ async function handleLatestTest(lastTest) {
                 { title: "Run Latest test", value: "run" },
                 { title: "Change variation", value: "changeVariation" },
                 { title: "Change test", value: "changeTest" },
+                { title: kleur.yellow("← Back"), value: "back" },
+                { title: kleur.red("Exit"), value: "exit" },
             ],
         })
 
@@ -91,6 +93,12 @@ async function handleLatestTest(lastTest) {
             case "changeTest":
                 await changeTest(testData.websiteName)
                 break
+            case "back":
+                return mainMenu()
+            case "exit":
+                console.log(kleur.blue("See you soon!"))
+                process.exit(0)
+
         }
     } else {
         console.log(kleur.yellow("Running last active tests..."))
