@@ -30,8 +30,8 @@ async function mainMenu(options) {
 
     const initialChoices = [
         { title: "Run a Single Test", value: "single" },
-        { title: "Run Multiple Tests", value: "multiple" },
-        { title: "Exit", value: "exit" },
+        { title: "Run Group Tests", value: "group" },
+        { title: kleur.red("Exit"), value: "exit" },
     ]
 
     if (history.length > 0) {
@@ -56,7 +56,7 @@ async function mainMenu(options) {
             case "single":
                 await runSingleTest(options)
                 return
-            case "multiple":
+            case "group":
                 await runMultipleTests()
                 return
             case "exit":
@@ -141,64 +141,99 @@ async function changeTest(website) {
 }
 
 async function viewTestHistory(history) {
-    const hasMultiTouchTest = history.some((entry) => entry.tests.some((test) => test.testType === "Multi-touch"))
+    const hasMultiTouchTest = history.some((entry) => entry.tests.some((test) => test.testType === "Multi-touch"));
+    const hasGroupTest = history.some((entry) => entry.tests.length > 1);
 
-    const tableHeaders = [
+    const tableHeaders = [];
+    const columnWidths = [];
+
+    if (hasGroupTest) {
+        tableHeaders.push(kleur.green("Group Test"));
+        columnWidths.push(14);
+    }
+
+    tableHeaders.push(
         kleur.green("Test type"),
         kleur.green("Website Name"),
-        kleur.green("Test Name"),
-        kleur.green("Variation Name"),
-        kleur.green("Last Run"),
-    ]
-    const columnWidths = [14, 14, 14, 16, 24]
+        kleur.green("Test Name")
+    );
+    columnWidths.push(14, 14, 14);
 
     if (hasMultiTouchTest) {
-        tableHeaders.splice(3, 0, kleur.green("Touch-point Name"))
-        columnWidths.splice(3, 0, 18)
+        tableHeaders.push(kleur.green("Touch-point Name"));
+        columnWidths.push(18);
     }
+
+    tableHeaders.push(
+        kleur.green("Variation Name"),
+        kleur.green("Last Run")
+    );
+    columnWidths.push(16, 24);
 
     const table = new Table({
         head: tableHeaders,
         colWidths: columnWidths,
-    })
+    });
 
     for (const entry of history) {
+        const groupTestIndicator = entry.tests.length > 1 ? "YES" : "NO";
+        let isFirstTestInGroup = true;
+
         for (const test of entry.tests) {
             if (test.testType === "Multi-touch") {
-                const testDir = path.join(ROOT_DIR, test.websiteName, test.testName)
-                const testInfo = await fs.readJson(path.join(testDir, "info.json"))
-                const touchpoints = testInfo.touchpoints || []
+                const testDir = path.join(ROOT_DIR, test.websiteName, test.testName);
+                const testInfo = await fs.readJson(path.join(testDir, "info.json"));
+                const touchpoints = testInfo.touchpoints || [];
+
                 touchpoints.forEach((touchpoint, index) => {
-                    const row = [
+                    const row = [];
+
+                    if (hasGroupTest) {
+                        row.push(isFirstTestInGroup ? groupTestIndicator : "");
+                    }
+
+                    row.push(
                         index === 0 ? test.testType : "",
                         index === 0 ? test.websiteName : "",
                         index === 0 ? test.testName : "",
                         touchpoint,
                         test.variationName,
-                        index === 0 ? new Date(entry.lastRun).toLocaleString() : "",
-                    ]
-                    if (!hasMultiTouchTest) {
-                        row.splice(3, 1)
-                    }
-                    table.push(row)
-                })
+                        index === 0 ? new Date(entry.lastRun).toLocaleString() : ""
+                    );
+
+                    table.push(row);
+                    isFirstTestInGroup = false;
+                });
             } else {
-                const row = [
+                const row = [];
+
+                if (hasGroupTest) {
+                    row.push(isFirstTestInGroup ? groupTestIndicator : "");
+                }
+
+                row.push(
                     test.testType,
                     test.websiteName,
-                    test.testName,
-                    test.variationName,
-                    new Date(entry.lastRun).toLocaleString(),
-                ]
+                    test.testName
+                );
+
                 if (hasMultiTouchTest) {
-                    row.splice(3, 0, "-")
+                    row.push("-");
                 }
-                table.push(row)
+
+                row.push(
+                    test.variationName,
+                    new Date(entry.lastRun).toLocaleString()
+                );
+
+                table.push(row);
+                isFirstTestInGroup = false;
             }
         }
     }
 
-    console.log(table.toString())
+    console.log(table.toString());
+
 
     const choices = history.flatMap((entry, index) =>
         entry.tests.map((test, testIndex) => ({
@@ -207,21 +242,46 @@ async function viewTestHistory(history) {
         })),
     )
 
+    // Add "back" and "exit" options at the end
+    const menuOptions = [
+        {
+            title: kleur.yellow("← Back"),
+            value: { action: "back" },
+        },
+        {
+            title: kleur.red("Exit"),
+            value: { action: "exit" },
+        },
+    ]
+
+    const allChoices = [...choices, ...menuOptions]
+
     const { selectedTest } = await prompts({
         type: "select",
         name: "selectedTest",
         message: "Select a test to run:",
-        choices: choices,
+        choices: allChoices,
     })
 
-    const selectedEntry = history[selectedTest.entryIndex]
-    const selectedTestData = selectedEntry.tests[selectedTest.testIndex]
-    await startTest(
-        selectedTestData.websiteName,
-        selectedTestData.testName,
-        selectedTestData.variationName,
-        selectedTestData.testType,
-    )
+    if (selectedTest.action) {
+        if (selectedTest.action === "back") {
+            // Show previous menu
+            return mainMenu()
+        } else if (selectedTest.action === "exit") {
+            // Exit the command
+            console.log(kleur.blue("See you soon!"))
+            process.exit(0)
+        }
+    } else {
+        const selectedEntry = history[selectedTest.entryIndex]
+        const selectedTestData = selectedEntry.tests[selectedTest.testIndex]
+        await startTest(
+            selectedTestData.websiteName,
+            selectedTestData.testName,
+            selectedTestData.variationName,
+            selectedTestData.testType,
+        )
+    }
 }
 
 async function runSingleTest(options) {

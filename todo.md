@@ -1,29 +1,5 @@
 #TODO
-### Update "view test history" 
-    - with history list there will be a back and exit button on view test history 
-    - when come to this command then table will be look like this
-        ┌──────────────┬──────────────┬──────────────┬──────────────┬──────────────────┬────────────────┬────────────────────────┐
-        │ Group Test   │ Test type    │ Website Name │ Test Name    │ Touch-point Name │ Variation Name │ Last Run               │
-        ├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤
-        │ NO           │ A/B          │ loopearplugs │ AB test      │ -                │ v01            │ 16/2/2025, 8:09:08 pm  │
-        ├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤
-        │ NO           │ AA           │ snocks       │ firt time b… │ -                │ v01            │ 16/2/2025, 7:44:09 pm  │
-        ├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤
-        │ NO           │ Multi-touch  │ loopearplugs │ Multi toch … │ home             │ v01            │ 16/2/2025, 7:08:18 pm  │
-        ├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤
-        │              │              │              │              │ manu             │ v01            │                        │
-        ├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤
-        │ YES          │ A/B          │ loopearplugs │ AB test      │ -                │ v01            │ 16/2/2025, 8:09:08 pm  │
-        │              ├──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤
-        │              │ AA           │ snocks       │ firt time b… │ -                │ v01            │ 16/2/2025, 7:44:09 pm  │
-        │              ├──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤
-        │              │ Multi-touch  │ loopearplugs │ Multi toch … │ home             │ v01            │ 16/2/2025, 7:08:18 pm  │
-        │              ├──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤
-        │              │              │              │              │ manu             │ v01            │                        │
-        ├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤
-        │ NO           │ Patch        │ snocks       │ full live c… │ -                │ v01            │ 16/2/2025, 7:44:09 pm  │
-        └──────────────┴──────────────┴──────────────┴──────────────┴──────────────────┴────────────────┴────────────────────────┘
-    - change the name "Run Multiple Tests" to "Run Group Tests"
+### Update "view test history"    
     - Also provide option to select a group selection and run tests as a group accordingly.
     - if last test is a group test then give user provide ad ability to run group wise again.
     - on "Run Group Tests" which is currently named as "Run Multiple Tests", there will be 3 options:
@@ -34,7 +10,7 @@
         - View group test History
             - here user will see the list of group wise running test history and can run that again.
 
-### Allow user to import from different files to work with on any variation.
+### Allow user to import from different files to work with on any variation. (work with bundler )
     - user will be able to import any module for scss or js file.
     - We will no longer include any css file inside the variation. 
     - Instead of that we will create a compiled folder.
@@ -72,5 +48,3 @@
 
 ### have to work on targeting
     - Here I have to marge the initial development branch with master and and create another branch for enhancement targeting. 
-
-

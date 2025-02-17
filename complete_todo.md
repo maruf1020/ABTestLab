@@ -3,6 +3,18 @@
 ------------------------------------------------------------------------------------
 Date: 16-FEB-2025
 ------------------------------------------------------------------------------------
+### Update "view test history" 
+    - with history list there will be a back and exit button on view test history 
+    - when come to this command then table will be look like this but the condition is:
+        - Single-run test without multi-touch: No Touch-point column, no Group Test column.
+        - Single-run test with multi-touch: Includes a Touch-point column but no Group Test column.
+        - Group-run test without multi-touch: Includes a Group Test column but no Touch-point column.
+        - Group-run test with multi-touch: Includes both Touch-point and Group Test columns.
+    - change the name "Run Multiple Tests" to "Run Group Tests"
+
+------------------------------------------------------------------------------------
+Date: 16-FEB-2025
+------------------------------------------------------------------------------------
 ### have to make the multi test run at the same time workable 
 
 ------------------------------------------------------------------------------------
