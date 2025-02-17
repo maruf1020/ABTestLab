@@ -88,10 +88,10 @@ async function handleLatestTest(lastTest) {
                 await startTest(testData.websiteName, testData.testName, testData.variationName, testData.testType)
                 break
             case "changeVariation":
-                await changeVariation(testData.websiteName, testData.testName, testData.testType)
+                await changeVariation(testData.websiteName, testData.testName, testData.testType, () => handleLatestTest(lastTest))
                 break
             case "changeTest":
-                await changeTest(testData.websiteName)
+                await changeTest(testData.websiteName, () => handleLatestTest(lastTest))
                 break
             case "back":
                 return mainMenu()
@@ -108,44 +108,83 @@ async function handleLatestTest(lastTest) {
     }
 }
 
-async function changeVariation(website, test, testType) {
-    const testDir = path.join(ROOT_DIR, website, test)
-    const testInfo = await fs.readJson(path.join(testDir, "info.json"))
+async function changeVariation(website, test, testType, callingFunction) {
+    const testDir = path.join(ROOT_DIR, website, test);
+    const testInfo = await fs.readJson(path.join(testDir, "info.json"));
+
+    const choices = [
+        ...testInfo.variations.map((v) => ({ title: v, value: v })),
+        { title: kleur.yellow("← Back"), value: "back" },
+        { title: kleur.red("Exit"), value: "exit" },
+    ];
 
     const { variation } = await prompts({
         type: "select",
         name: "variation",
         message: "Select a new variation to run:",
-        choices: testInfo.variations.map((v) => ({ title: v, value: v })),
-    })
+        choices: choices,
+    });
 
-    await startTest(website, test, variation, testType)
+    if (variation === "back") {
+        return callingFunction();
+    } else if (variation === "exit") {
+        console.log(kleur.blue("See you soon!"));
+        process.exit(0);
+    } else {
+        await startTest(website, test, variation, testType);
+    }
 }
 
-async function changeTest(website) {
-    const tests = await listTests(website)
+async function changeTest(website, callingFunction) {
+    const tests = await listTests(website);
+
+    const testChoices = [
+        ...tests.map((t) => ({ title: t, value: t })),
+        { title: kleur.yellow("← Back"), value: "back" },
+        { title: kleur.red("Exit"), value: "exit" },
+    ];
 
     const { test } = await prompts({
         type: "autocomplete",
         name: "test",
         message: "Search & select a new test:",
-        choices: tests.map((t) => ({ title: t, value: t })),
+        choices: testChoices,
         suggest: (input, choices) => {
-            return Promise.resolve(choices.filter((choice) => choice.title.toLowerCase().includes(input.toLowerCase())))
+            return Promise.resolve(choices.filter((choice) => choice.title.toLowerCase().includes(input.toLowerCase())));
         },
-    })
+    });
 
-    const testDir = path.join(ROOT_DIR, website, test)
-    const testInfo = await fs.readJson(path.join(testDir, "info.json"))
+    if (test === "back") {
+        return callingFunction();
+    } else if (test === "exit") {
+        console.log(kleur.blue("See you soon!"));
+        process.exit(0);
+    }
+
+    const testDir = path.join(ROOT_DIR, website, test);
+    const testInfo = await fs.readJson(path.join(testDir, "info.json"));
+
+    const variationChoices = [
+        ...testInfo.variations.map((v) => ({ title: v, value: v })),
+        { title: kleur.yellow("← Back"), value: "back" },
+        { title: kleur.red("Exit"), value: "exit" },
+    ];
 
     const { variation } = await prompts({
         type: "select",
         name: "variation",
         message: "Select a variation to run:",
-        choices: testInfo.variations.map((v) => ({ title: v, value: v })),
-    })
+        choices: variationChoices,
+    });
 
-    await startTest(website, test, variation, testInfo.type)
+    if (variation === "back") {
+        return callingFunction();
+    } else if (variation === "exit") {
+        console.log(kleur.blue("See you soon!"));
+        process.exit(0);
+    } else {
+        await startTest(website, test, variation, testInfo.type);
+    }
 }
 
 async function viewTestHistory(history) {
@@ -242,14 +281,6 @@ async function viewTestHistory(history) {
 
     console.log(table.toString());
 
-
-    const choices = history.flatMap((entry, index) =>
-        entry.tests.map((test, testIndex) => ({
-            title: `${test.websiteName} - ${test.testName}`,
-            value: { entryIndex: index, testIndex: testIndex },
-        })),
-    )
-
     // Add "back" and "exit" options at the end
     const menuOptions = [
         {
@@ -262,33 +293,60 @@ async function viewTestHistory(history) {
         },
     ]
 
-    const allChoices = [...choices, ...menuOptions]
+    const choices = history.map((entry, index) => {
+        if (entry.tests.length > 1) {
+            const groupTitle = entry.tests.map((test, i) =>
+                `${i === 0 ? "┌" : i === (entry.tests.length - 1) ? "    └" : i === 1 ? "    │" : "    │"} ${test.websiteName} - ${test.testName} - ${test.variationName} (${test.testType})`
+            ).join('\n');
+            return {
+                title: groupTitle,
+                value: { entryIndex: index, isGroup: true },
+            };
+        } else {
+            const test = entry.tests[0];
+            return {
+                title: `${test.websiteName} - ${test.testName} - ${test.variationName} (${test.testType})`,
+                value: { entryIndex: index, testIndex: 0, isGroup: false },
+            };
+        }
+    });
+
+    const allChoices = [...choices, ...menuOptions];
 
     const { selectedTest } = await prompts({
         type: "select",
         name: "selectedTest",
         message: "Select a test to run:",
         choices: allChoices,
-    })
+    });
 
     if (selectedTest.action) {
         if (selectedTest.action === "back") {
             // Show previous menu
-            return mainMenu()
+            return mainMenu();
         } else if (selectedTest.action === "exit") {
             // Exit the command
-            console.log(kleur.blue("See you soon!"))
-            process.exit(0)
+            console.log(kleur.blue("See you soon!"));
+            process.exit(0);
         }
     } else {
-        const selectedEntry = history[selectedTest.entryIndex]
-        const selectedTestData = selectedEntry.tests[selectedTest.testIndex]
-        await startTest(
-            selectedTestData.websiteName,
-            selectedTestData.testName,
-            selectedTestData.variationName,
-            selectedTestData.testType,
-        )
+        const selectedEntry = history[selectedTest.entryIndex];
+        if (selectedTest.isGroup) {
+            startMultipleTest(selectedEntry.tests.map((test) => ({
+                website: test.websiteName,
+                test: test.testName,
+                variation: test.variationName,
+                testType: test.testType
+            })));
+        } else {
+            const selectedTestData = selectedEntry.tests[selectedTest.testIndex];
+            await startTest(
+                selectedTestData.websiteName,
+                selectedTestData.testName,
+                selectedTestData.variationName,
+                selectedTestData.testType,
+            );
+        }
     }
 }
 

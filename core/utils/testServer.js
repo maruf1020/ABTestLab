@@ -93,7 +93,6 @@ export async function startTestServer(selectedVariations) {
     watcher
         .on("change", async (filePath) => {
             log(`File ${filePath} has been changed`)
-            console.log(kleur.yellow(`File has been changed: ${filePath}`))
             let touchPoint = null
             let variationDir = null
 
@@ -107,7 +106,6 @@ export async function startTestServer(selectedVariations) {
             const webSiteDir = path.dirname(testDir)
             const webSiteInfo = await fs.readJson(path.join(webSiteDir, "info.json"))
             const hostnames = webSiteInfo.hostnames;
-            console.log("hostnames", hostnames)
             const testInfo = {
                 website: isMultiTouch ? path.basename(testDir) : path.basename(path.dirname(testDir)),
                 test: isMultiTouch ? path.basename(path.dirname(testDir)) : path.basename(testDir),
@@ -144,6 +142,7 @@ export async function startTestServer(selectedVariations) {
                 io.emit("update", { type: "js", path: relativePath, content: fileContent, touchPoint, hostnames, testInfo })
             }
 
+            if (path.extname(filePath) === ".scss") return;
             console.log(kleur.green(`File has been changed for ${testInfo.website} - ${testInfo.test} -  ${testInfo.touchPoint ? testInfo.touchPoint + " - " : ""} ${testInfo.variation} - ${(path.extname(filePath) === ".scss" || path.extname(filePath) === ".css") ? "CSS" : "JS"}`))
         })
         .on("error", (error) => log(`Watcher error: ${error}`))

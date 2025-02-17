@@ -11,6 +11,8 @@ Date: 16-FEB-2025
         - Group-run test without multi-touch: Includes a Group Test column but no Touch-point column.
         - Group-run test with multi-touch: Includes both Touch-point and Group Test columns.
     - change the name "Run Multiple Tests" to "Run Group Tests"
+    - Also provide option to select a group selection and run tests as a group accordingly.
+    - if last test is a group test then give user provide ad ability to run group wise again.
 
 ------------------------------------------------------------------------------------
 Date: 16-FEB-2025

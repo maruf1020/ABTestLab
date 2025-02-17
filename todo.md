@@ -1,8 +1,6 @@
 #TODO
-### Update "view test history"    
-    - Also provide option to select a group selection and run tests as a group accordingly.
-    - if last test is a group test then give user provide ad ability to run group wise again.
-    - on "Run Group Tests" which is currently named as "Run Multiple Tests", there will be 3 options:
+### Update "view test history"        
+    - on "Run Group Tests" there will be 3 options:
         - create group test
             - Allow user to choose and run the test. which feature is currently available directly under the "Run Multiple Tests" options.
         - run from History
@@ -48,3 +46,5 @@
 
 ### have to work on targeting
     - Here I have to marge the initial development branch with master and and create another branch for enhancement targeting. 
+
+  
