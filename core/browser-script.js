@@ -46,7 +46,7 @@
 
         // socket.on("testData", ({ testId, data, isMultiTouch }) => {
         socket.on("testData", ({ data }) => {
-            console.log(`Received initial test data`)
+            console.log(`Received initial test data`, data)
             data.forEach(test => {
                 const { testInfo, files, isMultiTouch } = test;
 
@@ -59,6 +59,7 @@
         })
 
         socket.on("update", ({ type, path, content, touchPoint, hostnames, testInfo }) => {
+            console.log("Received update", type, path, content, touchPoint, hostnames, testInfo)
             // remove last slash from path
             if (!hostnames || hostnames.length <= 0 || !hostnames.some(hostname => window.location.href.replace(/\/$/, "").endsWith(hostname.replace(/\/$/, "")))) return;
             const { website, test, touchPoint: infoTouchPoint, variation } = testInfo;

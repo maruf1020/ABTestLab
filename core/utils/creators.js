@@ -5,6 +5,7 @@ import kleur from "kleur"
 import { fileURLToPath } from "url"
 import { ROOT_DIR } from "../config.js"
 import { initializeSkeleton } from "./init.js"
+import { bundleVariation } from "./bundler.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -72,9 +73,7 @@ export async function createWebsite(websiteName) {
     }
 
     await fs.writeJson(path.join(websiteDir, "info.json"), websiteInfo, { spaces: 2 })
-    console.log(
-      kleur.green(`Website "${websiteName}" created successfully with hostname(s): ${hostnameList.join(", ")}`),
-    )
+    console.log(kleur.green(`Website "${websiteName}" created successfully with hostname(s): ${hostnameList.join(", ")}`))
   } catch (error) {
     console.error(kleur.red(`Failed to create website: ${error.message}`))
     throw error
@@ -181,7 +180,7 @@ async function createMultiTouchTest(testDir) {
         createdAtReadable: new Date().toLocaleString(),
         lastUpdated: new Date().toISOString(),
       },
-      { spaces: 2 },
+      { spaces: 2 }
     )
     console.log(kleur.green(`Touchpoint "${touchpoint}" created successfully.`))
   }
@@ -276,7 +275,7 @@ async function createVariations(testDir, touchPointCount) {
           createdAtReadable: new Date().toLocaleString(),
           lastUpdated: new Date().toISOString(),
         },
-        { spaces: 2 },
+        { spaces: 2 }
       )
     }
 
@@ -305,7 +304,9 @@ async function createVariation(dir, variationName) {
       createdAtReadable: new Date().toLocaleString(),
       lastUpdated: new Date().toISOString(),
     },
-    { spaces: 2 },
+    { spaces: 2 }
   )
-}
 
+  // Bundle the variation
+  await bundleVariation(variationDir)
+}

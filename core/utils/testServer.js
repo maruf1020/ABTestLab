@@ -8,6 +8,7 @@ import { convertScssToCSS } from "./cssUtils.js"
 import debug from "debug"
 import { fileURLToPath } from "url"
 import kleur from "kleur"
+import { bundleVariation } from "./bundler.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -93,34 +94,43 @@ export async function startTestServer(selectedVariations) {
     watcher
         .on("change", async (filePath) => {
             log(`File ${filePath} has been changed`)
+            console.log(kleur.yellow(`File has been changed: ${filePath}`))
             let touchPoint = null
             let variationDir = null
 
             const dir = path.dirname(filePath)
             const activeVariation = path.basename(dir)
+            console.log("activeVariation", activeVariation)
 
             const base = path.basename(process.cwd());
-            const baseFromFilePath = dir.split(path.sep).slice(-6)[0]
+            const baseFromFilePath = dir.split(path.sep).slice(-7)[0]
             const isMultiTouch = base === baseFromFilePath;
+            console.log("isMultiTouch", isMultiTouch)
             const testDir = isMultiTouch ? path.join(dir, "..", "..") : path.join(dir, "..")
-            const webSiteDir = path.dirname(testDir)
+            console.log("testDir", testDir)
+            const webSiteDir = path.join(testDir, "..")
+            console.log("webSiteDir", webSiteDir)
             const webSiteInfo = await fs.readJson(path.join(webSiteDir, "info.json"))
+            console.log("webSiteInfo", webSiteInfo)
             const hostnames = webSiteInfo.hostnames;
+            console.log("hostnames", hostnames)
             const testInfo = {
                 website: isMultiTouch ? path.basename(testDir) : path.basename(path.dirname(testDir)),
                 test: isMultiTouch ? path.basename(path.dirname(testDir)) : path.basename(testDir),
                 touchPoint: isMultiTouch ? dir.split(path.sep).slice(-2)[0] : null,
                 variation: activeVariation
             }
+            console.log("testInfo", testInfo)
 
             if (isMultiTouch) {
-                touchPoint = dir.split(path.sep).slice(-2)[0]
+                touchPoint = dir.split(path.sep).slice(-3)[0]
                 if (touchPoint) {
                     const touchpointDir = path.join(testDir, touchPoint)
                     variationDir = path.join(touchpointDir, activeVariation)
                 }
             } else {
                 variationDir = path.join(testDir, activeVariation)
+                console.log("variationDir", variationDir)
             }
 
             if (!variationDir) {
@@ -129,21 +139,35 @@ export async function startTestServer(selectedVariations) {
                 return
             }
 
-            const relativePath = path.relative(variationDir, filePath)
-            const fileContent = await fs.readFile(filePath, "utf-8")
+            // const relativePath = path.relative(variationDir, filePath)
+            // const fileContent = await fs.readFile(filePath, "utf-8")
+            // console.log("filePath", filePath)
+            // console.log("fileContent", fileContent)
 
-            if (path.extname(filePath) === ".scss" || path.extname(filePath) === ".css") {
-                const cssFile = path.join(path.dirname(filePath), "style.css")
-                await convertScssToCSS(filePath, cssFile)
-                const css = await fs.readFile(cssFile, "utf-8")
-                io.emit("update", { type: "css", path: "style.css", content: css, touchPoint, hostnames, testInfo })
-            } else if (path.extname(filePath) === ".js") {
-                log(`JavaScript file changed: ${filePath}`)
-                io.emit("update", { type: "js", path: relativePath, content: fileContent, touchPoint, hostnames, testInfo })
+
+            if (filePath.includes("compiled") && (filePath.includes("style.css") || filePath.includes("index.js"))) {
+                if (path.extname(filePath) === ".css") {
+                    const cssFile = path.join(path.dirname(filePath), "style.css")
+                    // await convertScssToCSS(filePath, cssFile)
+                    const css = await fs.readFile(cssFile, "utf-8")
+                    io.emit("update", { type: "css", path: "style.css", content: css, touchPoint, hostnames, testInfo })
+                } else if (path.extname(filePath) === ".js") {
+                    // log(`JavaScript file changed: ${filePath}`)
+                    // io.emit("update", { type: "js", path: relativePath, content: fileContent, touchPoint, hostnames, testInfo })
+                    const jsFile = path.join(path.dirname(filePath), "index.js")
+                    const js = await fs.readFile(jsFile, "utf-8")
+                    io.emit("update", { type: "js", path: "index.js", content: js, touchPoint, hostnames, testInfo })
+                }
+
+                console.log(kleur.green(`File has been changed for ${testInfo.website} - ${testInfo.test} -  ${testInfo.touchPoint ? testInfo.touchPoint + " - " : ""} ${testInfo.variation} - ${(path.extname(filePath) === ".scss" || path.extname(filePath) === ".css") ? "CSS" : "JS"}`))
+            } else {
+                if (path.extname(filePath) === ".scss") {
+                    await bundleVariation(variationDir, "scss")
+                    console.log(variationDir)
+                } else if (path.extname(filePath) === ".js") {
+                    await bundleVariation(variationDir, "js")
+                }
             }
-
-            if (path.extname(filePath) === ".scss") return;
-            console.log(kleur.green(`File has been changed for ${testInfo.website} - ${testInfo.test} -  ${testInfo.touchPoint ? testInfo.touchPoint + " - " : ""} ${testInfo.variation} - ${(path.extname(filePath) === ".scss" || path.extname(filePath) === ".css") ? "CSS" : "JS"}`))
         })
         .on("error", (error) => log(`Watcher error: ${error}`))
 
@@ -248,37 +272,40 @@ export async function startTestServer(selectedVariations) {
     });
 }
 
+async function getMultiTouchTestData(testDir, activeVariation) {
+    const testData = {};
+    const touchpointDirs = await fs.readdir(testDir);
+
+    for (const touchpoint of touchpointDirs) {
+        const touchpointDir = path.join(testDir, touchpoint);
+        if ((await fs.stat(touchpointDir)).isDirectory() && touchpoint !== "targeting") {
+            const variationDir = path.join(touchpointDir, activeVariation, "compiled");
+            testData[touchpoint] = await getTestData(variationDir);
+        }
+    }
+    return testData;
+}
+
 async function getTestData(variationDir) {
     const testData = {
         css: {},
         js: {},
-    }
+    };
 
-    const files = await fs.readdir(variationDir)
+    const compiledDir = path.join(variationDir, "compiled");
+    const files = await fs.readdir(compiledDir);
     for (const file of files) {
-        const filePath = path.join(variationDir, file)
-        const stats = await fs.stat(filePath)
+        const filePath = path.join(compiledDir, file);
+        const stats = await fs.stat(filePath);
         if (stats.isFile()) {
             if (file === "style.css") {
-                testData.css[file] = await fs.readFile(filePath, "utf-8")
+                const css = await fs.readFile(filePath, "utf-8");
+                testData.css[file] = css;
             } else if (path.extname(file) === ".js") {
-                testData.js[file] = await fs.readFile(filePath, "utf-8")
+                const js = await fs.readFile(filePath, "utf-8");
+                testData.js[file] = js;
             }
         }
     }
-    return testData
-}
-
-async function getMultiTouchTestData(testDir, activeVariation) {
-    const testData = {}
-    const touchpointDirs = await fs.readdir(testDir)
-
-    for (const touchpoint of touchpointDirs) {
-        const touchpointDir = path.join(testDir, touchpoint)
-        if ((await fs.stat(touchpointDir)).isDirectory() && touchpoint !== "targeting") {
-            const variationDir = path.join(touchpointDir, activeVariation)
-            testData[touchpoint] = await getTestData(variationDir)
-        }
-    }
-    return testData
+    return testData;
 }
