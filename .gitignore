@@ -129,7 +129,9 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-# wnat to ignote website folder in root directory and insilde every folders and filea
+# personal folder and files should be ignored
 websites/
+skeleton/
 
 history.json
+settings.json
