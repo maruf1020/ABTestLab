@@ -670,7 +670,7 @@ async function startTest(website, test, variation, testType) {
     log(`Test directory: ${testDir}`)
     log(`Active variation: ${variation}`)
 
-    await startTestServer([{ website, test, variation }])
+    await startTestServer([{ website, test, variation, testType }])
     await updateHistory([{ websiteName: website, testName: test, variationName: variation, testType }])
 }
 async function startMultipleTest(selectedVariations) {
