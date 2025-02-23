@@ -14,7 +14,6 @@ const __dirname = path.dirname(__filename)
 
 const log = debug("ab-testing-cli:testServer")
 
-// export async function startTestServer(website, test, activeVariation) {
 export async function startTestServer(selectedVariations) {
 
     const testInfo = await Promise.all(selectedVariations.map(async selectedVariation => {
@@ -31,32 +30,8 @@ export async function startTestServer(selectedVariations) {
 
     const coreDir = path.join(__dirname, "..");
 
-    // inside coreDir I will create a file called browser-Runner.js
-    // there I will write the code add all the code from transformTestInfo
-    // from transformTestInfo I will take the testInfo and from there I will the variation files
-    // variation files contain the css and js files
-    // for css I will create a document.createElement("style") and append it to the head
-    // for js I will eval the js code / execute it
-    // but in the top I have to create a wait function that will frequently check if the head is available
-    // the frequency will be 10ms
-    // if the head is available then it will append the css and js files
-
     const browserRunnerPath = path.join(coreDir, "browser-runner.js");
-    fs.writeFileSync(browserRunnerPath, `const data = ${JSON.stringify(transformedTestInfo, null, 2)};
-        const headCheckInterval = setInterval(() => {
-            if (document.head) {
-                clearInterval(headCheckInterval);
-                data.testInfo.forEach((test) => {
-                    const style = document.createElement("style");
-                    style.textContent = test.variationFiles.css;
-                    document.head.appendChild(style);
-                    eval(test.variationFiles.js);
-
-                });
-            }
-        }, 10);      
-        
-    `);
+    fs.writeFileSync(browserRunnerPath, `const data = ${JSON.stringify(transformedTestInfo, null, 2)};`);
 
     const server = http.createServer(async (req, res) => {
         if (req.url === "/ab-test-script.js") {
@@ -111,6 +86,7 @@ export async function startTestServer(selectedVariations) {
             }
             parentTargetingMap.get(item.parentTargetingId).variationIdList.push(item.id);
         }
+        const targetingCheckDir = path.join(ROOT_DIR, "..", "skeleton", "default", "targetMet");
 
         // Process all testInfo items
         const finalTestInfo = await Promise.all(
@@ -122,7 +98,8 @@ export async function startTestServer(selectedVariations) {
                 testType: item.testType,
                 hostnames: item.hostnames,
                 variationFiles: await getVariationFiles(item.variationDir),
-                targetingFiles: await getTargetingFiles(item.targetingDir)
+                targetingFiles: await getTargetingFiles(item.targetingDir),
+                targetMet: await getTargetingFiles(targetingCheckDir),
             }))
         );
 
@@ -139,13 +116,7 @@ export async function startTestServer(selectedVariations) {
 
         try {
             const css = await fs.readFile(cssFile, "utf-8")
-            // .then(content => content.replace(/\\r\\n/g, '\n')
-            //     .replace(/\\n/g, '\n')
-            //     .replace(/\\t/g, '\t'));
             const js = await fs.readFile(jsFile, "utf-8")
-            // .then(content => content.replace(/\\r\\n/g, '\n')
-            //     .replace(/\\n/g, '\n')
-            //     .replace(/\\t/g, '\t'));
 
             return {
                 css,
@@ -504,40 +475,40 @@ export async function startTestServer(selectedVariations) {
     // });
 }
 
-async function getMultiTouchTestData(testDir, activeVariation) {
-    const testData = {};
-    const touchpointDirs = await fs.readdir(testDir);
+// async function getMultiTouchTestData(testDir, activeVariation) {
+//     const testData = {};
+//     const touchpointDirs = await fs.readdir(testDir);
 
-    for (const touchpoint of touchpointDirs) {
-        const touchpointDir = path.join(testDir, touchpoint);
-        if ((await fs.stat(touchpointDir)).isDirectory() && touchpoint !== "targeting") {
-            const variationDir = path.join(touchpointDir, activeVariation, "compiled");
-            testData[touchpoint] = await getTestData(variationDir);
-        }
-    }
-    return testData;
-}
+//     for (const touchpoint of touchpointDirs) {
+//         const touchpointDir = path.join(testDir, touchpoint);
+//         if ((await fs.stat(touchpointDir)).isDirectory() && touchpoint !== "targeting") {
+//             const variationDir = path.join(touchpointDir, activeVariation, "compiled");
+//             testData[touchpoint] = await getTestData(variationDir);
+//         }
+//     }
+//     return testData;
+// }
 
-async function getTestData(variationDir) {
-    const testData = {
-        css: {},
-        js: {},
-    };
+// async function getTestData(variationDir) {
+//     const testData = {
+//         css: {},
+//         js: {},
+//     };
 
-    const compiledDir = path.join(variationDir, "compiled");
-    const files = await fs.readdir(compiledDir);
-    for (const file of files) {
-        const filePath = path.join(compiledDir, file);
-        const stats = await fs.stat(filePath);
-        if (stats.isFile()) {
-            if (file === "style.css") {
-                const css = await fs.readFile(filePath, "utf-8");
-                testData.css[file] = css;
-            } else if (path.extname(file) === ".js") {
-                const js = await fs.readFile(filePath, "utf-8");
-                testData.js[file] = js;
-            }
-        }
-    }
-    return testData;
-}
+//     const compiledDir = path.join(variationDir, "compiled");
+//     const files = await fs.readdir(compiledDir);
+//     for (const file of files) {
+//         const filePath = path.join(compiledDir, file);
+//         const stats = await fs.stat(filePath);
+//         if (stats.isFile()) {
+//             if (file === "style.css") {
+//                 const css = await fs.readFile(filePath, "utf-8");
+//                 testData.css[file] = css;
+//             } else if (path.extname(file) === ".js") {
+//                 const js = await fs.readFile(filePath, "utf-8");
+//                 testData.js[file] = js;
+//             }
+//         }
+//     }
+//     return testData;
+// }
