@@ -1,4 +1,4 @@
-function checker(rulesConfig) {
+export default function checker(rulesConfig) {
   return new Promise((resolve) => {
     const startTime = Date.now();
     const result = {
