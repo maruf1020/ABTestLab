@@ -8,6 +8,7 @@ import debug from "debug"
 import { fileURLToPath } from "url"
 import kleur from "kleur"
 import { bundleVariation } from "./bundler.js"
+import browserScriptCreator from "./browserScriptCreator.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -28,24 +29,7 @@ export async function startTestServer(selectedVariations) {
 
     const transformedTestInfo = await transformTestInfo(testInfo);
 
-    const coreDir = path.join(__dirname, "..");
-
-    const browserRunnerPath = path.join(coreDir, "browser-runner.js");
-    const jsonString = JSON.stringify(transformedTestInfo, null, 2); // Pretty print with 2 spaces
-    fs.writeFileSync(browserRunnerPath, `const abTestPilotMainInformation = ${jsonString}
-        abTestPilotMainInformation.testInfo.forEach(item => {            
-            item.targetingFiles.customJS = eval(` + "`" + `($` + `{item.targetingFiles.customJS})` + "`" + `);
-        });
-        abTestPilotMainInformation.parentTargeting.forEach(item => {
-            item.targetingFiles.customJS = eval(` + "`" + `($` + `{item.targetingFiles.customJS})` + "`" + `);
-        });        
-        abTestPilotMainInformation.targetMet.customJS = eval(` + "`" + `($` + `{abTestPilotMainInformation.targetMet.customJS})` + "`" + `);
-        abTestPilotMainInformation.targetMet.elementChecker = eval(` + "`" + `($` + `{abTestPilotMainInformation.targetMet.elementChecker})` + "`" + `);
-        abTestPilotMainInformation.targetMet.urlChecker = eval(` + "`" + `($` + `{abTestPilotMainInformation.targetMet.urlChecker})` + "`" + `);   
-        
-        console.log("abTestPilotMainInformation", abTestPilotMainInformation);        
-    `);
-
+    await browserScriptCreator(transformedTestInfo);
 
     const server = http.createServer(async (req, res) => {
         if (req.url === "/ab-test-script.js") {
