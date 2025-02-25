@@ -32,7 +32,19 @@ export async function startTestServer(selectedVariations) {
 
     const browserRunnerPath = path.join(coreDir, "browser-runner.js");
     const jsonString = JSON.stringify(transformedTestInfo, null, 2); // Pretty print with 2 spaces
-    fs.writeFileSync(browserRunnerPath, `const data = ${jsonString}`);
+    fs.writeFileSync(browserRunnerPath, `const abTestPilotMainInformation = ${jsonString}
+        abTestPilotMainInformation.testInfo.forEach(item => {            
+            item.targetingFiles.customJS = eval(` + "`" + `($` + `{item.targetingFiles.customJS})` + "`" + `);
+        });
+        abTestPilotMainInformation.parentTargeting.forEach(item => {
+            item.targetingFiles.customJS = eval(` + "`" + `($` + `{item.targetingFiles.customJS})` + "`" + `);
+        });        
+        abTestPilotMainInformation.targetMet.customJS = eval(` + "`" + `($` + `{abTestPilotMainInformation.targetMet.customJS})` + "`" + `);
+        abTestPilotMainInformation.targetMet.elementChecker = eval(` + "`" + `($` + `{abTestPilotMainInformation.targetMet.elementChecker})` + "`" + `);
+        abTestPilotMainInformation.targetMet.urlChecker = eval(` + "`" + `($` + `{abTestPilotMainInformation.targetMet.urlChecker})` + "`" + `);   
+        
+        console.log("abTestPilotMainInformation", abTestPilotMainInformation);        
+    `);
 
 
     const server = http.createServer(async (req, res) => {
@@ -101,13 +113,13 @@ export async function startTestServer(selectedVariations) {
                 hostnames: item.hostnames,
                 variationFiles: await getVariationFiles(item.variationDir),
                 targetingFiles: await getTargetingFiles(item.targetingDir),
-                targetMet: await getTargetMetFiles(targetingCheckDir),
             }))
         );
 
         return {
             parentTargeting: Array.from(parentTargetingMap.values()),
-            testInfo: finalTestInfo
+            targetMet: await getTargetMetFiles(targetingCheckDir),
+            testInfo: finalTestInfo,
         };
     }
 
