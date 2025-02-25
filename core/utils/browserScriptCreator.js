@@ -43,9 +43,7 @@ export default async function browserScriptCreator(testInfo) {
         });        
         abTestPilotMainInformation.targetMet.customJS = eval(` + "`" + `($` + `{abTestPilotMainInformation.targetMet.customJS})` + "`" + `);
         abTestPilotMainInformation.targetMet.elementChecker = eval(` + "`" + `($` + `{abTestPilotMainInformation.targetMet.elementChecker})` + "`" + `);
-        abTestPilotMainInformation.targetMet.urlChecker = eval(` + "`" + `($` + `{abTestPilotMainInformation.targetMet.urlChecker})` + "`" + `);   
-        
-        console.log("abTestPilotMainInformation", abTestPilotMainInformation);      
+        abTestPilotMainInformation.targetMet.urlChecker = eval(` + "`" + `($` + `{abTestPilotMainInformation.targetMet.urlChecker})` + "`" + `);      
         
         const abTestPilotApplicableTestsBasedOnTheWebsite = abTestPilotMainInformation.testInfo.filter(item => {
             return item.hostnames.some(hostname => {
@@ -55,15 +53,17 @@ export default async function browserScriptCreator(testInfo) {
             });
         });
 
-        console.log("abTestPilotApplicableTestsBasedOnTheWebsite", abTestPilotApplicableTestsBasedOnTheWebsite);
-
         const abTestPilotParentTargetingIDs = abTestPilotMainInformation.parentTargeting.map(item => item.variationIdList).flat();
-
-        console.log("abTestPilotParentTargetingIDs", abTestPilotParentTargetingIDs);
 
         const abTestPilotWithoutParentTargetingTests = abTestPilotApplicableTestsBasedOnTheWebsite.filter(item => !abTestPilotParentTargetingIDs.includes(item.id));
 
-        console.log("abTestPilotWithoutParentTargetingTests", abTestPilotWithoutParentTargetingTests);
+        const abTestPilotWithParentTargetingTests = abTestPilotApplicableTestsBasedOnTheWebsite.filter(item => abTestPilotParentTargetingIDs.includes(item.id));
+
+        const abTestPilotApplicableParentTargeting = abTestPilotMainInformation.parentTargeting.filter(item => {
+            return item.variationIdList.some(id => {
+                return abTestPilotWithParentTargetingTests.some(test => test.id === id);
+            });
+        });
 
         function abTestPilotTargetMet(targetMetFiles, targetingFiles) {
             return Promise.all([
@@ -72,6 +72,30 @@ export default async function browserScriptCreator(testInfo) {
                 targetMetFiles.urlChecker(targetingFiles.urlChecker)
             ]);
         }
+
+        abTestPilotApplicableParentTargeting.forEach(item => {
+            abTestPilotTargetMet(abTestPilotMainInformation.targetMet, item.targetingFiles).then(result => {
+                if(result.every(item => item.status === true)) {
+                    abTestPilotMainInformation.testInfo.filter(test => item.variationIdList.includes(test.id)).forEach(test => {
+                        abTestPilotTargetMet(abTestPilotMainInformation.targetMet, test.targetingFiles).then(result => {
+                            if(result.every(item => item.status === true)) {
+                                const style = document.createElement("style");
+                                style.innerHTML = test.variationFiles.css;
+                                style.type = "text/css";
+                                style.id = test.id;
+                                document.head.appendChild(style);
+
+                                const script = document.createElement("script");
+                                script.innerHTML = test.variationFiles.js;
+                                script.type = "text/javascript";
+                                script.id = test.id;
+                                document.head.appendChild(script);
+                            }
+                        });
+                    })
+                }
+            });
+        });
 
         abTestPilotWithoutParentTargetingTests.forEach(item => {
             abTestPilotTargetMet(abTestPilotMainInformation.targetMet, item.targetingFiles).then(result => {
@@ -89,7 +113,7 @@ export default async function browserScriptCreator(testInfo) {
                     document.head.appendChild(script);
                 }
             });
-        });
+        });       
 
     `);
 }
