@@ -16,7 +16,6 @@ const __dirname = path.dirname(__filename)
 const log = debug("ab-testing-cli:testServer")
 
 export async function startTestServer(selectedVariations) {
-
     const testInfo = await Promise.all(selectedVariations.map(async selectedVariation => {
         if (selectedVariation.testType === "Multi-touch") {
             const touchPointsDir = await getTouchPointsDir(selectedVariation);
@@ -32,7 +31,12 @@ export async function startTestServer(selectedVariations) {
     await browserScriptCreator(transformedTestInfo);
 
     const server = http.createServer(async (req, res) => {
-        if (req.url === "/ab-test-script.js") {
+        if (req.url === "/ab-pilot-script.js") {
+            const scriptPath = path.join(__dirname, "..", "browser-Runner.js");
+            const content = await fs.readFile(scriptPath, "utf-8");
+            res.writeHead(200, { "Content-Type": "application/javascript" });
+            res.end(content);
+        } else if (req.url === "/ab-test-script.js") {
             const scriptPath = path.join(__dirname, "..", "browser-script.js");
             const content = await fs.readFile(scriptPath, "utf-8");
             res.writeHead(200, { "Content-Type": "application/javascript" });
@@ -40,11 +44,6 @@ export async function startTestServer(selectedVariations) {
         } else if (req.url === "/socket-io-client.js") {
             const socketIoClientPath = path.join(__dirname, "..", "public", "js", "vendor", "socket-io-client.js");
             const content = await fs.readFile(socketIoClientPath, "utf-8");
-            res.writeHead(200, { "Content-Type": "application/javascript" });
-            res.end(content);
-        } else if (req.url === "/ab-pilot-script.js") {
-            const scriptPath = path.join(__dirname, "..", "browser-Runner.js");
-            const content = await fs.readFile(scriptPath, "utf-8");
             res.writeHead(200, { "Content-Type": "application/javascript" });
             res.end(content);
         } else {
@@ -96,6 +95,10 @@ async function transformTestInfo(testInfo) {
             hostnames: item.hostnames,
             variationFiles: await getVariationFiles(item.variationDir),
             targetingFiles: await getTargetingFiles(item.targetingDir),
+            websiteName: item.websiteName,
+            testName: item.testName,
+            touchPointName: item.touchPointName,
+            variationName: item.variationName
         }))
     );
 
@@ -146,7 +149,7 @@ async function getTargetingFiles(targetingDir) {
         const urlChecker = await fs.readJson(urlCheckerPath);
 
         return {
-            "customJS": customJS.toString(),
+            "customJS": customJS,
             elementChecker,
             urlChecker
         };
@@ -180,9 +183,9 @@ async function getTargetMetFiles(targetingCheckDir) {
         const urlChecker = urlCheckerModule.default;
 
         return {
-            "customJS": customJS.toString(),
-            "elementChecker": elementChecker.toString(),
-            "urlChecker": urlChecker.toString()
+            "customJS": customJS,
+            "elementChecker": elementChecker,
+            "urlChecker": urlChecker
         };
     } catch (error) {
         console.error("Error reading targeting files:", error);
@@ -204,19 +207,27 @@ async function getVariationDir(selectedVariation) {
         if (await fs.existsSync(infoPath)) {
             const info = await fs.readJson(infoPath);
             const id = info.id;
+            const variationName = info.name;
             const webSiteDir = path.join(ROOT_DIR, selectedVariation.website);
             const webSiteInfo = await fs.readJson(path.join(webSiteDir, "info.json"));
             const hostnames = webSiteInfo.hostnames;
+            const websiteName = webSiteInfo.name;
             const testDir = path.join(ROOT_DIR, selectedVariation.website, selectedVariation.test);
             const testInfo = await fs.readJson(path.join(testDir, "info.json"));
+            const testName = testInfo.name;
             const testType = testInfo.type;
+            const touchPointName = null;
 
             return {
                 variationDir,
                 targetingDir: await fs.existsSync(targetingDir) ? targetingDir : null,
                 id,
                 hostnames,
-                testType
+                testType,
+                websiteName,
+                testName,
+                touchPointName,
+                variationName
             };
         }
         return null;
@@ -228,14 +239,23 @@ async function getVariationDir(selectedVariation) {
 
 async function getTouchPointsDir(selectedVariation) {
     const testDir = path.join(ROOT_DIR, selectedVariation.website, selectedVariation.test);
+    const testInfo = await fs.readJson(path.join(testDir, "info.json"));
+    const testName = testInfo.name;
     const touchPoints = await fs.readdir(testDir);
     const websiteDir = path.join(ROOT_DIR, selectedVariation.website);
     const websiteInfo = await fs.readJson(path.join(websiteDir, "info.json"));
     const hostnames = websiteInfo.hostnames;
+    const websiteName = websiteInfo.name;
     const touchPointsDir = await Promise.all(
-        touchPoints.filter(touchPoint => touchPoint !== "targeting").map(async touchPoint => {
+        touchPoints.filter(touchPoint => touchPoint !== "targeting" && touchPoint !== "info.json").map(async touchPoint => {
+            console.log("touchPoint", touchPoint);
+            const touchPointDir = path.join(testDir, touchPoint);
+            const touchPointInfoPath = path.join(touchPointDir, "info.json");
+            const touchPointInfo = await fs.readJson(touchPointInfoPath);
+            const touchPointName = touchPointInfo.name;
             const variationDir = path.join(testDir, touchPoint, selectedVariation.variation);
             const infoPath = path.join(variationDir, "info.json");
+            const variationName = selectedVariation.variation;
             const targetingDir = path.join(testDir, touchPoint, "targeting");
             const parentTargetingDir = path.join(testDir, "targeting");
             let parentTargetingId = null;
@@ -259,7 +279,11 @@ async function getTouchPointsDir(selectedVariation) {
                             parentTargeting: await fs.existsSync(parentTargetingDir) ? parentTargetingDir : null,
                             parentTargetingId,
                             testType: selectedVariation.testType,
-                            hostnames
+                            hostnames,
+                            websiteName,
+                            touchPointName,
+                            testName,
+                            variationName
                         };
                     }
                 }

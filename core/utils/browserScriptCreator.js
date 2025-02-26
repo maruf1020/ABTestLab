@@ -1,6 +1,7 @@
 import fs from "fs-extra"
 import path from "path"
 import { fileURLToPath } from "url"
+import serialize from 'serialize-javascript';
 
 export default async function browserScriptCreator(testInfo) {
     const __filename = fileURLToPath(import.meta.url)
@@ -13,7 +14,7 @@ export default async function browserScriptCreator(testInfo) {
             return {
                 "parentTargetingId": item.parentTargetingId,
                 "targetingFiles": item.targetingFiles,
-                "variationIdList": item.variationIdList
+                "variationIdList": item.variationIdList,
             }
         }),
         testInfo: testInfo.testInfo.map(item => {
@@ -22,7 +23,12 @@ export default async function browserScriptCreator(testInfo) {
                 "id": item.id,
                 "targetingFiles": item.targetingFiles,
                 "testType": item.testType,
-                "variationFiles": item.variationFiles
+                "variationFiles": item.variationFiles,
+                "websiteName": item.websiteName,
+                "testName": item.testName,
+                "touchPointName": item.touchPointName,
+                "variationName": item.variationName,
+                "testType": item.testType
             }
         }),
         targetMet: {
@@ -33,93 +39,93 @@ export default async function browserScriptCreator(testInfo) {
     }
 
     const browserRunnerPath = path.join(coreDir, "browser-runner.js");
-    const jsonString = JSON.stringify(browserData, null, 2); // Pretty print with 2 spaces
-    await fs.writeFileSync(browserRunnerPath, `const abTestPilotMainInformation = ${jsonString}
-        abTestPilotMainInformation.testInfo.forEach(item => {            
-            item.targetingFiles.customJS = eval(` + "`" + `($` + `{item.targetingFiles.customJS})` + "`" + `);
-        });
-        abTestPilotMainInformation.parentTargeting.forEach(item => {
-            item.targetingFiles.customJS = eval(` + "`" + `($` + `{item.targetingFiles.customJS})` + "`" + `);
-        });        
-        abTestPilotMainInformation.targetMet.customJS = eval(` + "`" + `($` + `{abTestPilotMainInformation.targetMet.customJS})` + "`" + `);
-        abTestPilotMainInformation.targetMet.elementChecker = eval(` + "`" + `($` + `{abTestPilotMainInformation.targetMet.elementChecker})` + "`" + `);
-        abTestPilotMainInformation.targetMet.urlChecker = eval(` + "`" + `($` + `{abTestPilotMainInformation.targetMet.urlChecker})` + "`" + `);      
-        
-        const abTestPilotApplicableTestsBasedOnTheWebsite = abTestPilotMainInformation.testInfo.filter(item => {
-            return item.hostnames.some(hostname => {
-                const hostnameWithoutSlash = hostname.split("")[hostname.length - 1] === "/" ? hostname.slice(0, -1) : hostname;
-                const originWithoutSlash = window.location.origin.split("")[window.location.origin.length - 1] === "/" ? window.location.origin.slice(0, -1) : window.location.origin;
-                return hostnameWithoutSlash.includes(originWithoutSlash) || originWithoutSlash.includes(hostnameWithoutSlash);
+    // const jsonString = JSON.stringify(browserData, null, 2); // Pretty print with 2 spaces
+    const SerializeString = serialize(browserData, { space: 2 }); // Pretty print with 2 spaces
+    await fs.writeFileSync(browserRunnerPath, `const abTestPilotMainInformation = ${SerializeString}
+        let abTestPilot = {};
+        function abTestPilotFilterTestsByHostname(testInfo) {
+            return testInfo.filter(item => {
+                return item.hostnames.some(hostname => {
+                    const hostnameWithoutSlash = hostname.endsWith("/") ? hostname.slice(0, -1) : hostname;
+                    const originWithoutSlash = window.location.origin.endsWith("/") ? window.location.origin.slice(0, -1) : window.location.origin;
+                    return hostnameWithoutSlash.includes(originWithoutSlash) || originWithoutSlash.includes(hostnameWithoutSlash);
+                });
             });
-        });
+        }
 
-        const abTestPilotParentTargetingIDs = abTestPilotMainInformation.parentTargeting.map(item => item.variationIdList).flat();
+        function abTestPilotFilterTestsByParentTargeting(testInfo, parentTargeting) {
+            const parentTargetingIDs = parentTargeting.map(item => item.variationIdList).flat();
+            const testsWithParentTargeting = testInfo.filter(item => parentTargetingIDs.includes(item.id));
+            const testsWithoutParentTargeting = testInfo.filter(item => !parentTargetingIDs.includes(item.id));
+            return { testsWithParentTargeting, testsWithoutParentTargeting };
+        }
 
-        const abTestPilotWithoutParentTargetingTests = abTestPilotApplicableTestsBasedOnTheWebsite.filter(item => !abTestPilotParentTargetingIDs.includes(item.id));
-
-        const abTestPilotWithParentTargetingTests = abTestPilotApplicableTestsBasedOnTheWebsite.filter(item => abTestPilotParentTargetingIDs.includes(item.id));
-
-        const abTestPilotApplicableParentTargeting = abTestPilotMainInformation.parentTargeting.filter(item => {
-            return item.variationIdList.some(id => {
-                return abTestPilotWithParentTargetingTests.some(test => test.id === id);
+        function abTestPilotGetApplicableParentTargeting(parentTargeting, testsWithParentTargeting) {
+            return parentTargeting.filter(item => {
+                return item.variationIdList.some(id => {
+                    return testsWithParentTargeting.some(test => test.id === id);
+                });
             });
-        });
-        
+        }
 
-        abTestPilotApplicableParentTargeting.forEach(item => {
-            abTestPilotTargetMet(abTestPilotMainInformation.targetMet, item.targetingFiles).then(result => {
-                console.log(result, "------");
-                if(result.every(item => item.status === true)) {
-                    abTestPilotMainInformation.testInfo.filter(test => item.variationIdList.includes(test.id)).forEach(test => {
-                        abTestPilotTargetMet(abTestPilotMainInformation.targetMet, test.targetingFiles).then(result => {
-                            if(result.every(item => item.status === true)) {
-                                const style = document.createElement("style");
-                                style.innerHTML = test.variationFiles.css;
-                                style.type = "text/css";
-                                style.id = test.id;
-                                document.head.appendChild(style);
-
-                                const script = document.createElement("script");
-                                script.innerHTML = test.variationFiles.js;
-                                script.type = "text/javascript";
-                                script.id = test.id;
-                                document.head.appendChild(script);
-                            }
-                        });
-                    })
-                }
-            });
-        });
-
-        async function abTestPilotTargetMet(targetMetFiles, targetingFiles) {            
+        async function abTestPilotTargetMet(targetMetFiles, targetingFiles) {
             const results = await Promise.all([
                 targetMetFiles.customJS(targetingFiles.customJS),
                 targetMetFiles.elementChecker(targetingFiles.elementChecker),
                 targetMetFiles.urlChecker(targetingFiles.urlChecker)
             ]);
-            console.log('Checker results:', results);
             return results;
         }
 
-        abTestPilotWithoutParentTargetingTests.forEach(async item => {
-            const result = await abTestPilotTargetMet(abTestPilotMainInformation.targetMet, item.targetingFiles)
-            console.log(result, "------");  
-            console.log(result.every(item => item.status === true), "------~~");
-            if(result.every(item => item.status === true)) {
-                console.log("Test is applicable");
-                const style = document.createElement("style");
-                style.innerHTML = item.variationFiles.css;
-                style.type = "text/css";
-                style.id = item.id;
-                document.head.appendChild(style);
+        function abTestPilotApplyTestVariation(test) {
+            const style = document.createElement("style");
+            style.innerHTML = test.variationFiles.css;
+            style.type = "text/css";
+            style.id = test.id;
+            document.head.appendChild(style);
 
-                const script = document.createElement("script");
-                script.innerHTML = item.variationFiles.js;
-                script.type = "text/javascript";
-                script.id = item.id;
-                document.head.appendChild(script);
-            }        
-        });       
+            const script = document.createElement("script");
+            script.innerHTML = test.variationFiles.js;
+            script.type = "text/javascript";
+            script.id = test.id;
+            document.head.appendChild(script);
+        }
+
+        async function abTestPilotProcessTests(tests, targetMet) {
+            for (const test of tests) {
+                const result = await abTestPilotTargetMet(targetMet, test.targetingFiles);
+                abTestPilot[test.id] = {
+                    status: result.every(item => item.status === true) ? "Active" : "Inactive",
+                    targetingDetails: result,
+                    id: test.id,
+                    websiteName : test.websiteName,
+                    testName : test.testName,
+                    variationName : test.variationName,
+                    testType : test.testType
+                }
+                if(test.touchPointName) {
+                    abTestPilot[test.id].touchPointName = test.touchPointName;
+                }
+                if (result.every(item => item.status === true)) {
+                    abTestPilotApplyTestVariation(test);
+                }
+            }
+        }
+
+        const abTestPilotApplicableTestsBasedOnTheWebsite = abTestPilotFilterTestsByHostname(abTestPilotMainInformation.testInfo);
+        const { testsWithParentTargeting, testsWithoutParentTargeting } = abTestPilotFilterTestsByParentTargeting(abTestPilotApplicableTestsBasedOnTheWebsite, abTestPilotMainInformation.parentTargeting);
+        const abTestPilotApplicableParentTargeting = abTestPilotGetApplicableParentTargeting(abTestPilotMainInformation.parentTargeting, testsWithParentTargeting);
+
+        abTestPilotApplicableParentTargeting.forEach(item => {
+            abTestPilotTargetMet(abTestPilotMainInformation.targetMet, item.targetingFiles).then(result => {
+                if (result.every(item => item.status === true)) {
+                    const applicableTests = abTestPilotMainInformation.testInfo.filter(test => item.variationIdList.includes(test.id));
+                    abTestPilotProcessTests(applicableTests, abTestPilotMainInformation.targetMet);
+                }
+            });
+        });
+
+        abTestPilotProcessTests(testsWithoutParentTargeting, abTestPilotMainInformation.targetMet);    
 
     `);
 }
