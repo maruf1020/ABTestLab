@@ -9,7 +9,7 @@ import { bundleVariation } from "./bundler.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const SKELETON_DIR = path.resolve(__dirname, "..", "..", "skeleton", "default")
+const SKELETON_DIR = path.resolve(__dirname, "..", "..", "skeleton")
 
 function generateId(name) {
   const timestamp = Date.now()
@@ -37,7 +37,7 @@ async function ensureSkeletonExist() {
 
 async function validateSkeleton() {
   const targetingTemplateExists = await fs.pathExists(path.join(SKELETON_DIR, "targeting"))
-  const variationTemplateExists = await fs.pathExists(path.join(SKELETON_DIR, "variation"))
+  const variationTemplateExists = await fs.pathExists(path.join(SKELETON_DIR, "variation", "default"))
 
   if (!targetingTemplateExists || !variationTemplateExists) {
     throw new Error('Required skeleton are missing. Please run "npm run cli init" to create skeleton.')
@@ -264,7 +264,7 @@ async function createVariations(testDir, touchPointCount) {
     if (touchPointCount !== 0) {
       const variationDir = path.join(testDir, response.variationName)
       await fs.ensureDir(variationDir)
-      await fs.copy(path.join(SKELETON_DIR, "variation"), variationDir)
+      await fs.copy(path.join(SKELETON_DIR, "variation", "default"), variationDir)
       await fs.writeJson(
         path.join(variationDir, "info.json"),
         {
@@ -290,7 +290,7 @@ async function createVariations(testDir, touchPointCount) {
 async function createVariation(dir, variationName) {
   const variationDir = path.join(dir, variationName)
   await fs.ensureDir(variationDir)
-  await fs.copy(path.join(SKELETON_DIR, "variation"), variationDir)
+  await fs.copy(path.join(SKELETON_DIR, "variation", "default"), variationDir)
 
   // Create info.json for the variation
   const infoJsonPath = path.join(variationDir, "info.json")

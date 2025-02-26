@@ -64,17 +64,11 @@ export default async function browserScriptCreator(testInfo) {
                 return abTestPilotWithParentTargetingTests.some(test => test.id === id);
             });
         });
-
-        function abTestPilotTargetMet(targetMetFiles, targetingFiles) {
-            return Promise.all([
-                targetMetFiles.customJS(targetingFiles.customJS),
-                targetMetFiles.elementChecker(targetingFiles.elementChecker),
-                targetMetFiles.urlChecker(targetingFiles.urlChecker)
-            ]);
-        }
+        
 
         abTestPilotApplicableParentTargeting.forEach(item => {
             abTestPilotTargetMet(abTestPilotMainInformation.targetMet, item.targetingFiles).then(result => {
+                console.log(result, "------");
                 if(result.every(item => item.status === true)) {
                     abTestPilotMainInformation.testInfo.filter(test => item.variationIdList.includes(test.id)).forEach(test => {
                         abTestPilotTargetMet(abTestPilotMainInformation.targetMet, test.targetingFiles).then(result => {
@@ -97,22 +91,34 @@ export default async function browserScriptCreator(testInfo) {
             });
         });
 
-        abTestPilotWithoutParentTargetingTests.forEach(item => {
-            abTestPilotTargetMet(abTestPilotMainInformation.targetMet, item.targetingFiles).then(result => {
-                if(result.every(item => item.status === true)) {
-                    const style = document.createElement("style");
-                    style.innerHTML = item.variationFiles.css;
-                    style.type = "text/css";
-                    style.id = item.id;
-                    document.head.appendChild(style);
+        async function abTestPilotTargetMet(targetMetFiles, targetingFiles) {            
+            const results = await Promise.all([
+                targetMetFiles.customJS(targetingFiles.customJS),
+                targetMetFiles.elementChecker(targetingFiles.elementChecker),
+                targetMetFiles.urlChecker(targetingFiles.urlChecker)
+            ]);
+            console.log('Checker results:', results);
+            return results;
+        }
 
-                    const script = document.createElement("script");
-                    script.innerHTML = item.variationFiles.js;
-                    script.type = "text/javascript";
-                    script.id = item.id;
-                    document.head.appendChild(script);
-                }
-            });
+        abTestPilotWithoutParentTargetingTests.forEach(async item => {
+            const result = await abTestPilotTargetMet(abTestPilotMainInformation.targetMet, item.targetingFiles)
+            console.log(result, "------");  
+            console.log(result.every(item => item.status === true), "------~~");
+            if(result.every(item => item.status === true)) {
+                console.log("Test is applicable");
+                const style = document.createElement("style");
+                style.innerHTML = item.variationFiles.css;
+                style.type = "text/css";
+                style.id = item.id;
+                document.head.appendChild(style);
+
+                const script = document.createElement("script");
+                script.innerHTML = item.variationFiles.js;
+                script.type = "text/javascript";
+                script.id = item.id;
+                document.head.appendChild(script);
+            }        
         });       
 
     `);

@@ -83,7 +83,7 @@ async function transformTestInfo(testInfo) {
         }
         parentTargetingMap.get(item.parentTargetingId).variationIdList.push(item.id);
     }
-    const targetingCheckDir = path.join(ROOT_DIR, "..", "skeleton", "default", "targetMet");
+    const targetingCheckDir = path.join(ROOT_DIR, "..", "skeleton", "targetMet");
 
     // Process all testInfo items
     const finalTestInfo = await Promise.all(
