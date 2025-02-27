@@ -8,12 +8,13 @@
     - Have to set two global variable 
         - one will only contain the variation information but internal task.
         - Another will be abTestPilot for user, where they will see the test details.
-        
+
     - For "npm run cli create"
         - Need to add option for create variation
             - Have to be careful of general test and multi touch test. For a multi touch test if user create any variation there then all the touch point will get the same variation
         - Need to create ability to create touch point.
             - for creating any new touch point, automatically added targeting, info and variations which other touch point contain. 
+        -Have to confirm that no duplicate website name inside the website list. inside any website there should not be any same name test name. same as inside test there should not same name touch point or test. Also for touch point and test there should not be same name multiple variation. So all will be unique. 
 
 ### allow user to create build files. (will do it later)
     - There will be a new command npm run cli build 
