@@ -1,6 +1,5 @@
 #TODO
 
-
 ### Enhancement required  
     - Reload webpage when update targeting        
         - Have to provide ability to make a reload on the webpage when user update targeting.
@@ -15,6 +14,15 @@
         - Need to create ability to create touch point.
             - for creating any new touch point, automatically added targeting, info and variations which other touch point contain. 
         -Have to confirm that no duplicate website name inside the website list. inside any website there should not be any same name test name. same as inside test there should not same name touch point or test. Also for touch point and test there should not be same name multiple variation. So all will be unique. 
+
+### Need to add UI for test details.
+    - for single test
+        - all type of test
+        - specially multi touch test
+        - need ui design from Shoyaib
+        - have to create a draft design 
+        - need option to force run test
+        - change variation option (later implementation)
 
 ### allow user to create build files. (will do it later)
     - There will be a new command npm run cli build 
@@ -41,6 +49,4 @@
         - Build (with a mindful name and a hint also)
 
 
-
-
-
+### have to remove unnecessary library and files and folder and release v1
