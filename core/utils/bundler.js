@@ -18,7 +18,7 @@ export async function bundleVariation(variationDir, UpdateFile) {
                     const result = sass.compile(scssFile, { style: "expanded" }); // Pretty formatting
                     // const result = sass.compile(scssFile, { style: "compressed" }) // Minified
                     await fs.writeFile(path.join(compiledDir, "style.css"), result.css)
-                    console.log("✅ SCSS compiled successfully:", scssFile)
+                    // console.log("✅ SCSS compiled successfully:", scssFile)
                 }
             } catch (error) {
                 const errorLines = error.message.split("\n").slice(0, 5).join("\n"); // Get first 5 lines
@@ -46,7 +46,7 @@ export async function bundleVariation(variationDir, UpdateFile) {
                     })
 
                     await bundle.close()
-                    console.log("✅ JS bundled successfully:", jsFile)
+                    // console.log("✅ JS bundled successfully:", jsFile)
                 }
             } catch (error) {
                 console.error("❌ Error bundling JS:", error)

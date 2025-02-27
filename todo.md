@@ -1,12 +1,19 @@
 #TODO
-### Allow user to import from different files to work with on any variation. (work with bundler )
-    - user will be able to import any module for scss or js file.
-    - We will no longer include any css file inside the variation. 
-    - Instead of that we will create a compiled folder.
-        - compiled folder will be created each time when a variation will be created 
-        - We will use the variation data from the compiled files.
-        - any changes on index.js or style.scss file on any variation will again do bundler and update it inside compiler.
-        - when a test will run it will do the DOM update only is detect any change inside compiled folder. tough watchPaths will be still same but inside `.on("change", async (filePath) => {` we will decide that should we need to call update the DOM or not.
+
+
+### Enhancement required  
+    - Reload webpage when update targeting        
+        - Have to provide ability to make a reload on the webpage when user update targeting.
+
+    - Have to set two global variable 
+        - one will only contain the variation information but internal task.
+        - Another will be abTestPilot for user, where they will see the test details.
+        
+    - For "npm run cli create"
+        - Need to add option for create variation
+            - Have to be careful of general test and multi touch test. For a multi touch test if user create any variation there then all the touch point will get the same variation
+        - Need to create ability to create touch point.
+            - for creating any new touch point, automatically added targeting, info and variations which other touch point contain. 
 
 ### allow user to create build files. (will do it later)
     - There will be a new command npm run cli build 
@@ -33,73 +40,6 @@
         - Build (with a mindful name and a hint also)
 
 
-### have to created checker (targeting check) main function meaningful and a proper mapper which will allow any upgradation workable
-
-### have to work on targeting
-    - Here I have to marge the initial development branch with master and and create another branch for enhancement targeting. 
-
-shoup test look should look like this which we have done on 
-
-viewTestHistory: but only yhe goup test.
 
 
 
-┌──────────────┬──────────────┬──────────────┬──────────────┬──────────────────┬────────────────┬────────────────────────┐
-│ Group Test   │ Test type    │ Website Name │ Test Name    │ Touch-point Name │ Variation Name │ Last Run               │
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤
-│ YES          │ A/B          │ loopearplugs │ AB test      │ -                │ v01            │ 18/2/2025, 3:19:04 am  │
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤
-│              │ AA           │ loopearplugs │ AA test      │ -                │ v01            │ 18/2/2025, 3:19:04 am  │      
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤      
-│ YES          │ A/B          │ loopearplugs │ AB test      │ -                │ v01            │ 18/2/2025, 3:17:38 am  │      
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤      
-│              │ A/B          │ snocks       │ AB test      │ -                │ v02            │ 18/2/2025, 3:17:38 am  │      
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤      
-│ YES          │ A/B          │ loopearplugs │ AB test      │ -                │ v01            │ 18/2/2025, 2:58:15 am  │      
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤      
-│              │ A/B          │ snocks       │ AB test      │ -                │ v01            │ 18/2/2025, 2:58:15 am  │      
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤      
-│ NO           │ A/B          │ loopearplugs │ AB test      │ -                │ v01            │ 18/2/2025, 2:42:43 am  │      
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤      
-│ YES          │ Multi-touch  │ loopearplugs │ Multi toch … │ home             │ v01            │ 18/2/2025, 2:20:07 am  │      
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤      
-│              │              │              │              │ manu             │ v01            │                        │      
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤      
-│              │ A/B          │ snocks       │ AB test      │ -                │ v01            │ 18/2/2025, 2:20:07 am  │      
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤      
-│ NO           │ Multi-touch  │ loopearplugs │ Multi toch … │ home             │ v01            │ 18/2/2025, 1:10:48 am  │      
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤      
-│              │              │              │              │ manu             │ v01            │                        │      
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤      
-│ NO           │ AA           │ loopearplugs │ AA test      │ -                │ v01            │ 18/2/2025, 1:08:08 am  │      
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤      
-│ YES          │ AA           │ loopearplugs │ AA test      │ -                │ v01            │ 18/2/2025, 12:24:22 am │      
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤      
-│              │ A/B          │ loopearplugs │ AB test      │ -                │ v01            │ 18/2/2025, 12:24:22 am │      
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤      
-│              │ Multi-touch  │ loopearplugs │ Multi toch … │ home             │ v01            │ 18/2/2025, 12:24:22 am │      
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤      
-│              │              │              │              │ manu             │ v01            │                        │      
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤      
-│              │ A/B          │ snocks       │ AB test      │ -                │ Control        │ 18/2/2025, 12:24:22 am │      
-├──────────────┼──────────────┼──────────────┼──────────────┼──────────────────┼────────────────┼────────────────────────┤      
-│ NO           │ A/B          │ loopearplugs │ AB test      │ -                │ v02            │ 17/2/2025, 2:27:34 am  │      
-└──────────────┴──────────────┴──────────────┴──────────────┴──────────────────┴────────────────┴────────────────────────┘      
-? Select a test to run: »
->   ┌ loopearplugs - AB test - v01 (A/B)
-    └ loopearplugs - AA test - v01 (AA)
-    ┌ loopearplugs - AB test - v01 (A/B)
-    └ snocks - AB test - v02 (A/B)
-    ┌ loopearplugs - AB test - v01 (A/B)
-    └ snocks - AB test - v01 (A/B)
-    loopearplugs - AB test - v01 (A/B)
-    ┌ loopearplugs - Multi toch test manu and home page - v01 (Multi-touch)
-    └ snocks - AB test - v01 (A/B)
-    loopearplugs - Multi toch test manu and home page - v01 (Multi-touch)
-    loopearplugs - AA test - v01 (AA)
-    ┌ loopearplugs - AA test - v01 (AA)
-    │ loopearplugs - AB test - v01 (A/B)
-    │ loopearplugs - Multi toch test manu and home page - v01 (Multi-touch)
-    └ snocks - AB test - Control (A/B)
-    loopearplugs - AB test - v02 (A/B)
-    ← Back

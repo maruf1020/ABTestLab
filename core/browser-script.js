@@ -6,10 +6,7 @@
     document.head.appendChild(script)
 
     function initializeABTest() {
-        let config = {
-            cssReload: false,
-            jsReload: false
-        }
+        let config = {}
 
         if (!abTestPilot) {
             console.log("No Test is available for this website")
@@ -22,6 +19,10 @@
             console.log("Connected to A/B testing server")
             loadTest()
         })
+
+        socket.on("config", (browserConfig) => {
+            config = browserConfig
+        });
 
         function loadTest(testId) {
             // if (testId && activeTests[testId]) {
@@ -51,7 +52,6 @@
         // { type: "css", content: css, id: info.id }
         socket.on("update", ({ type, content, id }) => {
             if (abTestPilot && abTestPilot[id] && abTestPilot[id].status == "Active") {
-                console.log("Updating test", id)
                 if (type === "css") {
                     updateStyle(id, content)
                 } else if (type === "js") {
@@ -102,6 +102,8 @@
                 console.log("Trying to update non-existing style", id)
                 return;
             }
+
+            console.log("config", config)
 
             if (config.cssReload == true) {
                 window.location.reload()

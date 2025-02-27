@@ -1,6 +1,92 @@
 ## Complete TODO
 
 ------------------------------------------------------------------------------------
+Date: 27-FEB-2025
+------------------------------------------------------------------------------------
+Transfer config information to the browser side for detecting reload feature. 
+
+
+------------------------------------------------------------------------------------
+Date: 26-FEB-2025
+------------------------------------------------------------------------------------
+### have to created checker (targeting check) main function meaningful and a proper mapper which will allow any upgradation workable
+
+
+------------------------------------------------------------------------------------
+Date: 25-FEB-2025
+------------------------------------------------------------------------------------
+### re-create and enhance folder and file structure 
+
+
+------------------------------------------------------------------------------------
+Date: 24-FEB-2025
+------------------------------------------------------------------------------------
+### create teo separate browser script for run test more faster.  
+    - One file will inject the initial test for fast inject code to the DOM
+    - Another will inject after for gating live changes.
+
+
+
+------------------------------------------------------------------------------------
+Date: 23-FEB-2025
+------------------------------------------------------------------------------------
+### Allow user to import from different files to work with on any variation. (work with bundler )
+- Instead of that we will create a compiled folder.
+        - when a test will run it will do the DOM update only is detect any change inside compiled folder. tough watchPaths will be still same but inside `.on("change", async (filePath) => {` we will decide that should we need to call update the DOM or not.
+
+------------------------------------------------------------------------------------
+Date: 22-FEB-2025
+------------------------------------------------------------------------------------
+### Allow user to import from different files to work with on any variation. (work with bundler )
+- Instead of that we will create a compiled folder.
+        - any changes on index.js or style.scss file on any variation will again do bundler and update it inside compiler.
+
+
+------------------------------------------------------------------------------------
+Date: 21-FEB-2025
+------------------------------------------------------------------------------------
+### Allow user to import from different files to work with on any variation. (work with bundler )
+- Instead of that we will create a compiled folder.
+        - We will use the variation data from the compiled files.
+
+
+------------------------------------------------------------------------------------
+Date: 20-FEB-2025
+------------------------------------------------------------------------------------
+### Allow user to import from different files to work with on any variation. (work with bundler )
+- Instead of that we will create a compiled folder.
+        - compiled folder will be created each time when a variation will be created         
+
+
+------------------------------------------------------------------------------------
+Date: 19-FEB-2025
+------------------------------------------------------------------------------------
+### Allow user to import from different files to work with on any variation. (work with bundler )
+    - We will no longer include any css file inside the variation. 
+
+
+
+------------------------------------------------------------------------------------
+Date: 18-FEB-2025
+------------------------------------------------------------------------------------
+### Allow user to import from different files to work with on any variation. (work with bundler )
+    - user will be able to import any module for scss or js file.
+
+
+
+------------------------------------------------------------------------------------
+Date: 17-FEB-2025
+------------------------------------------------------------------------------------
+### have to work on targeting
+    - Here I have to marge the initial development branch with master and and create another branch for enhancement targeting. 
+
+    - group test look should look like this which we have done on 
+
+    - viewTestHistory: but only on the group test.
+
+
+
+------------------------------------------------------------------------------------
 Date: 16-FEB-2025
 ------------------------------------------------------------------------------------
 ### Update "view test history" 
@@ -59,29 +145,29 @@ Date: 11-FEB-2025
 ------------------------------------------------------------------------------------
 Date: 10-FEB-2025
 ------------------------------------------------------------------------------------
-For A/B Tests, AA Tests, and Patch Tests, when a test is created, the targeting folder should be copied from the template and placed inside the test.
+    - For A/B Tests, AA Tests, and Patch Tests, when a test is created, the targeting folder should be copied from the template and placed inside the test.
 
-If the targeting folder is not available in the template, prompt the user to run ->  npm run cli init, or in another option automatically initialize it for them. Once initialized, the targeting folder will be available in the template, and it can then be copied into the test.
+    - If the targeting folder is not available in the template, prompt the user to run ->  npm run cli init, or in another option automatically initialize it for them. Once initialized, the targeting folder will be available in the template, and it can then be copied into the test.
 
-For Multi-Touch Tests, there are two key changes: The template no longer needs to create a separate structure for a multi-touch page since it will be simplified. so, creating multi touch template code will will be removed accordingly.
-
-
-A multi-touch test consists of multiple or single touchpoints. Users can select their desired touchpoints, then create one or multiple variations. All touchpoints will share the same variation. Currently, this part is fully functional.
-
-but the expected behavior is:
-
-Each touchpoint should have a default variation named "Control."
-
-For Multi-Touch Tests, copy of the targeting folder should be placed under the test name, similar to other test types. aldo Every touchpoint should receive a copy of the targeting folder from the template. Before copying, the system should validate whether the targeting template is available. If not, it should be initialized first and the same validation applies to variation templates, ensuring they exist before use in any type of test. validation for all kind of test
+    - For Multi-Touch Tests, there are two key changes: The template no longer needs to create a separate structure for a multi-touch page since it will be simplified. so, creating multi touch template code will will be removed accordingly.
 
 
-After setting up the test, the system should prompt the user to select an active variation:
+    - A multi-touch test consists of multiple or single touchpoints. Users can select their desired touchpoints, then create one or multiple variations. All touchpoints will share the same variation. Currently, this part is fully functional.
 
-In Multi-Touch Tests, selecting a variation (or "Control") will apply the same selection across all touchpoints.
+    - but the expected behavior is:
 
-In other test types, users can independently choose any variation or control.
+    - Each touchpoint should have a default variation named "Control."
 
-Since multiple folders may exist inside a test or touchpoint, each JSON file inside a variation should include a variable that identifies it as a variation. This ensures clarity when displaying selectable variations.
+    - For Multi-Touch Tests, copy of the targeting folder should be placed under the test name, similar to other test types. aldo Every touchpoint should receive a copy of the targeting folder from the template. Before copying, the system should validate whether the targeting template is available. If not, it should be initialized first and the same validation applies to variation templates, ensuring they exist before use in any type of test. validation for all kind of test
+
+
+    - After setting up the test, the system should prompt the user to select an active variation:
+
+    - In Multi-Touch Tests, selecting a variation (or "Control") will apply the same selection across all touch points.
+
+    - In other test types, users can independently choose any variation or control.
+
+    - Since multiple folders may exist inside a test or touch point, each JSON file inside a variation should include a variable that identifies it as a variation. This ensures clarity when displaying selectable variations.
 
 
 

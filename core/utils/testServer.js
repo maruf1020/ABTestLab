@@ -69,13 +69,15 @@ export async function startTestServer(selectedVariations) {
     watcher
         .on("change", async (filePath) => {
             log(`File ${filePath} has been changed`)
-            console.log(kleur.yellow(`File has been changed: ${filePath}`))
+            // console.log(kleur.yellow(`File has been changed: ${filePath}`))
 
             if (!filePath.includes("compiled")) {
                 if (filePath.includes("style.scss")) {
                     await bundleVariation(path.dirname(filePath), "scss")
+                    console.log(kleur.gray(`🎨 SCSS File has been updated`))
                 } else if (filePath.includes("index.js")) {
                     await bundleVariation(path.dirname(filePath), "js")
+                    console.log(kleur.gray(`📦 JS File has been updated`))
                 }
             } else {
                 const info = transformedTestInfo.testInfo.find(test => test.compiledDir === path.dirname(filePath))
@@ -99,20 +101,23 @@ export async function startTestServer(selectedVariations) {
         .on("error", (error) => log(`Watcher error: ${error}`))
 
 
-    io.on("connection", (socket) => {
+    io.on("connection", async (socket) => {
         log("Browser connected");
-        // try {
-        //     const config = await fs.readJson(path.join(process.cwd(), "settings.json"));
-        //     log("Config sent to client:", config);
-        //     callback(config);
-        // } catch (error) {
-        //     log(`Error reading config: ${error.message}`);
-        //     callback({});
-        // }
+
+        try {
+            const config = await fs.readJson(path.join(process.cwd(), "settings.json"));
+            log("Config sent to client:", config);
+
+            socket.emit("config", config);
+
+        } catch (error) {
+            log(`Error reading config: ${error.message}`);
+            socket.emit("config", {});
+        }
+
         socket.on("checkWebsite", async (data, callback) => {
             const { url } = data;
             const origin = new URL(url.toString()).origin;
-            // console.log(kleur.green(`connected with the website: ${origin} and url is: ${url}`));
             const IsMatched = transformedTestInfo.testInfo.some(test => test.hostnames.some(hostname => origin.replace(/\/$/, "").endsWith(hostname.replace(/\/$/, "")) || url.replace(/\/$/, "").endsWith(hostname.replace(/\/$/, ""))));
             if (IsMatched) {
                 console.log(kleur.magenta(`connected with the url: ${url}`));
