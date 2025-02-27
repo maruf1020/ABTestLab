@@ -843,8 +843,8 @@ const abTestPilotMainInformation = {
       },
       "testType": "A\u002FB",
       "variationFiles": {
-        "css": "",
-        "js": "(function () {\n\t'use strict';\n\n\n\n})();\n"
+        "css": "body {\n  background-color: red;\n  color: white;\n  font-size: 20px;\n  font-family: Arial, sans-serif;\n  margin: 0;\n  padding: 0;\n  text-align: center;\n}\n\nh1 {\n  font-size: 40px;\n  font-weight: bold;\n}\n\nh2 {\n  font-size: 30px;\n  background-color: rgb(228, 70, 175);\n  border: 10px solid rgb(131, 8, 84);\n}",
+        "js": "console.log(\"Hello, World!!!!\");\n"
       },
       "websiteName": "loopearplugs",
       "testName": "test AB",

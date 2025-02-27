@@ -85,7 +85,7 @@ export async function startTestServer(selectedVariations) {
             watchPaths.push(variationDir);
         }
     }
-
+    console.log("watchPaths", watchPaths)
     const watcher = chokidar.watch(watchPaths, {
         ignored: /(^|[/\\])\../,
         persistent: true,

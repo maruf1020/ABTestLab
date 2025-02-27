@@ -1,4 +1,4 @@
-import http, { get } from "http"
+import http from "http"
 import { Server } from "socket.io"
 import fs from "fs-extra"
 import path from "path"
@@ -59,11 +59,75 @@ export async function startTestServer(selectedVariations) {
         },
     });
 
-    //want to start the server here
-    server.listen(3000, () => {
-        log("Server running on http://localhost:3000");
+    const watchPaths = transformedTestInfo.testInfo.map(test => test.variationDir);
+
+    const watcher = chokidar.watch(watchPaths, {
+        ignored: /(^|[/\\])\../,
+        persistent: true,
+    });
+
+    watcher
+        .on("change", async (filePath) => {
+            log(`File ${filePath} has been changed`)
+            console.log(kleur.yellow(`File has been changed: ${filePath}`))
+
+            if (!filePath.includes("compiled")) {
+                if (filePath.includes("style.scss")) {
+                    await bundleVariation(path.dirname(filePath), "scss")
+                } else if (filePath.includes("index.js")) {
+                    await bundleVariation(path.dirname(filePath), "js")
+                }
+            } else {
+                const info = transformedTestInfo.testInfo.find(test => test.compiledDir === path.dirname(filePath))
+                if (info) {
+                    if (path.extname(filePath) === ".css") {
+                        const cssFile = path.join(path.dirname(filePath), "style.css")
+                        const css = await fs.readFile(cssFile, "utf-8")
+                        io.emit("update", { type: "css", content: css, id: info.id })
+                        transformedTestInfo.testInfo.find(test => test.id === info.id).variationFiles.css = css
+                        await browserScriptCreator(transformedTestInfo);
+                    } else if (path.extname(filePath) === ".js") {
+                        const jsFile = path.join(path.dirname(filePath), "index.js")
+                        const js = await fs.readFile(jsFile, "utf-8")
+                        io.emit("update", { type: "js", content: js, id: info.id })
+                        transformedTestInfo.testInfo.find(test => test.id === info.id).variationFiles.js = js
+                        await browserScriptCreator(transformedTestInfo);
+                    }
+                }
+            }
+        })
+        .on("error", (error) => log(`Watcher error: ${error}`))
+
+
+    io.on("connection", (socket) => {
+        log("Browser connected");
+        // try {
+        //     const config = await fs.readJson(path.join(process.cwd(), "settings.json"));
+        //     log("Config sent to client:", config);
+        //     callback(config);
+        // } catch (error) {
+        //     log(`Error reading config: ${error.message}`);
+        //     callback({});
+        // }
+        socket.on("checkWebsite", async (data, callback) => {
+            const { url } = data;
+            const origin = new URL(url.toString()).origin;
+            // console.log(kleur.green(`connected with the website: ${origin} and url is: ${url}`));
+            const IsMatched = transformedTestInfo.testInfo.some(test => test.hostnames.some(hostname => origin.replace(/\/$/, "").endsWith(hostname.replace(/\/$/, "")) || url.replace(/\/$/, "").endsWith(hostname.replace(/\/$/, ""))));
+            if (IsMatched) {
+                console.log(kleur.magenta(`connected with the url: ${url}`));
+                callback("Successfully connected with the server");
+            }
+        });
+    });
+
+    // const port = process.env.PORT || 3000;
+    const port = 3000;
+    server.listen(port, () => {
+        log(`Test server running on http://localhost:${port}`);
     });
 }
+
 async function transformTestInfo(testInfo) {
     const parentTargetingMap = new Map();
 
@@ -248,7 +312,6 @@ async function getTouchPointsDir(selectedVariation) {
     const websiteName = websiteInfo.name;
     const touchPointsDir = await Promise.all(
         touchPoints.filter(touchPoint => touchPoint !== "targeting" && touchPoint !== "info.json").map(async touchPoint => {
-            console.log("touchPoint", touchPoint);
             const touchPointDir = path.join(testDir, touchPoint);
             const touchPointInfoPath = path.join(touchPointDir, "info.json");
             const touchPointInfo = await fs.readJson(touchPointInfoPath);
