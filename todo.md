@@ -1,7 +1,8 @@
 #TODO
 
 ### Enhancement required  
-    - Reload webpage when update targeting        
+    - Reload webpage when update targeting  
+        - we have to add a compiled folder for custom js targeting. (Will dop later)      
         - Have to provide ability to make a reload on the webpage when user update targeting.
 
     - Have to set two global variable 

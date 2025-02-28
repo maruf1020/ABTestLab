@@ -17,24 +17,27 @@
 
         socket.on("connect", () => {
             console.log("Connected to A/B testing server")
-            loadTest()
         })
 
         socket.on("config", (browserConfig) => {
             config = browserConfig
         });
 
-        function loadTest(testId) {
-            // if (testId && activeTests[testId]) {
-            //     console.log(`Test ${testId} is already active`)
-            //     return
-            // }
+        // function loadTest(testId) {
+        //     // if (testId && activeTests[testId]) {
+        //     //     console.log(`Test ${testId} is already active`)
+        //     //     return
+        //     // }
 
-            socket.emit("checkWebsite", { url: window.location.href }, (response) => {
-                console.log("Server response: ", response)
-            })
-        }
+        socket.emit("checkWebsite", { url: window.location.href }, (response) => {
+            console.log("Server response: ", response)
+        })
+        // }
 
+        // Listen for the 'reload_page' event
+        socket.on('reload_page', () => {
+            window.location.reload();
+        });
         // // socket.on("testData", ({ testId, data, isMultiTouch }) => {
         // socket.on("testData", ({ data }) => {
         //     console.log(`Received initial test data`, data)

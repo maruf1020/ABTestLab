@@ -59,7 +59,7 @@ export async function startTestServer(selectedVariations) {
         },
     });
 
-    const watchPaths = transformedTestInfo.testInfo.map(test => test.variationDir);
+    const watchPaths = transformedTestInfo.testInfo.map(test => [test.variationDir, test.targetingDir]).flat().filter(Boolean);
 
     const watcher = chokidar.watch(watchPaths, {
         ignored: /(^|[/\\])\../,
@@ -71,7 +71,7 @@ export async function startTestServer(selectedVariations) {
             log(`File ${filePath} has been changed`)
             // console.log(kleur.yellow(`File has been changed: ${filePath}`))
 
-            if (!filePath.includes("compiled")) {
+            if (!filePath.includes("compiled") && !filePath.includes("targeting")) {
                 if (filePath.includes("style.scss")) {
                     await bundleVariation(path.dirname(filePath), "scss")
                     console.log(kleur.gray(`🎨 SCSS File has been updated`))
@@ -79,7 +79,15 @@ export async function startTestServer(selectedVariations) {
                     await bundleVariation(path.dirname(filePath), "js")
                     console.log(kleur.gray(`📦 JS File has been updated`))
                 }
-            } else {
+            } else if (filePath.includes("targeting")) {
+                const info = transformedTestInfo.testInfo.find(test => test.targetingDir === path.dirname(filePath))
+                const targetingFiles = await getTargetingFiles(info.targetingDir);
+                transformedTestInfo.testInfo.find(test => test.id === info.id).targetingFiles = targetingFiles;
+                transformedTestInfo.testInfo.find(test => test.id === info.id).targetingFiles = await getTargetingFiles(info.targetingDir);
+                await browserScriptCreator(transformedTestInfo);
+                io.emit("reload_page");
+                console.log(kleur.gray(`🎯 Targeting files have been updated`))
+            } else if (filePath.includes("compiled")) {
                 const info = transformedTestInfo.testInfo.find(test => test.compiledDir === path.dirname(filePath))
                 if (info) {
                     if (path.extname(filePath) === ".css") {
@@ -212,6 +220,7 @@ async function getTargetingFiles(targetingDir) {
     try {
         // Dynamically import customJS.js
         const customJSModule = await import(`file://${customJSPath}`);
+        // const customJSModule = await import(`file://${customJSPath}?update=${Date.now()}`);
         const customJS = customJSModule.default; // Get the default exported function
 
         const elementChecker = await fs.readJson(elementCheckerPath);
