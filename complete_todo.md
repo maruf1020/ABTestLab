@@ -1,6 +1,14 @@
 ## Complete TODO
 
 ------------------------------------------------------------------------------------
+Date: 28-FEB-2025
+------------------------------------------------------------------------------------
+### Enhancement required  
+    - Reload webpage when update targeting  
+        - we have to add a compiled folder for custom js targeting. (Will dop later)      
+        - Have to provide ability to make a reload on the webpage when user update targeting.
+
+------------------------------------------------------------------------------------
 Date: 27-FEB-2025
 ------------------------------------------------------------------------------------
 Transfer config information to the browser side for detecting reload feature. 

@@ -1,10 +1,6 @@
 #TODO
 
 ### Enhancement required  
-    - Reload webpage when update targeting  
-        - we have to add a compiled folder for custom js targeting. (Will dop later)      
-        - Have to provide ability to make a reload on the webpage when user update targeting.
-
     - Have to set two global variable 
         - one will only contain the variation information but internal task.
         - Another will be abTestPilot for user, where they will see the test details.
