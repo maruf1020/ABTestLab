@@ -254,9 +254,9 @@ async function viewTestHistory(history, viewType, callingFunction) {
             if (test.testType === "Multi-touch") {
                 const testDir = path.join(ROOT_DIR, test.websiteName, test.testName);
                 const testInfo = await fs.readJson(path.join(testDir, "info.json"));
-                const touchpoints = testInfo.touchpoints || [];
+                const touchPoints = testInfo.touchPoints || [];
 
-                touchpoints.forEach((touchpoint, index) => {
+                touchPoints.forEach((touchPoint, index) => {
                     const row = [];
 
                     if (hasGroupTest) {
@@ -267,7 +267,7 @@ async function viewTestHistory(history, viewType, callingFunction) {
                         index === 0 ? test.testType : "",
                         index === 0 ? test.websiteName : "",
                         index === 0 ? test.testName : "",
-                        touchpoint,
+                        touchPoint,
                         test.variationName,
                         index === 0 ? new Date(entry.lastRun).toLocaleString() : ""
                     );
@@ -652,12 +652,12 @@ async function startTest(website, test, variation, testType) {
     })
 
     if (testType === "Multi-touch") {
-        const touchpoints = testInfo.touchpoints || []
-        touchpoints.forEach((touchpoint, index) => {
+        const touchPoints = testInfo.touchPoints || []
+        touchPoints.forEach((touchPoint, index) => {
             if (index === 0) {
-                table.push([testType, website, test, touchpoint, variation])
+                table.push([testType, website, test, touchPoint, variation])
             } else {
-                table.push(["", "", "", touchpoint, variation])
+                table.push(["", "", "", touchPoint, variation])
             }
         })
     } else {
@@ -697,12 +697,12 @@ async function startMultipleTest(selectedVariations) {
 
     selectedVariations.forEach((v) => {
         if (v.testType === "Multi-touch") {
-            const touchpoints = testInfoList.find((t) => t.name === v.test).touchpoints || []
-            touchpoints.forEach((touchpoint, index) => {
+            const touchPoints = testInfoList.find((t) => t.name === v.test).touchPoints || []
+            touchPoints.forEach((touchPoint, index) => {
                 if (index === 0) {
-                    table.push([v.testType, v.website, v.test, touchpoint, v.variation])
+                    table.push([v.testType, v.website, v.test, touchPoint, v.variation])
                 } else {
-                    table.push(["", "", "", touchpoint, v.variation])
+                    table.push(["", "", "", touchPoint, v.variation])
                 }
             })
         } else {

@@ -56,3 +56,35 @@ export async function bundleVariation(variationDir, UpdateFile) {
         console.error("❌ Unexpected error in bundleVariation:", error)
     }
 }
+
+export async function bundleTargeting(targetingDir) {
+    try {
+        const compiledDir = path.join(targetingDir, "compiled")
+        await fs.ensureDir(compiledDir)
+
+        // Bundle JS
+        const jsFile = path.join(targetingDir, "customJS.js")
+        if (!await fs.pathExists(jsFile)) {
+            console.error("❌ customJS.js not found in targeting directory:", targetingDir)
+            return
+        }
+
+        const bundle = await rollup({
+            input: jsFile,
+            plugins: [resolve(), commonjs()],
+            output: {
+                format: "esm", // Ensures the output is not wrapped in an IIFE
+                // format: "iife", // Wraps the output inside an IIFE  (Immediately Invoked Function Expression)
+            },
+        })
+
+        await bundle.write({
+            file: path.join(compiledDir, "customJS.js"),
+            format: "esm", // Change format to "esm" for unwrapped output
+        })
+
+        await bundle.close()
+    } catch (error) {
+        console.error("❌ Error bundling targeting JS:", error)
+    }
+}

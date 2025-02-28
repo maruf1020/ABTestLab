@@ -7,7 +7,7 @@ import { ROOT_DIR } from "../config.js"
 import debug from "debug"
 import { fileURLToPath } from "url"
 import kleur from "kleur"
-import { bundleVariation } from "./bundler.js"
+import { bundleVariation, bundleTargeting } from "./bundler.js"
 import browserScriptCreator from "./browserScriptCreator.js"
 
 const __filename = fileURLToPath(import.meta.url)
@@ -79,15 +79,15 @@ export async function startTestServer(selectedVariations) {
                     await bundleVariation(path.dirname(filePath), "js")
                     console.log(kleur.gray(`📦 JS File has been updated`))
                 }
-            } else if (filePath.includes("targeting")) {
+            } else if (!filePath.includes("compiled") && filePath.includes("targeting")) {
                 const info = transformedTestInfo.testInfo.find(test => test.targetingDir === path.dirname(filePath))
-                const targetingFiles = await getTargetingFiles(info.targetingDir);
-                transformedTestInfo.testInfo.find(test => test.id === info.id).targetingFiles = targetingFiles;
-                transformedTestInfo.testInfo.find(test => test.id === info.id).targetingFiles = await getTargetingFiles(info.targetingDir);
-                await browserScriptCreator(transformedTestInfo);
-                io.emit("reload_page");
-                console.log(kleur.gray(`🎯 Targeting files have been updated`))
-            } else if (filePath.includes("compiled")) {
+                if (info) {
+                    transformedTestInfo.testInfo.find(test => test.id === info.id).targetingFiles = await getTargetingFiles(info.targetingDir);
+                    await browserScriptCreator(transformedTestInfo);
+                    io.emit("reload_page", info.hostnames);
+                    console.log(kleur.gray(`🎯 Targeting files have been updated`))
+                }
+            } else if (filePath.includes("compiled") && !filePath.includes("targeting")) {
                 const info = transformedTestInfo.testInfo.find(test => test.compiledDir === path.dirname(filePath))
                 if (info) {
                     if (path.extname(filePath) === ".css") {
@@ -213,15 +213,26 @@ async function getTargetingFiles(targetingDir) {
         return null;
     }
 
-    const customJSPath = path.join(targetingDir, "customJS.js");
     const elementCheckerPath = path.join(targetingDir, "elementChecker.json");
     const urlCheckerPath = path.join(targetingDir, "urlChecker.json");
+    // const compiledPath = path.join(targetingDir, "compiled", "customJS.js");
 
     try {
         // Dynamically import customJS.js
-        const customJSModule = await import(`file://${customJSPath}`);
-        // const customJSModule = await import(`file://${customJSPath}?update=${Date.now()}`);
-        const customJS = customJSModule.default; // Get the default exported function
+        // const customJSModule = await import(`file://${customJSPath}`);
+        // // const customJSModule = await import(`file://${customJSPath}?update=${Date.now()}`);
+        // const customJS = customJSModule.default; // Get the default exported function
+
+        // Check if the file exists and delete it if it does
+        // if (fs.existsSync(compiledPath)) {
+        //     fs.unlinkSync(compiledPath);
+        // }
+
+        await bundleTargeting(targetingDir);
+        const BundleTargetingPath = path.join(targetingDir, "compiled", "customJS.js");
+        // const customJSModule = await import(`file://${BundleTargetingPath}`);
+        const customJSModule = await import(`file://${BundleTargetingPath}?update=${Date.now()}`);
+        const customJS = customJSModule.default;
 
         const elementChecker = await fs.readJson(elementCheckerPath);
         const urlChecker = await fs.readJson(urlCheckerPath);

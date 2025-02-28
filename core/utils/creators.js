@@ -5,7 +5,7 @@ import kleur from "kleur"
 import { fileURLToPath } from "url"
 import { ROOT_DIR } from "../config.js"
 import { initializeSkeleton } from "./init.js"
-import { bundleVariation } from "./bundler.js"
+import { bundleVariation, bundleTargeting } from "./bundler.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -47,6 +47,8 @@ async function validateSkeleton() {
 async function copyTargetingFolder(destination) {
   const targetingTemplateDir = path.join(SKELETON_DIR, "targeting")
   await fs.copy(targetingTemplateDir, path.join(destination, "targeting"))
+  const targetingDir = path.join(destination, "targeting")
+  await bundleTargeting(targetingDir)
 }
 
 export async function createWebsite(websiteName) {
@@ -120,7 +122,7 @@ export async function createTest(website, testName, testType) {
 
     if (testType === "Multi-touch") {
       const dirs = await fs.readdir(testDir)
-      testInfo.touchpoints = dirs.filter((dir) => dir !== "targeting" && dir !== "info.json")
+      testInfo.touchPoints = dirs.filter((dir) => dir !== "targeting" && dir !== "info.json")
     }
 
     await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 })
@@ -151,30 +153,30 @@ async function createAATest(testDir) {
 }
 
 async function createMultiTouchTest(testDir) {
-  const touchpoints = await createTouchpoints(testDir)
+  const touchPoints = await createTouchPoints(testDir)
   const variations = await createVariations(testDir, 0) // Pass 0 to prevent creating variations in test folder
 
   // Copy targeting folder to the test directory
   await copyTargetingFolder(testDir)
 
-  for (const touchpoint of touchpoints) {
-    const touchpointDir = path.join(testDir, touchpoint)
-    await fs.ensureDir(touchpointDir)
-    await copyTargetingFolder(touchpointDir)
+  for (const touchPoint of touchPoints) {
+    const touchPointDir = path.join(testDir, touchPoint)
+    await fs.ensureDir(touchPointDir)
+    await copyTargetingFolder(touchPointDir)
 
     // Create Control variation first
-    await createVariation(touchpointDir, "Control")
+    await createVariation(touchPointDir, "Control")
 
     // Create other variations
     for (const variation of variations) {
-      await createVariation(touchpointDir, variation)
+      await createVariation(touchPointDir, variation)
     }
 
     await fs.writeJson(
-      path.join(touchpointDir, "info.json"),
+      path.join(touchPointDir, "info.json"),
       {
-        id: generateId(touchpoint),
-        name: touchpoint,
+        id: generateId(touchPoint),
+        name: touchPoint,
         variations: ["Control", ...variations],
         createdAt: new Date().toISOString(),
         createdAtReadable: new Date().toLocaleString(),
@@ -182,7 +184,7 @@ async function createMultiTouchTest(testDir) {
       },
       { spaces: 2 }
     )
-    console.log(kleur.green(`Touchpoint "${touchpoint}" created successfully.`))
+    console.log(kleur.green(`Touchpoint "${touchPoint}" created successfully.`))
   }
 
   return ["Control", ...variations]
@@ -194,8 +196,8 @@ async function createPatchTest(testDir) {
   return variations
 }
 
-async function createTouchpoints(testDir) {
-  const touchpoints = []
+async function createTouchPoints(testDir) {
+  const touchPoints = []
   let touchpointCount = 0
 
   while (true) {
@@ -208,7 +210,7 @@ async function createTouchpoints(testDir) {
         message: `Enter the name for Touchpoint ${touchpointCount}:`,
         validate: async (input) => {
           if (input.trim() === "") return "Touchpoint name cannot be empty"
-          if (touchpoints.includes(input)) return "A Touchpoint with this name already exists"
+          if (touchPoints.includes(input)) return "A Touchpoint with this name already exists"
           return true
         },
       },
@@ -220,17 +222,17 @@ async function createTouchpoints(testDir) {
       },
     ])
 
-    touchpoints.push(response.touchpointName)
+    touchPoints.push(response.touchpointName)
 
-    const touchpointDir = path.join(testDir, response.touchpointName)
-    await fs.ensureDir(touchpointDir)
-    await copyTargetingFolder(touchpointDir)
+    const touchPointDir = path.join(testDir, response.touchpointName)
+    await fs.ensureDir(touchPointDir)
+    await copyTargetingFolder(touchPointDir)
     console.log(kleur.green(`Touchpoint "${response.touchpointName}" created successfully.`))
 
     if (!response.createAnother) break
   }
 
-  return touchpoints
+  return touchPoints
 }
 
 async function createVariations(testDir, touchPointCount) {

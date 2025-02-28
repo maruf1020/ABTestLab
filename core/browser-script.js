@@ -35,8 +35,11 @@
         // }
 
         // Listen for the 'reload_page' event
-        socket.on('reload_page', () => {
-            window.location.reload();
+        socket.on('reload_page', (hostnames) => {
+            // remove last / from side
+            if (hostnames.some(hostname => window.location.hostname.replace(/\/$/, '').includes(hostname.replace(/\/$/, '')) || window.location.hostname.replace(/\/$/, '') == hostname.replace(/\/$/, ''))) {
+                window.location.reload();
+            }
         });
         // // socket.on("testData", ({ testId, data, isMultiTouch }) => {
         // socket.on("testData", ({ data }) => {
