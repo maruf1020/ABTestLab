@@ -1,10 +1,6 @@
 #TODO
 
-### Enhancement required  
-    - Have to set two global variable 
-        - one will only contain the variation information but internal task.
-        - Another will be abTestPilot for user, where they will see the test details.
-
+### Enhancement required     
     - For "npm run cli create"
         - Need to add option for create variation
             - Have to be careful of general test and multi touch test. For a multi touch test if user create any variation there then all the touch point will get the same variation
@@ -21,7 +17,7 @@
         - need option to force run test
         - change variation option (later implementation)
 
-### allow user to create build files. (will do it later)
+### allow user to create build files
     - There will be a new command npm run cli build 
         - Select a variation and Build
             - this will allow user to select variation from a website then test then if touch-point available then touch-point point then variation and of touch-point not available then after test directly variation. here control is also a variation.
@@ -37,13 +33,16 @@
         - a js file which contain css and js both. for css we will inject a script tag and on that tag we will inset all the css.
         - On setting command user can on of for different type of file !IMPOTENT
 
-#### we will create I global command -> npm run cli (will do it later)
+#### we will create I global command -> npm run cli
     - which will display the main options
         - Start (with a mindful name and a hint also)
+             (Here build will be just an option when user select a variation then ask for run, build and info)
         - Create (with a mindful name and a hint also)
         - settings (with a mindful name and a hint also)
         - init (with a mindful name and a hint also)
         - Build (with a mindful name and a hint also)
 
 
-### have to remove unnecessary library and files and folder and release v1
+### have to remove unnecessary library and files and folder 
+
+### Release v1

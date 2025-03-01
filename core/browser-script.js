@@ -8,7 +8,7 @@
     function initializeABTest() {
         let config = {}
 
-        if (!abTestPilot) {
+        if (!abTestPilotVariaTionInfo) {
             console.log("No Test is available for this website")
             return;
         }
@@ -57,7 +57,7 @@
 
         // { type: "css", content: css, id: info.id }
         socket.on("update", ({ type, content, id }) => {
-            if (abTestPilot && abTestPilot[id] && abTestPilot[id].status == "Active") {
+            if (abTestPilotVariaTionInfo && abTestPilotVariaTionInfo[id] && abTestPilotVariaTionInfo[id].status == "Active") {
                 if (type === "css") {
                     updateStyle(id, content)
                 } else if (type === "js") {

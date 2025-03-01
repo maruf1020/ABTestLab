@@ -1,6 +1,14 @@
 ## Complete TODO
 
 ------------------------------------------------------------------------------------
+Date: 01-MAR-2025
+------------------------------------------------------------------------------------
+### Enhancement required  
+    - Have to set two global variable 
+        - one will only contain the variation information but internal task.
+        - Another will be abTestPilot for user, where they will see the test details.
+
+------------------------------------------------------------------------------------
 Date: 28-FEB-2025
 ------------------------------------------------------------------------------------
 ### Enhancement required  

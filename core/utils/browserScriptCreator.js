@@ -41,8 +41,10 @@ export default async function browserScriptCreator(testInfo) {
     const browserRunnerPath = path.join(coreDir, "browser-runner.js");
     // const jsonString = JSON.stringify(browserData, null, 2); // Pretty print with 2 spaces
     const SerializeString = serialize(browserData, { space: 2 }); // Pretty print with 2 spaces
-    await fs.writeFileSync(browserRunnerPath, `const abTestPilotMainInformation = ${SerializeString}
-        let abTestPilot = {};
+    await fs.writeFileSync(browserRunnerPath, `(()=>{
+        const abTestPilotMainInformation = ${SerializeString}
+        window.abTestPilotVariaTionInfo = {};
+        window.abTestPilot = {};
         function abTestPilotFilterTestsByHostname(testInfo) {
             return testInfo.filter(item => {
                 return item.hostnames.some(hostname => {
@@ -91,11 +93,14 @@ export default async function browserScriptCreator(testInfo) {
             document.head.appendChild(script);
         }
 
-        async function abTestPilotProcessTests(tests, targetMet) {
+        async function abTestPilotProcessTests(tests, targetMet, parentTargetingData) {
             for (const test of tests) {
                 const result = await abTestPilotTargetMet(targetMet, test.targetingFiles);
-                abTestPilot[test.id] = {
+                const isParentTargeting = parentTargetingData.isParentTargeting;               
+
+                abTestPilotVariaTionInfo[test.id] = {
                     status: result.every(item => item.status === true) ? "Active" : "Inactive",
+                    message: result.every(item => item.status === true) ? "Targeting Met and Variation Applied" : "Targeting Not Met and Variation Not Applied",
                     targetingDetails: result,
                     id: test.id,
                     websiteName : test.websiteName,
@@ -104,9 +109,39 @@ export default async function browserScriptCreator(testInfo) {
                     testType : test.testType
                 }
                 if(test.touchPointName) {
-                    abTestPilot[test.id].touchPointName = test.touchPointName;
+                    abTestPilotVariaTionInfo[test.id].touchPointName = test.touchPointName;
                 }
-                if (result.every(item => item.status === true)) {
+                if(isParentTargeting) {
+                    const parentResult = parentTargetingData.result;
+                    const parentResultData = parentTargetingData.resultData;
+                    const parentTargetingInfo = parentTargetingData.info;
+                    abTestPilotVariaTionInfo[test.id].status = parentResult ? result.every(item => item.status === true) ? "Active" : "Inactive" : "Inactive";
+                    abTestPilotVariaTionInfo[test.id].parentTargetingDetails = parentResultData;
+                    abTestPilotVariaTionInfo[test.id].result = {
+                        touchPointTargeting: abTestPilotVariaTionInfo[test.id].status,
+                        parentTargeting: parentResult ? "Active" : "Inactive"
+                    }
+                    abTestPilotVariaTionInfo[test.id].parentTargetingTestInfo = parentTargetingInfo;
+                    abTestPilotVariaTionInfo[test.id].message = parentResult ? result.every(item => item.status === true) ? "Both of the Parent and touch point targeting met and Variation Applied" : "Parent Targeting Met but touch point targeting not met and Variation Not Applied" : result.every(item => item.status === true) ? "Touch point targeting met but Parent Targeting not met and Variation is not Applied" : "Both of the Parent and touch point targeting not met and Variation Not Applied";
+                }
+                // on abTestPilot pilot variation we have set the data in this way. if there is parent targeting then we will add a key on the object of that parent targeting id and inside that we will include the parent information and inside there we will keep the child test details and if there is no parent targeting then we will keep the test details directly on the object.
+                
+                abTestPilot = Object.entries(abTestPilotVariaTionInfo).reduce((acc, [key, value]) => {
+                    if(value.parentTargetingTestInfo) {
+                        if(!acc[value.parentTargetingTestInfo.parentTargetingId]) {
+                            acc[value.parentTargetingTestInfo.parentTargetingId] = {
+                                parentTargetingInfo: value.parentTargetingTestInfo,
+                                tests: []
+                            }
+                        }
+                        acc[value.parentTargetingTestInfo.parentTargetingId].tests.push(value);
+                    }
+                    else {
+                        acc[key] = value;
+                    }
+                    return acc;
+                }, {});
+                if (abTestPilotVariaTionInfo[test.id].status === "Active") {
                     abTestPilotApplyTestVariation(test);
                 }
             }
@@ -117,15 +152,13 @@ export default async function browserScriptCreator(testInfo) {
         const abTestPilotApplicableParentTargeting = abTestPilotGetApplicableParentTargeting(abTestPilotMainInformation.parentTargeting, testsWithParentTargeting);
 
         abTestPilotApplicableParentTargeting.forEach(item => {
-            abTestPilotTargetMet(abTestPilotMainInformation.targetMet, item.targetingFiles).then(result => {
-                if (result.every(item => item.status === true)) {
-                    const applicableTests = abTestPilotMainInformation.testInfo.filter(test => item.variationIdList.includes(test.id));
-                    abTestPilotProcessTests(applicableTests, abTestPilotMainInformation.targetMet);
-                }
+            abTestPilotTargetMet(abTestPilotMainInformation.targetMet, item.targetingFiles).then(result => {                
+                const applicableTests = abTestPilotMainInformation.testInfo.filter(test => item.variationIdList.includes(test.id));
+                abTestPilotProcessTests(applicableTests, abTestPilotMainInformation.targetMet, {isParentTargeting: true, resultData: result, result: result.every(item => item.status === true), info: item});                
             });
         });
 
-        abTestPilotProcessTests(testsWithoutParentTargeting, abTestPilotMainInformation.targetMet);    
+        abTestPilotProcessTests(testsWithoutParentTargeting, abTestPilotMainInformation.targetMet, {isParentTargeting: false});    
 
-    `);
+    })()`);
 }
