@@ -134,6 +134,67 @@ export async function createTest(website, testName, testType) {
   }
 }
 
+export async function UpdateTest(website, testName) {
+  try {
+    await ensureSkeletonExist()
+    await validateSkeleton()
+    const testDir = path.join(ROOT_DIR, website, testName)
+    await fs.ensureDir(testDir)
+
+
+    let variations = []
+
+    // switch (testType) {
+    //   case "A/B":
+    //     variations = await createABTest(testDir)
+    //     break
+    //   case "AA":
+    //     variations = await createAATest(testDir)
+    //     break
+    //   case "Multi-touch":
+    //     variations = await createMultiTouchTest(testDir)
+    //     break
+    //   case "Patch":
+    //     variations = await createPatchTest(testDir)
+    //     break
+    // }
+
+    // const testInfo = {
+    //   id: generateId(testName),
+    //   name: testName,
+    //   type: testType,
+    //   website: website,
+    //   variations: variations,
+    //   createdAt: new Date().toISOString(),
+    //   createdAtReadable: new Date().toLocaleString(),
+    //   lastUpdated: new Date().toISOString(),
+    // }
+
+    // if (testType === "Multi-touch") {
+    //   const dirs = await fs.readdir(testDir)
+    //   testInfo.touchPoints = [testInfo.touchPoints, dirs.filter((dir) => dir !== "targeting" && dir !== "info.json")].flat()
+    // }
+
+    // await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 })
+
+    // console.log(kleur.green(`Test "${testName}" updated successfully for website "${website}".`))
+    // console.log(kleur.blue("Returning to main menu..."))
+  } catch (error) {
+    console.error(kleur.red(`Failed to update test: ${error.message}`))
+    throw error
+  }
+}
+
+export async function listTests(website) {
+  const websiteDir = path.join(ROOT_DIR, website)
+  const tests = await fs.readdir(websiteDir)
+  // types should be folder not file
+  return tests
+    .filter((test) => fs.lstatSync(path.join(websiteDir, test)).isDirectory())
+    //only the folder which has info.json file are considered as test
+    .filter((test) => fs.pathExists(path.join(websiteDir, test, "info.json")))
+}
+
 async function createABTest(testDir) {
   const variations = ["Control"]
   await createVariation(testDir, "Control")
@@ -184,7 +245,7 @@ async function createMultiTouchTest(testDir) {
       },
       { spaces: 2 }
     )
-    console.log(kleur.green(`Touchpoint "${touchPoint}" created successfully.`))
+    console.log(kleur.green(`TouchPoint "${touchPoint}" created successfully.`))
   }
 
   return ["Control", ...variations]
@@ -198,36 +259,36 @@ async function createPatchTest(testDir) {
 
 async function createTouchPoints(testDir) {
   const touchPoints = []
-  let touchpointCount = 0
+  let touchPointCount = 0
 
   while (true) {
-    touchpointCount++
+    touchPointCount++
 
     const response = await prompts([
       {
         type: "text",
-        name: "touchpointName",
-        message: `Enter the name for Touchpoint ${touchpointCount}:`,
+        name: "touchPointName",
+        message: `Enter the name for TouchPoint ${touchPointCount}:`,
         validate: async (input) => {
-          if (input.trim() === "") return "Touchpoint name cannot be empty"
-          if (touchPoints.includes(input)) return "A Touchpoint with this name already exists"
+          if (input.trim() === "") return "TouchPoint name cannot be empty"
+          if (touchPoints.includes(input)) return "A TouchPoint with this name already exists"
           return true
         },
       },
       {
         type: "confirm",
         name: "createAnother",
-        message: "Do you want to create another Touchpoint?",
+        message: "Do you want to create another TouchPoint?",
         initial: false,
       },
     ])
 
-    touchPoints.push(response.touchpointName)
+    touchPoints.push(response.touchPointName)
 
-    const touchPointDir = path.join(testDir, response.touchpointName)
+    const touchPointDir = path.join(testDir, response.touchPointName)
     await fs.ensureDir(touchPointDir)
     await copyTargetingFolder(touchPointDir)
-    console.log(kleur.green(`Touchpoint "${response.touchpointName}" created successfully.`))
+    console.log(kleur.green(`TouchPoint "${response.touchPointName}" created successfully.`))
 
     if (!response.createAnother) break
   }

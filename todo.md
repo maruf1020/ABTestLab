@@ -46,3 +46,49 @@
 ### have to remove unnecessary library and files and folder 
 
 ### Release v1
+
+
+project structure : 
+core/
+├── commands/
+│   ├── create.js
+│   ├── init.js
+│   ├── list.js
+│   ├── settings.js
+│   ├── start.js
+│   └── testUtils.js
+│
+├── scripts/
+│   └──download-socket-io.js
+│
+├── templates/
+│   ├── targeting/
+│   │   ├── customJS.js
+│   │   ├── elementChecker.json
+│   │   └── urlChecker.json
+│   │
+│   ├── targetMet/
+│   │   ├── customJS.js
+│   │   ├── elementChecker.js
+│   │   └── urlChecker.js
+│   │
+│   └── variation/
+│       ├── index.js
+│       ├── info.json
+│       └── style.scss
+│   
+├── utils/
+│   ├── browserScriptCreator.js
+│   ├── bundler.js
+│   ├── creators.js
+│   ├── cssUtils.js
+│   ├── fileUtils.js
+│   ├── historyUtils.js
+│   ├── init.js
+│   └── testServer.js
+├── browser-script.js
+├── config.js
+├── config.json
+└── index.ks
+.gitignore
+package.json
