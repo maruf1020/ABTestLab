@@ -139,7 +139,9 @@ export async function UpdateTest(website, testName) {
     await ensureSkeletonExist()
     await validateSkeleton()
     const testDir = path.join(ROOT_DIR, website, testName)
-    await fs.ensureDir(testDir)
+    const testInfo = await fs.readJson(path.join(testDir, "info.json"))
+
+    console.log(testInfo)
 
 
     let variations = []
@@ -183,16 +185,6 @@ export async function UpdateTest(website, testName) {
     console.error(kleur.red(`Failed to update test: ${error.message}`))
     throw error
   }
-}
-
-export async function listTests(website) {
-  const websiteDir = path.join(ROOT_DIR, website)
-  const tests = await fs.readdir(websiteDir)
-  // types should be folder not file
-  return tests
-    .filter((test) => fs.lstatSync(path.join(websiteDir, test)).isDirectory())
-    //only the folder which has info.json file are considered as test
-    .filter((test) => fs.pathExists(path.join(websiteDir, test, "info.json")))
 }
 
 async function createABTest(testDir) {
