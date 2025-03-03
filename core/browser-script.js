@@ -103,13 +103,11 @@
         // }
 
         function updateStyle(id, content) {
-            const style = document.getElementById(id)
+            const style = document.querySelector(`style#abTestPilot-${id}`)
             if (!style) {
                 console.log("Trying to update non-existing style", id)
                 return;
             }
-
-            console.log("config", config)
 
             if (config.cssReload == true) {
                 window.location.reload()
@@ -121,7 +119,7 @@
         }
 
         function updateScript(id, content) {
-            const script = document.getElementById(id)
+            const script = document.querySelector(`script#abTestPilot-${id}`)
             if (!script) {
                 console.log("Trying to update non-existing script", id)
                 return;
@@ -134,7 +132,7 @@
                 return
             } else {
                 const newScript = document.createElement("script")
-                newScript.id = id
+                newScript.id = `abTestPilot-${id}`
                 newScript.textContent = content
                 document.head.appendChild(newScript)
             }
