@@ -76,11 +76,65 @@ export async function createWebsite(websiteName) {
 
     await fs.writeJson(path.join(websiteDir, "info.json"), websiteInfo, { spaces: 2 })
     console.log(kleur.green(`Website "${websiteName}" created successfully with hostname(s): ${hostnameList.join(", ")}`))
+
+    return websiteInfo;
   } catch (error) {
     console.error(kleur.red(`Failed to create website: ${error.message}`))
     throw error
   }
 }
+
+// export async function createTest(website, testName, testType) {
+//   try {
+//     await ensureSkeletonExist()
+//     await validateSkeleton()
+//     const testDir = path.join(ROOT_DIR, website, testName)
+//     await fs.ensureDir(testDir)
+
+//     // Copy targeting folder for all test types
+//     await copyTargetingFolder(testDir)
+
+//     let variations = []
+
+//     switch (testType) {
+//       case "A/B":
+//         variations = await createABTest(testDir)
+//         break
+//       case "AA":
+//         variations = await createAATest(testDir)
+//         break
+//       case "Multi-touch":
+//         variations = await createMultiTouchTest(testDir)
+//         break
+//       case "Patch":
+//         variations = await createPatchTest(testDir)
+//         break
+//     }
+
+//     const testInfo = {
+//       id: generateId(testName),
+//       name: testName,
+//       type: testType,
+//       website: website,
+//       variations: variations,
+//       createdAt: new Date().toISOString(),
+//       createdAtReadable: new Date().toLocaleString(),
+//       lastUpdated: new Date().toISOString(),
+//     }
+
+//     if (testType === "Multi-touch") {
+//       const dirs = await fs.readdir(testDir)
+//       testInfo.touchPoints = dirs.filter((dir) => dir !== "targeting" && dir !== "info.json")
+//     }
+
+//     await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 })
+//     console.log(kleur.green(`Test "${testName}" created successfully for website "${website}".`))
+//     console.log(kleur.blue("Returning to main menu..."))
+//   } catch (error) {
+//     console.error(kleur.red(`Failed to create test: ${error.message}`))
+//     throw error
+//   }
+// }
 
 export async function createTest(website, testName, testType) {
   try {
@@ -92,42 +146,26 @@ export async function createTest(website, testName, testType) {
     // Copy targeting folder for all test types
     await copyTargetingFolder(testDir)
 
-    let variations = []
-
-    switch (testType) {
-      case "A/B":
-        variations = await createABTest(testDir)
-        break
-      case "AA":
-        variations = await createAATest(testDir)
-        break
-      case "Multi-touch":
-        variations = await createMultiTouchTest(testDir)
-        break
-      case "Patch":
-        variations = await createPatchTest(testDir)
-        break
-    }
-
     const testInfo = {
       id: generateId(testName),
       name: testName,
       type: testType,
       website: website,
-      variations: variations,
+      variations: [],
       createdAt: new Date().toISOString(),
       createdAtReadable: new Date().toLocaleString(),
       lastUpdated: new Date().toISOString(),
     }
 
     if (testType === "Multi-touch") {
-      const dirs = await fs.readdir(testDir)
-      testInfo.touchPoints = dirs.filter((dir) => dir !== "targeting" && dir !== "info.json")
+      testInfo.touchPoints = []
     }
 
     await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 })
     console.log(kleur.green(`Test "${testName}" created successfully for website "${website}".`))
-    console.log(kleur.blue("Returning to main menu..."))
+
+    return testInfo;
+
   } catch (error) {
     console.error(kleur.red(`Failed to create test: ${error.message}`))
     throw error
