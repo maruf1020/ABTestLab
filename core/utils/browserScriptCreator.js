@@ -83,13 +83,13 @@ export default async function browserScriptCreator(testInfo) {
             const style = document.createElement("style");
             style.innerHTML = test.variationFiles.css;
             style.type = "text/css";
-            style.id = test.id;
+            style.id = 'abTestPilot-' + test.id;
             document.head.appendChild(style);
 
             const script = document.createElement("script");
             script.innerHTML = test.variationFiles.js;
             script.type = "text/javascript";
-            script.id = test.id;
+            script.id = 'abTestPilot-' + test.id;
             document.head.appendChild(script);
         }
 

@@ -136,3 +136,5 @@ skeleton/
 history.json
 settings.json
 core/browser-Runner.js
+core/public
+settings.json
