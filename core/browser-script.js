@@ -8,8 +8,8 @@
     function initializeABTest() {
         let config = {}
 
-        if (!abTestPilotVariaTionInfo) {
-            console.log("No Test is available for this website")
+        if (!window.abTestPilotVariaTionInfo) {
+            console.log("Either browser script injection is not properly working or no Test is available for this website")
             return;
         }
         const { io } = window
