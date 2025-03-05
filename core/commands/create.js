@@ -1,7 +1,7 @@
 import { Command } from "commander"
 import prompts from "prompts"
-import { createWebsite, createTest } from "../utils/creators.js"
-import { listWebsites, listTests, listOnlyMultiTouchTests, listAllTestExceptMultiTouch, listTouchPoints, listVariations, getWebsiteInfo, getTestInfo, getTouchPointInfo, getTouchPointsVariationInfo, getVariationInfo } from "../utils/fileUtils.js"
+import { createWebsite, createTest, createTouchPoint, createVariation } from "../utils/creators.js"
+import { listWebsites, listTests, listOnlyMultiTouchTests, listAllTestExceptMultiTouch, listTouchPoints, listVariations, listTouchPointsAndVariations, getWebsiteInfo, getTestInfo, getTouchPointInfo, getTouchPointsVariationInfo, getVariationInfo } from "../utils/fileUtils.js"
 import chalk from "chalk"
 import kleur from "kleur"
 
@@ -64,35 +64,46 @@ export const createCommand = new Command("create").description("Create a new web
 async function create() {
   const selectedWebsite = await selectWebsite();
   if (typeof selectedWebsite === 'string') {
-    const selectedTest = await selectTest(selectedWebsite, create);
-    if (typeof selectedTest === 'string') {
-      const testInfo = await getTestInfo(selectedWebsite, selectedTest);
-      if (typeof testInfo === 'object' && testInfo !== null && 'type' in testInfo) {
-        console.log('Selected test info:', testInfo.type);
-        switch (testInfo.type) {
-          case 'Multi-touch':
-            const selectedTouchPoint = await selectTouchPoint(selectedWebsite, selectedTest, () => selectTest);
-            console.log('Selected touch point:', selectedTouchPoint);
-            break;
-          case 'AA':
-          case 'A/B':
-            const selectedVariation = await selectVariation(selectedWebsite, selectedTest, () => selectTest);
-            console.log('Selected variation:', selectedVariation);
-            break;
-          case 'patch':
-            console.log('under development');
-            break;
-          default:
-            console.error('Unknown test type');
-        }
-
-      } else {
-        console.log('Invalid testInfo object');
-      }
-    }
+    await handleTestSelection(selectedWebsite);
   }
 }
 
+async function handleTestSelection(selectedWebsite) {
+  const selectedTest = await selectTest(selectedWebsite, create);
+  console.log('Selected test:------', selectedTest);
+  if (typeof selectedTest === 'string') {
+    const testInfo = await getTestInfo(selectedWebsite, selectedTest);
+    if (typeof testInfo === 'object' && testInfo !== null && 'type' in testInfo) {
+      console.log('Selected test info:', testInfo.type);
+      switch (testInfo.type) {
+        case 'Multi-touch':
+          const selectedTouchPoint = await selectTouchPointAndVariations(selectedWebsite, selectedTest, () => handleTestSelection(selectedWebsite));
+          if (selectedTouchPoint === 'back') {
+            await handleTestSelection(selectedWebsite);
+          } else {
+            console.log('Selected touch point:', selectedTouchPoint);
+          }
+          break;
+        case 'AA':
+        case 'A/B':
+          const selectedVariation = await selectVariation(selectedWebsite, selectedTest, () => handleTestSelection(selectedWebsite));
+          if (selectedVariation === 'back') {
+            await handleTestSelection(selectedWebsite);
+          } else {
+            console.log('Selected variation:', selectedVariation);
+          }
+          break;
+        case 'patch':
+          console.log('under development');
+          break;
+        default:
+          console.error('Unknown test type');
+      }
+    } else {
+      console.log('Invalid testInfo object');
+    }
+  }
+}
 
 // Helper function to handle website and test selection
 async function selectWebsite() {
@@ -195,7 +206,7 @@ async function selectTouchPoint(selectedWebsite, selectedTest, goBack) {
         return await selectTouchPoint(selectedWebsite, selectedTest, goBack);
       case "back":
         goBack();
-      // return null;
+        return null;
       case "exit":
         process.exit(0);
       default:
@@ -240,6 +251,51 @@ async function selectVariation(selectedWebsite, selectedTest, goBack) {
     }
   } catch (error) {
     console.log(chalk.red('Error selecting variation:', error.message));
+    return null;
+  }
+}
+
+async function selectTouchPointAndVariations(selectedWebsite, selectedTest, goBack) {
+  try {
+    const touchPointsAndVariations = await listTouchPointsAndVariations(selectedWebsite, selectedTest);
+    const options = [
+      { title: "Create New Touch Point", value: "create-touch-point" },
+    ];
+
+    if (touchPointsAndVariations.some(item => item.type === "touchPoint")) {
+      options.push({ title: "Create New Variation", value: "create-variation" });
+    }
+
+    options.push(
+      ...touchPointsAndVariations.map(item => ({ title: item.name + ' (' + (item.type === "variation" ? kleur.blue(item.type) : kleur.magenta(item.type)) + ')', value: item.name + ' (' + item.type + ')' })),
+      { title: "Go Back", value: "back" },
+      { title: "Exit", value: "exit" }
+    );
+
+    const response = await prompts({
+      type: "autocomplete",
+      name: "choice",
+      message: "Select an option:",
+      choices: options,
+    });
+
+    switch (response.choice) {
+      case "create-touch-point":
+        const touchPointInfo = await createNewTouchPoint(selectedWebsite, selectedTest);
+        return touchPointInfo ? touchPointInfo.name : null;
+      case "create-variation":
+        const variationInfo = await createNewVariation(selectedWebsite, selectedTest);
+        return variationInfo ? variationInfo.name : null;
+      case "back":
+        goBack();
+        return null;
+      case "exit":
+        process.exit(0);
+      default:
+        return response.choice;
+    }
+  } catch (error) {
+    console.log(chalk.red('Error selecting touch point:', error.message));
     return null;
   }
 }
@@ -329,113 +385,141 @@ async function createNewTest(website) {
   }
 }
 
-// async function createNewTouchPoint(website, testName) {
-//   // it will show the websites then the tests (test that are multi-touch) listOnlyMultiTouchTests(website)
-//   // after selecting the test it will ask for the touch point name
-//   // Every step there will be option to go back and exit and create (for website create website, for test create test, for touch point create touch point)
-// }
-
-// async function createNewVariation(website, testName) {
-//   // it will show the websites then the tests listTests(website)
-//   // after selecting the test it will ask for the variation name
-//   // Every step there will be option to go back and exit and create (for website create website, for test create test, for variation create variation)
-// }
-
-async function createNewTouchPoint() {
-  try {
-    // List available websites
-    const websites = await listWebsites()
-    if (!websites.length) {
-      console.log(chalk.red('No websites found. Please create a website first.'))
-      return
-    }
-
-    // Select website
-    const selectedWebsite = await prompts({
-      type: 'select',
-      name: 'website',
-      message: 'Select a website:',
-      choices: websites.map(w => ({ title: w, value: w })),
-    })
-
-    // Get multi-touch tests for selected website
-    const multiTouchTests = await listOnlyMultiTouchTests(selectedWebsite)
-    if (!multiTouchTests.length) {
-      console.log(chalk.red('No multi-touch tests found. Please create a multi-touch test first.'))
-      return
-    }
-
-    // Select test
-    const selectedTest = await prompts({
-      type: 'select',
-      name: 'test',
-      message: 'Select a multi-touch test:',
-      choices: multiTouchTests.map(t => ({ title: t, value: t })),
-    })
-
-    // Get touch point name
-    const touchPointName = await prompts({
+async function createNewTouchPoint(website, testName) {
+  const createResponse = await prompts([
+    {
       type: 'text',
-      name: 'name',
-      message: 'Enter touch point name:',
-      validate: value => value.trim() !== '' || 'Name is required',
-    })
+      name: 'touchPointName',
+      message: 'Enter the name of the new touch point:',
+      validate: (input) => input.trim() !== '' || 'Touch point name cannot be empty',
+    },
+  ]);
 
-    // Create new touch point
-    await createTouchPoint(selectedWebsite, selectedTest, touchPointName)
-    console.log(chalk.green(`Touch point '${touchPointName}' created successfully!`))
+  const { touchPointName } = createResponse;
+
+  try {
+    console.log(chalk.green(`Touch point "${touchPointName}" created successfully for test "${testName}".`));
+    return await createTouchPoint(website, testName, touchPointName);
   } catch (error) {
-    console.log(chalk.red('Error creating touch point:', error.message))
+    console.error(chalk.red(`Failed to create touch point: ${error.message}`));
   }
 }
 
-async function createNewVariation() {
-  try {
-    // List available websites
-    const websites = await listWebsites()
-    if (!websites.length) {
-      console.log(chalk.red('No websites found. Please create a website first.'))
-      return
-    }
-
-    // Select website
-    const selectedWebsite = await prompts({
-      type: 'select',
-      name: 'website',
-      message: 'Select a website:',
-      choices: websites.map(w => ({ title: w, value: w })),
-    })
-
-    // Get all tests for selected website
-    const tests = await listTests(selectedWebsite.website)
-    if (!tests.length) {
-      console.log(chalk.red('No tests found. Please create a test first.'))
-      return
-    }
-
-    // Select test
-    const selectedTest = await prompts({
-      type: 'select',
-      name: 'test',
-      message: 'Select a test:',
-      choices: tests.map(t => ({ title: t, value: t })),
-    })
-
-    // Get variation name
-    const variationName = await prompts({
+async function createNewVariation(website, testName) {
+  const createResponse = await prompts([
+    {
       type: 'text',
-      name: 'name',
-      message: 'Enter variation name:',
-      validate: value => value.trim() !== '' || 'Name is required',
-    })
+      name: 'variationName',
+      message: 'Enter the name of the new variation:',
+      validate: (input) => input.trim() !== '' || 'Variation name cannot be empty',
+    },
+  ]);
 
-    // Create new variation
-    await createVariation(selectedWebsite, selectedTest, variationName)
-    console.log(chalk.green(`Variation '${variationName}' created successfully!`))
+  const { variationName } = createResponse;
+
+  try {
+    console.log(chalk.green(`Variation "${variationName}" created successfully for test "${testName}".`));
+    return await createVariation(website, testName, variationName);
   } catch (error) {
-    console.log(chalk.red('Error creating variation:', error.message))
+    console.error(chalk.red(`Failed to create variation: ${error.message}`));
   }
 }
+
+// async function createNewTouchPoint() {
+//   try {
+//     // List available websites
+//     const websites = await listWebsites()
+//     if (!websites.length) {
+//       console.log(chalk.red('No websites found. Please create a website first.'))
+//       return
+//     }
+
+//     // Select website
+//     const selectedWebsite = await prompts({
+//       type: 'select',
+//       name: 'website',
+//       message: 'Select a website:',
+//       choices: websites.map(w => ({ title: w, value: w })),
+//     })
+
+//     // Get multi-touch tests for selected website
+//     const multiTouchTests = await listOnlyMultiTouchTests(selectedWebsite)
+//     if (!multiTouchTests.length) {
+//       console.log(chalk.red('No multi-touch tests found. Please create a multi-touch test first.'))
+//       return
+//     }
+
+//     // Select test
+//     const selectedTest = await prompts({
+//       type: 'select',
+//       name: 'test',
+//       message: 'Select a multi-touch test:',
+//       choices: multiTouchTests.map(t => ({ title: t, value: t })),
+//     })
+
+//     // Get touch point name
+//     const touchPointName = await prompts({
+//       type: 'text',
+//       name: 'name',
+//       message: 'Enter touch point name:',
+//       validate: value => value.trim() !== '' || 'Name is required',
+//     })
+
+//     // Create new touch point
+//     await createTouchPoint(selectedWebsite, selectedTest, touchPointName)
+//     console.log(chalk.green(`Touch point '${touchPointName}' created successfully!`))
+//   } catch (error) {
+//     console.log(chalk.red('Error creating touch point:', error.message))
+//   }
+// }
+
+// async function createNewVariation() {
+//   try {
+//     // List available websites
+//     const websites = await listWebsites()
+//     if (!websites.length) {
+//       console.log(chalk.red('No websites found. Please create a website first.'))
+//       return
+//     }
+
+//     // Select website
+//     const selectedWebsite = await prompts({
+//       type: 'select',
+//       name: 'website',
+//       message: 'Select a website:',
+//       choices: websites.map(w => ({ title: w, value: w })),
+//     })
+
+//     // Get all tests for selected website
+//     const tests = await listTests(selectedWebsite.website)
+//     if (!tests.length) {
+//       console.log(chalk.red('No tests found. Please create a test first.'))
+//       return
+//     }
+
+//     // Select test
+//     const selectedTest = await prompts({
+//       type: 'select',
+//       name: 'test',
+//       message: 'Select a test:',
+//       choices: tests.map(t => ({ title: t, value: t })),
+//     })
+
+//     // Get variation name
+//     const variationName = await prompts({
+//       type: 'text',
+//       name: 'name',
+//       message: 'Enter variation name:',
+//       validate: value => value.trim() !== '' || 'Name is required',
+//     })
+
+//     // Create new variation
+//     await createVariation(selectedWebsite, selectedTest, variationName)
+//     console.log(chalk.green(`Variation '${variationName}' created successfully!`))
+//   } catch (error) {
+//     console.log(chalk.red('Error creating variation:', error.message))
+//   }
+// }
 
 
 // export { createCommand, createNewWebsite, createNewTest, createNewTouchPoint, createNewVariation }

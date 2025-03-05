@@ -61,6 +61,27 @@ export async function listVariations(website, test) {
   }
 }
 
+export async function listTouchPointsAndVariations(website, test) {
+  try {
+    const testInfo = await getTestInfo(website, test)
+    const touchPoints = testInfo.touchPoints.map(item => {
+      return {
+        name: item,
+        type: "touchPoint"
+      }
+    })
+    const variations = testInfo.variations.map(item => {
+      return {
+        name: item,
+        type: "variation"
+      }
+    })
+    return [...touchPoints, ...variations]
+  } catch (error) {
+    throw new Error(`Failed to list touchPoints for test ${test} in website ${website}: ${error.message}`)
+  }
+}
+
 export async function getWebsiteInfo(website) {
   try {
     const websiteInfoPath = path.join(ROOT_DIR, website, "info.json")

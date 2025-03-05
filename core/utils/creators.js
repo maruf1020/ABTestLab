@@ -172,6 +172,18 @@ export async function createTest(website, testName, testType) {
   }
 }
 
+export async function createVariation(website, test, variationName) {
+  return {
+    name: "This feature is not implemented yet"
+  }
+}
+
+export async function createTouchPoint(website, test, touchPointName) {
+  return {
+    name: "This feature is not implemented yet"
+  }
+}
+
 export async function UpdateTest(website, testName) {
   try {
     await ensureSkeletonExist()
@@ -380,26 +392,26 @@ async function createVariations(testDir, touchPointCount) {
   return variations
 }
 
-async function createVariation(dir, variationName) {
-  const variationDir = path.join(dir, variationName)
-  await fs.ensureDir(variationDir)
-  await fs.copy(path.join(SKELETON_DIR, "variation", "default"), variationDir)
+// async function createVariation(dir, variationName) {
+//   const variationDir = path.join(dir, variationName)
+//   await fs.ensureDir(variationDir)
+//   await fs.copy(path.join(SKELETON_DIR, "variation", "default"), variationDir)
 
-  // Create info.json for the variation
-  const infoJsonPath = path.join(variationDir, "info.json")
-  await fs.writeJson(
-    infoJsonPath,
-    {
-      id: generateId(variationName),
-      name: variationName,
-      isVariation: true,
-      createdAt: new Date().toISOString(),
-      createdAtReadable: new Date().toLocaleString(),
-      lastUpdated: new Date().toISOString(),
-    },
-    { spaces: 2 }
-  )
+//   // Create info.json for the variation
+//   const infoJsonPath = path.join(variationDir, "info.json")
+//   await fs.writeJson(
+//     infoJsonPath,
+//     {
+//       id: generateId(variationName),
+//       name: variationName,
+//       isVariation: true,
+//       createdAt: new Date().toISOString(),
+//       createdAtReadable: new Date().toLocaleString(),
+//       lastUpdated: new Date().toISOString(),
+//     },
+//     { spaces: 2 }
+//   )
 
-  // Bundle the variation
-  await bundleVariation(variationDir)
-}
+//   // Bundle the variation
+//   await bundleVariation(variationDir)
+// }
