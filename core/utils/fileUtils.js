@@ -100,6 +100,15 @@ export async function getTestInfo(website, test) {
   }
 }
 
+export async function getVariationInfo(website, test, variation) {
+  try {
+    const variationInfoPath = path.join(ROOT_DIR, website, test, variation, "info.json")
+    return await fs.readJson(variationInfoPath)
+  } catch (error) {
+    throw new Error(`Failed to get variation info for ${variation} in test ${test} in website ${website}: ${error.message}`)
+  }
+}
+
 export async function getTouchPointInfo(website, test, touchPoint) {
   try {
     const touchPointInfoPath = path.join(ROOT_DIR, website, test, touchPoint, "info.json")
@@ -115,14 +124,5 @@ export async function getTouchPointsVariationInfo(website, test, touchPoint, var
     return await fs.readJson(touchPointInfoPath)
   } catch (error) {
     throw new Error(`Failed to get touchPoint info for ${variation} in touchPoint ${touchPoint} in test ${test} in website ${website}: ${error.message}`)
-  }
-}
-
-export async function getVariationInfo(website, test, variation) {
-  try {
-    const variationInfoPath = path.join(ROOT_DIR, website, test, variation, "info.json")
-    return await fs.readJson(variationInfoPath)
-  } catch (error) {
-    throw new Error(`Failed to get variation info for ${variation} in test ${test} in website ${website}: ${error.message}`)
   }
 }

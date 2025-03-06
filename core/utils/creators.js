@@ -51,6 +51,49 @@ async function copyTargetingFolder(destination) {
   await bundleTargeting(targetingDir)
 }
 
+async function copyVariationFolder(destination, variationName) {
+
+  const testInfo = await fs.readJson(path.join(destination, "info.json"))
+  const isMultiTouchTest = testInfo.type === "Multi-touch"
+
+  const variationTemplateDir = path.join(SKELETON_DIR, "variation", "default")
+  const variationDir = path.join(destination, variationName)
+  await fs.copy(variationTemplateDir, variationDir)
+
+  const info = {
+    id: generateId(variationName),
+    name: variationName,
+    isVariation: true,
+    createdAt: new Date().toISOString(),
+    createdAtReadable: new Date().toLocaleString(),
+    lastUpdated: new Date().toISOString()
+  }
+
+  const infoPath = path.join(variationDir, "info.json")
+  await fs.writeJson(infoPath, info, { spaces: 2 })
+
+
+  if (!testInfo.variations || testInfo.variations.length === 0) {
+    testInfo.variations = [variationName]
+  } else {
+    testInfo.variations.push(variationName)
+  }
+  await fs.writeJson(path.join(destination, "info.json"), testInfo, { spaces: 2 })
+
+  if (isMultiTouchTest) {
+    const touchPointDir = path.join(variationDir, "..")
+    const touchPointInfo = await fs.readJson(path.join(touchPointDir, "info.json"))
+    if (!touchPointInfo.variations || touchPointInfo.variations.length === 0) {
+      touchPointInfo.variations = [variationName]
+    } else {
+      touchPointInfo.variations.push(variationName)
+    }
+    await fs.writeJson(path.join(destination, "info.json"), touchPointInfo, { spaces: 2 })
+  }
+
+  await bundleVariation(variationDir)
+}
+
 export async function createWebsite(websiteName) {
   const websiteDir = path.join(ROOT_DIR, websiteName)
   try {
