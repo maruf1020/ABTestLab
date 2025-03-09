@@ -47,14 +47,14 @@ async function copyTargetingFolder(destination) {
 }
 
 async function initCopyVariationFolder(destination, variationName) {
-  const testInfo = await fs.readJson(path.join(destination, "info.json"))
-  const isMultiTouchTest = testInfo.type === "Multi-touch"
+  const testInfo = await fs.readJson(path.join(destination, "info.json"));
+  const isMultiTouchTest = testInfo.type === "Multi-touch";
   if (isMultiTouchTest) {
     const touchPoints = testInfo.touchPoints;
     if (touchPoints.length >= 1) {
-      touchPoints.forEach(async (touchPoint) => {
-        const touchPointDir = path.join(destination, touchPoint)
-        const touchPointInfo = await fs.readJson(path.join(touchPointDir, "info.json"))
+      for (const touchPoint of touchPoints) { // Changed to for...of loop for proper async/await handling
+        const touchPointDir = path.join(destination, touchPoint);
+        const touchPointInfo = await fs.readJson(path.join(touchPointDir, "info.json"));
         const touchPointVariations = touchPointInfo.variations;
         console.log('touchPointVariations:', touchPointVariations);
         console.log('variationName:', variationName);
@@ -66,20 +66,20 @@ async function initCopyVariationFolder(destination, variationName) {
 
         console.log('Condition not met, proceeding');
         if (touchPointVariations && touchPointVariations.includes(variationName)) return;
-        copyVariationFolder(true, touchPointDir, variationName, testInfo, destination, touchPointInfo)
-      })
+        await copyVariationFolder(true, touchPointDir, variationName, testInfo, destination, touchPointInfo); // Added await to ensure proper async handling
+      }
     } else {
-      console.log(kleur.red(`Failed to create variation: TouchPoint is missing`))
+      console.log(kleur.red(`Failed to create variation: TouchPoint is missing`));
     }
   } else {
-    copyVariationFolder(false, destination, variationName, testInfo, destination)
+    await copyVariationFolder(false, destination, variationName, testInfo, destination); // Added await to ensure proper async handling
   }
 }
 
 async function copyVariationFolder(isMultiTouchTest, destination, variationName, testInfo, testDestination, touchPointInfo) {
-  const variationTemplateDir = path.join(SKELETON_DIR, "variation", "default")
-  const variationDir = path.join(destination, variationName)
-  await fs.copy(variationTemplateDir, variationDir)
+  const variationTemplateDir = path.join(SKELETON_DIR, "variation", "default");
+  const variationDir = path.join(destination, variationName);
+  await fs.copy(variationTemplateDir, variationDir);
 
   const info = {
     id: generateId(variationName),
@@ -88,32 +88,32 @@ async function copyVariationFolder(isMultiTouchTest, destination, variationName,
     createdAt: new Date().toISOString(),
     createdAtReadable: new Date().toLocaleString(),
     lastUpdated: new Date().toISOString()
-  }
+  };
 
-  const variationInfo = path.join(variationDir, "info.json")
-  await fs.writeJson(variationInfo, info, { spaces: 2 })
-
+  const variationInfo = path.join(variationDir, "info.json");
+  await fs.writeJson(variationInfo, info, { spaces: 2 });
 
   if (!testInfo.variations || testInfo.variations.length === 0) {
-    testInfo.variations = [variationName]
+    testInfo.variations = [variationName];
   } else {
     if (!testInfo.variations.includes(variationName)) {
       testInfo.variations.push(variationName);
     }
   }
-  await fs.writeJson(path.join(testDestination, "info.json"), testInfo, { spaces: 2 })
+  await fs.writeJson(path.join(testDestination, "info.json"), testInfo, { spaces: 2 });
 
   if (isMultiTouchTest) {
     if (!touchPointInfo.variations || touchPointInfo.variations.length === 0) {
-      touchPointInfo.variations = [variationName]
+      touchPointInfo.variations = [variationName];
     } else {
       if (!touchPointInfo.variations.includes(variationName)) {
         touchPointInfo.variations.push(variationName);
       }
     }
-    await fs.writeJson(path.join(destination, "info.json"), touchPointInfo, { spaces: 2 })
+    await fs.writeJson(path.join(destination, "info.json"), touchPointInfo, { spaces: 2 });
   }
-  await bundleVariation(variationDir)
+
+  await bundleVariation(variationDir); // Ensure this asynchronous operation is awaited
 }
 
 export async function createWebsite(websiteName, hostnameList) {
@@ -192,7 +192,7 @@ export async function createWebsite(websiteName, hostnameList) {
 //   }
 // }
 
-export async function createTest(website, testName, testType) {
+export async function createTest(website, testName, testType, touchPointName, variationName) {
   try {
     //When create a test with a minimum of 1 variation with control and one touchPoint with control and one variation then we need this two functions
     // await ensureSkeletonExist()
@@ -218,24 +218,26 @@ export async function createTest(website, testName, testType) {
       testInfo.touchPoints = [] // have to update
     }
 
-    // switch (testType) {
-    //   case "A/B":
-    //     variations = await createABTest(testDir)
-    //     break
-    //   case "AA":
-    //     variations = await createAATest(testDir)
-    //     break
-    //   case "Multi-touch":
-    //     variations = await createMultiTouchTest(testDir)
-    //     break
-    //   case "Patch":
-    //     variations = await createPatchTest(testDir)
-    //     break
-    // }
-
-
     await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 })
     console.log(kleur.green(`Test "${testName}" created successfully for website "${website}".`))
+
+    switch (testType) {
+      case "A/B":
+        await createVariation(website, testName, "control")
+        await createVariation(website, testName, variationName)
+        break
+      case "AA":
+        await createVariation(website, testName, variationName)
+        break
+      case "Multi-touch":
+        await createTouchPoint(website, testName, touchPointName)
+        await createVariation(website, testName, "control")
+        await createVariation(website, testName, variationName)
+        break
+      case "Patch":
+        await createVariation(website, testName, variationName)
+        break
+    }
 
     return testInfo;
 
