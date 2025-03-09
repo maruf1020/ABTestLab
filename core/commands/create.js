@@ -201,6 +201,8 @@ async function selectTouchPoint(selectedWebsite, selectedTest, goBack) {
 
     switch (response.choice) {
       case "create":
+        // const testInfo = await createNewTest(selectedWebsite);
+        // return testInfo ? testInfo.name : null;
         await createNewTouchPoint(selectedWebsite, selectedTest);
         // After creating, re-run the selection
         return await selectTouchPoint(selectedWebsite, selectedTest, goBack);
@@ -238,6 +240,8 @@ async function selectVariation(selectedWebsite, selectedTest, goBack) {
 
     switch (response.choice) {
       case "create":
+        // const testInfo = await createNewTest(selectedWebsite);
+        // return testInfo ? testInfo.name : null;
         await createNewVariation(selectedWebsite, selectedTest);
         // After creating, re-run the selection
         return await selectVariation(selectedWebsite, selectedTest, goBack);
@@ -301,16 +305,25 @@ async function selectTouchPointAndVariations(selectedWebsite, selectedTest, goBa
 }
 
 async function createNewWebsite() {
-  const response = await prompts({
+  const websiteNameResponse = await prompts({
     type: "text",
     name: "websiteName",
     message: "Enter the name of the new website:",
     validate: (input) => input.trim() !== "" || "Website name cannot be empty",
   })
-  const { websiteName } = response
+  const { websiteName } = websiteNameResponse
+
+  const HostNamesResponse = await prompts({
+    type: "text",
+    name: "hostnames",
+    message: "Enter the website host(s) or URL(s) (separate multiple with commas):",
+    validate: (input) => input.trim() !== "" || "At least one hostname or URL is required",
+  })
+
+  const hostnameList = HostNamesResponse.hostnames.split(",").map((host) => host.trim())
 
   try {
-    return await createWebsite(websiteName)
+    return await createWebsite(websiteName, hostnameList)
 
     // const response = await prompts({
     //   type: "toggle",
@@ -332,6 +345,7 @@ async function createNewWebsite() {
 }
 
 async function createNewTest(website) {
+  const testList = await listTests(website);
   // const websites = await listWebsites()
   // if (websites.length === 0) {
   //   console.log(chalk.yellow("No websites found. Please create a new website first."))
@@ -365,7 +379,21 @@ async function createNewTest(website) {
       type: 'text',
       name: 'testName',
       message: 'Enter the name of the new test:',
-      validate: (input) => input.trim() !== '' || 'Test name cannot be empty',
+      validate: (input) => {
+        const trimmedInput = input.trim();
+        const validNamePattern = /^[a-zA-Z0-9\-_ ]+$/;
+        if (trimmedInput === '') {
+          return 'Test name cannot be empty';
+        }
+        if (!validNamePattern.test(trimmedInput)) {
+          const invalidChars = [...new Set(trimmedInput.replace(/[a-zA-Z0-9\-_ ]/g, ''))].join(', ');
+          return `Test name contains invalid characters: ${invalidChars}`;
+        }
+        if (testList.includes(trimmedInput)) {
+          return 'Test name already exists';
+        }
+        return true;
+      },
     },
     {
       type: 'select',
@@ -373,13 +401,27 @@ async function createNewTest(website) {
       message: 'Select the test type:',
       choices: ['A/B', 'AA', 'Multi-touch', 'Patch'].map((type) => ({ title: type, value: type })),
     },
+    {
+      type: (prev) => (prev === 'Multi-touch' ? 'text' : null),
+      name: 'touchPointName',
+      message: 'Enter the touch point name:',
+      validate: (input) => input.trim() !== '' || 'Touch point name cannot be empty',
+    },
+    {
+      type: 'text',
+      name: 'variationName',
+      message: 'Enter the variation name:',
+      validate: (input) => input.trim() !== '' || 'Variation name cannot be empty',
+    },
   ]);
 
-  const { testName, testType } = createResponse;
+  const { testName, testType, touchPointName, variationName } = createResponse;
+
+  if (!testName || !testType || (testType === 'Multi-touch' && !touchPointName) || !variationName) return null;
 
   try {
     console.log(chalk.green(`Test "${testName}" created successfully for website "${website}".`));
-    return await createTest(website, testName, testType);
+    return await createTest(website, testName, testType, touchPointName, variationName);
   } catch (error) {
     console.error(chalk.red(`Failed to create test: ${error.message}`));
   }
