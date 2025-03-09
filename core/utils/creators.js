@@ -47,6 +47,7 @@ async function copyTargetingFolder(destination) {
 }
 
 async function initCopyVariationFolder(destination, variationName) {
+  const variationInfoList = [];
   const testInfo = await fs.readJson(path.join(destination, "info.json"));
   const isMultiTouchTest = testInfo.type === "Multi-touch";
   if (isMultiTouchTest) {
@@ -66,14 +67,17 @@ async function initCopyVariationFolder(destination, variationName) {
 
         console.log('Condition not met, proceeding');
         if (touchPointVariations && touchPointVariations.includes(variationName)) return;
-        await copyVariationFolder(true, touchPointDir, variationName, testInfo, destination, touchPointInfo); // Added await to ensure proper async handling
+        const info = await copyVariationFolder(true, touchPointDir, variationName, testInfo, destination, touchPointInfo); // Added await to ensure proper async handling
+        variationInfoList.push(info);
       }
     } else {
       console.log(kleur.red(`Failed to create variation: TouchPoint is missing`));
     }
   } else {
-    await copyVariationFolder(false, destination, variationName, testInfo, destination); // Added await to ensure proper async handling
+    await copyVariationFolder(false, destination, variationName, testInfo, destination);
+    variationInfoList.push(info);
   }
+  return variationInfoList;
 }
 
 async function copyVariationFolder(isMultiTouchTest, destination, variationName, testInfo, testDestination, touchPointInfo) {
@@ -114,6 +118,7 @@ async function copyVariationFolder(isMultiTouchTest, destination, variationName,
   }
 
   await bundleVariation(variationDir); // Ensure this asynchronous operation is awaited
+  return info;
 }
 
 export async function createWebsite(websiteName, hostnameList) {
@@ -251,9 +256,10 @@ export async function createVariation(website, test, variationName) {
   try {
     const testDir = path.join(ROOT_DIR, website, test)
 
-    await initCopyVariationFolder(testDir, variationName)
-
     console.log(kleur.green(`Variation "${variationName}" created successfully for test "${test}" in website "${website}".`))
+
+    return await initCopyVariationFolder(testDir, variationName)
+
   } catch (error) {
     console.error(kleur.red(`Failed to create variation: ${error.message}`))
     throw error
@@ -302,6 +308,8 @@ export async function createTouchPoint(website, test, touchPointName) {
     }
 
     console.log(kleur.green(`TouchPoint "${touchPointName}" created successfully for test "${test}" in website "${website}".`))
+
+    return touchPointInfoObj;
   } catch (error) {
     console.error(kleur.red(`Failed to create touchPoint: ${error.message}`))
     throw error
