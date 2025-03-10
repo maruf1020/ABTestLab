@@ -1,6 +1,6 @@
 {
   "name": "ab-testing-cli",
-  "version": "0.03.04",
+  "version": "0.03.11",
   "description": "A CLI tool for A/B testing directly from a local machine",
   "main": "core/index.js",
   "type": "module",
