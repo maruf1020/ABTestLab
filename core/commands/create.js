@@ -454,13 +454,20 @@ async function createNewTest(website) {
 }
 
 async function createNewTouchPoint(website, testName) {
+  const touchPointList = await listTouchPoints(website, testName);
   const createResponse = await prompts([
     {
       type: 'text',
       name: 'touchPointName',
       message: 'Enter the name of the new touch point:',
-      validate: (input) => input.trim() !== '' || 'Touch point name cannot be empty',
-    },
+      validate: (input) => {
+        const trimmedInput = input.trim();
+        if (touchPointList.includes(trimmedInput)) {
+          return 'Touch point name already exists';
+        }
+        return trimmedInput !== '' || 'Touch point name cannot be empty';
+      },
+    }
   ]);
 
   const { touchPointName } = createResponse;
@@ -474,12 +481,19 @@ async function createNewTouchPoint(website, testName) {
 }
 
 async function createNewVariation(website, testName) {
+  const testInfo = await getTestInfo(website, testName);
   const createResponse = await prompts([
     {
       type: 'text',
       name: 'variationName',
       message: 'Enter the name of the new variation:',
-      validate: (input) => input.trim() !== '' || 'Variation name cannot be empty',
+      validate: (input) => {
+        const trimmedInput = input.trim();
+        if (testInfo.variations.some(v => v.name === trimmedInput)) {
+          return 'Variation name already exists';
+        }
+        return trimmedInput !== '' || 'Variation name cannot be empty';
+      },
     },
   ]);
 
