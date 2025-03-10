@@ -40,8 +40,6 @@ async function handleTestDetails(selectedWebsite, selectedTest) {
             if (typeof touchPointDetails === 'string') {
               console.log('TouchPoint Details:', touchPointDetails);
             }
-          } else {
-            console.log('Unexpected Selection:', selectedTouchPoint);
           }
         }
         break;
@@ -449,7 +447,6 @@ async function createNewTest(website) {
   if (!testName || !testType || (testType === 'Multi-touch' && !touchPointName) || !variationName) return null;
 
   try {
-    console.log(chalk.green(`Test "${testName}" created successfully for website "${website}".`));
     return await createTest(website, testName, testType, touchPointName, variationName);
   } catch (error) {
     console.error(chalk.red(`Failed to create test: ${error.message}`));
@@ -489,7 +486,6 @@ async function createNewVariation(website, testName) {
   const { variationName } = createResponse;
 
   try {
-    console.log(chalk.green(`Variation "${variationName}" created successfully for test "${testName}".`));
     return await createVariation(website, testName, variationName);
   } catch (error) {
     console.error(chalk.red(`Failed to create variation: ${error.message}`));

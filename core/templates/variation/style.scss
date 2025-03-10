@@ -1,1 +1,15 @@
-/* SCSS file for variation styling */
+html {
+    position: relative;
+
+    &::before {
+        content: "AB test pilot CSS";
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 99999999999;
+        background: #ff0000;
+        color: #ffffff;
+        padding: 10px;
+        border: 7px solid #269b11;
+    }
+}

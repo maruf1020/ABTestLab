@@ -4,6 +4,13 @@
     script.src = "http://localhost:3000/socket-io-client.js"
     script.onload = initializeABTest
     document.head.appendChild(script)
+    script.onerror = function () {
+        console.log("local server failed to load, trying to load from cdn")
+        var script = document.createElement("script")
+        script.src = "https://cdn.socket.io/4.5.4/socket.io.min.js"
+        script.onload = initializeABTest
+        document.head.appendChild(script)
+    }
 
     function initializeABTest() {
         let config = {}
