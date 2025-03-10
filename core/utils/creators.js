@@ -61,7 +61,6 @@ async function initCopyVariationFolder(destination, variationName) {
         if (touchPointVariations && touchPointVariations.includes(variationName)) {
           return variationInfoList;
         }
-
         const info = await copyVariationFolder(true, touchPointDir, variationName, testInfo, destination, touchPointInfo);
         variationInfoList.push(info);
       }));
@@ -100,6 +99,7 @@ async function copyVariationFolder(isMultiTouchTest, destination, variationName,
       testInfo.variations.push(variationName);
     }
   }
+  testInfo.lastUpdated = new Date().toISOString();
   await fs.writeJson(path.join(testDestination, "info.json"), testInfo, { spaces: 2 });
 
   if (isMultiTouchTest) {
@@ -110,6 +110,7 @@ async function copyVariationFolder(isMultiTouchTest, destination, variationName,
         touchPointInfo.variations.push(variationName);
       }
     }
+    touchPointInfo.lastUpdated = new Date().toISOString();
     await fs.writeJson(path.join(destination, "info.json"), touchPointInfo, { spaces: 2 });
   }
 
@@ -260,3 +261,51 @@ export async function createTouchPoint(website, test, touchPointName) {
   }
 }
 
+export async function renameVariation(website, test, variation, newName) {
+  console.log("website", website, "test", test, "variation", variation, "newName", newName);
+  const info = [];
+  try {
+    const testDir = path.join(ROOT_DIR, website, test);
+    const testInfo = await fs.readJson(path.join(testDir, "info.json"));
+
+    testInfo.variations = testInfo.variations.map((v) => (v === variation ? newName : v));
+    testInfo.lastUpdated = new Date().toISOString();
+    await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 });
+
+    if (testInfo.type === "Multi-touch") {
+      const touchPoints = testInfo.touchPoints;
+      if (touchPoints.length >= 1) {
+        await Promise.all(touchPoints.map(async (touchPoint) => {
+          const VariationDir = path.join(testDir, touchPoint, variation);
+          if (await fs.pathExists(VariationDir)) {
+            await updateName(VariationDir, newName);
+          }
+          const touchPointDir = path.join(testDir, touchPoint);
+          const touchPointInfo = await fs.readJson(path.join(touchPointDir, "info.json"));
+          touchPointInfo.variations = touchPointInfo.variations.map((v) => (v === variation ? newName : v));
+          touchPointInfo.lastUpdated = new Date().toISOString();
+          await fs.writeJson(path.join(touchPointDir, "info.json"), touchPointInfo, { spaces: 2 });
+        }));
+      }
+    } else {
+      const variationDir = path.join(testDir, variation);
+      await updateName(variationDir, newName);
+    }
+
+    async function updateName(variationDir, newName) {
+      const variationInfo = await fs.readJson(path.join(variationDir, "info.json"));
+      variationInfo.name = newName;
+      variationInfo.lastUpdated = new Date().toISOString();
+      info.push(variationInfo);
+      await fs.writeJson(path.join(variationDir, "info.json"), variationInfo, { spaces: 2 });
+      await fs.rename(variationDir, path.join(path.dirname(variationDir), newName));
+    }
+
+    console.log(kleur.green(`Variation "${variation}" renamed to "${newName}" successfully for test "${test}" in website "${website}".`));
+
+    return info;
+  } catch (error) {
+    console.error(kleur.red(`Failed to rename variation: ${error.message}`));
+    throw error;
+  }
+}

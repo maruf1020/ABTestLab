@@ -1,9 +1,10 @@
 import { Command } from "commander"
 import prompts from "prompts"
-import { createWebsite, createTest, createTouchPoint, createVariation } from "../utils/creators.js"
-import { listWebsites, listTests, listTouchPoints, listVariations, listTouchPointsAndVariations, getTestInfo } from "../utils/fileUtils.js"
+import { createWebsite, createTest, createTouchPoint, createVariation, renameVariation } from "../utils/creators.js"
+import { listWebsites, listTests, listTouchPoints, listVariations, listTouchPointsAndVariations, getTestInfo, getVariationInfo } from "../utils/fileUtils.js"
 import chalk from "chalk"
 import kleur from "kleur"
+import Table from 'cli-table3';
 
 export const createCommand = new Command("create").description("Create a new website or test").action(create)
 
@@ -250,9 +251,28 @@ async function selectVariationDetails(selectedWebsite, selectedTest, selectedVar
         console.log(kleur.yellow("Under development"));
         break;
       case "details":
-        // See test details
-        console.log(kleur.yellow("Under development"));
-        break;
+        const variationInfo = await getVariationInfo(selectedWebsite, selectedTest, selectedVariation);
+        if (variationInfo) {
+          const formattedCreatedAt = new Date(variationInfo.createdAt).toLocaleString();
+          const formattedLastUpdated = new Date(variationInfo.lastUpdated).toLocaleString();
+
+          const table = new Table({
+            head: ['Key', 'Value']
+          });
+
+          table.push(
+            ['ID', variationInfo.id],
+            ['Name', variationInfo.name],
+            ['Created At', formattedCreatedAt],
+            ['Last Updated', formattedLastUpdated]
+          );
+
+          console.log('Variation Details:');
+          console.log(table.toString());
+        } else {
+          console.log(chalk.red('Failed to get variation details'));
+        }
+        return null;
       case "build":
         // Build variation
         console.log(kleur.yellow("Under development"));
@@ -263,7 +283,26 @@ async function selectVariationDetails(selectedWebsite, selectedTest, selectedVar
         break;
       case "rename":
         // Rename variation
-        console.log(kleur.yellow("Under development"));
+        const renameResponse = await prompts({
+          type: 'text',
+          name: 'newName',
+          message: 'Enter the new name for the variation:',
+          validate: (input) => input.trim() !== '' || 'Variation name cannot be empty',
+        });
+
+        const { newName } = renameResponse;
+
+        try {
+          const renameVariationResponse = await renameVariation(selectedWebsite, selectedTest, selectedVariation, newName);
+          // if (renameVariationResponse) {
+          //   console.log(chalk.green(`Variation "${selectedVariation}" renamed to "${newName}" successfully.`));
+          // } else {
+          //   console.error(chalk.red('Failed to rename variation'));
+          // }
+        } catch (error) {
+          console.error(chalk.red(`Failed to rename variation: ${error.message}`));
+        }
+
         break;
       case "copy-to-another-test":
         // Copy variation to another test
@@ -473,7 +512,6 @@ async function createNewTouchPoint(website, testName) {
   const { touchPointName } = createResponse;
 
   try {
-    console.log(chalk.green(`Touch point "${touchPointName}" created successfully for test "${testName}".`));
     return await createTouchPoint(website, testName, touchPointName);
   } catch (error) {
     console.error(chalk.red(`Failed to create touch point: ${error.message}`));
