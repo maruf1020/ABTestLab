@@ -671,7 +671,7 @@ async function startTest(website, test, variation, testType) {
     log(`Active variation: ${variation}`)
 
     await startTestServer([{ website, test, variation, testType }])
-    await updateHistory([{ websiteName: website, testName: test, variationName: variation, testType }])
+    await updateHistory([{ website, test, variation, testType }])
 }
 async function startMultipleTest(selectedVariations) {
     const testDirList = selectedVariations.map((v) => path.join(ROOT_DIR, v.website, v.test))
@@ -719,6 +719,6 @@ async function startMultipleTest(selectedVariations) {
     log(`Active variations: ${selectedVariations.map((v) => "website: " + v.website + " test: " + v.test + " variation: " + v.variation).join(", ")}`)
 
     await startTestServer(selectedVariations)
-    await updateHistory(selectedVariations.map((v) => ({ websiteName: v.website, testName: v.test, variationName: v.variation, testType: v.testType })))
+    await updateHistory(selectedVariations.map((v) => ({ website: v.website, test: v.test, variation: v.variation, testType: v.testType })))
 }
 

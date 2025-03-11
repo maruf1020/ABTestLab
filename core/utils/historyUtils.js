@@ -11,6 +11,10 @@ export async function loadHistory() {
     return []
 }
 
+export async function clearHistory() {
+    await fs.writeJson(historyPath, [])
+}
+
 export async function updateHistory(newTests) {
     let history = await loadHistory()
     const settings = await fs.readJson(settingsPath)
@@ -19,7 +23,12 @@ export async function updateHistory(newTests) {
     // Create a new entry
     const newEntry = {
         lastRun: new Date().toISOString(),
-        tests: newTests,
+        tests: newTests.map(({ website, test, variation, testType }) => ({
+            websiteName: website,
+            testName: test,
+            variationName: variation,
+            testType,
+        })),
     }
 
     // Remove duplicates
@@ -39,6 +48,32 @@ export async function updateHistory(newTests) {
     } catch (error) {
         console.error("Error writing history file:", error)
     }
+}
+
+export async function changeVariationsNameOnHistory(test, newVariationName) {
+    const history = await loadHistory()
+    const newHistory = history.map((entry) => {
+        const newTests = entry.tests.map((testInfo) => {
+            if (
+                testInfo.websiteName === test.website &&
+                testInfo.testName === test.test &&
+                testInfo.variationName === test.variation &&
+                testInfo.testType === test.testType
+            ) {
+                return {
+                    ...testInfo,
+                    variationName: newVariationName,
+                }
+            }
+            return testInfo
+        })
+        return {
+            ...entry,
+            tests: newTests,
+        }
+    })
+
+    await fs.writeJson(historyPath, newHistory, { spaces: 2 })
 }
 
 function isDuplicate(existingEntry, newEntry) {
