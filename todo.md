@@ -1,21 +1,23 @@
 #TODO
+#### we will create I global command -> npm run cli
+    - which will display the main options
+        - Start (with a mindful name and a hint also)
+             (Here build will be just an option when user select a variation then ask for run, build and info)
+        - Create (with a mindful name and a hint also)
+        - settings (with a mindful name and a hint also)
+        - init (with a mindful name and a hint also)
+        - Build (with a mindful name and a hint also)
 
-### Enhancement required     
-    - For "npm run cli create"
-        - Need to add option for create variation
-            - Have to be careful of general test and multi touch test. For a multi touch test if user create any variation there then all the touch point will get the same variation
-        - Need to create ability to create touch point.
-            - for creating any new touch point, automatically added targeting, info and variations which other touch point contain. 
-        -Have to confirm that no duplicate website name inside the website list. inside any website there should not be any same name test name. same as inside test there should not same name touch point or test. Also for touch point and test there should not be same name multiple variation. So all will be unique. 
+### user can run test from create function
+    - have to cleaning the code for start file
+        - cleaning code
+        - re-usable function
+        - make some function export so that later we are able to run test outside the start file
+        - need to use fileUtils function as maximum as possible
+        - have to remove list.js and testUtil js from from command folder
+    - hove to provide option to run a test directly from create option
+    - need to remove the option start single test from start option (Not sure yet)
 
-### Need to add UI for test details.
-    - for single test
-        - all type of test
-        - specially multi touch test
-        - need ui design from Shoyaib
-        - have to create a draft design 
-        - need option to force run test
-        - change variation option (later implementation)
 
 ### allow user to create build files
     - There will be a new command npm run cli build 
@@ -33,14 +35,14 @@
         - a js file which contain css and js both. for css we will inject a script tag and on that tag we will inset all the css.
         - On setting command user can on of for different type of file !IMPOTENT
 
-#### we will create I global command -> npm run cli
-    - which will display the main options
-        - Start (with a mindful name and a hint also)
-             (Here build will be just an option when user select a variation then ask for run, build and info)
-        - Create (with a mindful name and a hint also)
-        - settings (with a mindful name and a hint also)
-        - init (with a mindful name and a hint also)
-        - Build (with a mindful name and a hint also)
+### Need to add UI for test details.
+    - for single test
+        - all type of test
+        - specially multi touch test
+        - need ui design from Shoyaib
+        - have to create a draft design 
+        - need option to force run test
+        - change variation option (later implementation)
 
 
 ### have to remove unnecessary library and files and folder 

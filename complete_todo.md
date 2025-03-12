@@ -1,4 +1,84 @@
 ## Complete TODO
+------------------------------------------------------------------------------------
+Date: 13-MAR-2025
+------------------------------------------------------------------------------------
+### Enhancement required     
+    - Added an option to rename variation and touch point
+    - added an option to see details for variation and touch point
+    - added an option to delete any variation and touch point
+
+------------------------------------------------------------------------------------
+Date: 12-MAR-2025
+------------------------------------------------------------------------------------
+### Enhancement required     
+    - added option to rename variation
+
+------------------------------------------------------------------------------------
+Date: 11-MAR-2025
+------------------------------------------------------------------------------------
+### Enhancement required     
+    - code re structure
+
+------------------------------------------------------------------------------------
+Date: 10-MAR-2025
+------------------------------------------------------------------------------------
+### Enhancement required     
+    - For "npm run cli create"
+        -confirm that no duplicate website name inside the website list. inside any website there should not be any same name test name. same as inside test there should not same name touch point or test. Also for touch point and test there should not be same name multiple variation. So all will be unique. 
+
+------------------------------------------------------------------------------------
+Date: 09-MAR-2025
+------------------------------------------------------------------------------------
+### Enhancement required     
+    - For "npm run cli create"
+        - created ability to create touch point.
+            - for creating any new touch point, automatically added targeting, info and variations which other touch point contain.
+
+------------------------------------------------------------------------------------
+Date: 08-MAR-2025
+------------------------------------------------------------------------------------
+### Enhancement required     
+    - For "npm run cli create"
+        - Added an option for create variation   
+            - make it workable
+
+------------------------------------------------------------------------------------
+Date: 07-MAR-2025
+------------------------------------------------------------------------------------
+### Enhancement required     
+    - For "npm run cli create"
+        - Added an option for create variation            
+
+------------------------------------------------------------------------------------
+Date: 06-MAR-2025
+------------------------------------------------------------------------------------
+### Enhancement required     
+    - update license 
+    - Added option for delete, rename, details for touch points and variations
+
+------------------------------------------------------------------------------------
+Date: 05-MAR-2025
+------------------------------------------------------------------------------------
+### Enhancement required     
+    - make the back and exit feature for all kind of step on create menu 
+
+------------------------------------------------------------------------------------
+Date: 04-MAR-2025
+------------------------------------------------------------------------------------
+### Enhancement required     
+    - make the back and exit feature for test, variation and touchPoint
+
+------------------------------------------------------------------------------------
+Date: 03-MAR-2025
+------------------------------------------------------------------------------------
+### Enhancement required     
+    - make the back and exit feature for website and test selection 
+
+------------------------------------------------------------------------------------
+Date: 02-MAR-2025
+------------------------------------------------------------------------------------
+### Enhancement required     
+    - change file structure 
 
 ------------------------------------------------------------------------------------
 Date: 01-MAR-2025
@@ -315,4 +395,3 @@ Date: 9-FEB-2025
                 ``` 
 
     - for any test will add a 
-
