@@ -1,4 +1,4 @@
-import fs, { copy } from "fs-extra"
+import fs from "fs-extra"
 import path from "path"
 import prompts from "prompts"
 import kleur from "kleur"
@@ -6,6 +6,7 @@ import { ROOT_DIR, SKELETON_DIR } from "../config.js"
 import { initializeSkeleton } from "./init.js"
 import { bundleVariation, bundleTargeting } from "./bundler.js"
 import { changeVariationsNameOnHistory } from "./historyUtils.js"
+import { getTestInfo } from "./fileUtils.js"
 
 function generateId(name) {
   const timestamp = Date.now()
@@ -158,8 +159,8 @@ export async function createTest(website, testName, testType, touchPointName, va
         break
       case "Multi-touch":
         await createTouchPoint(website, testName, touchPointName)
-        await createTouchPoint(website, testName, "control")
         await createVariation(website, testName, variationName)
+        await createVariation(website, testName, "control")
         break
       case "Patch":
         await createVariation(website, testName, variationName)
@@ -336,4 +337,75 @@ export async function renameVariation(website, test, variation, newName) {
     console.error(kleur.red(`Failed to rename variation: ${error.message}`));
     throw error;
   }
+}
+
+export async function renameTouchPoint(website, test, touchPoint, newName) {
+  try {
+    const testDir = path.join(ROOT_DIR, website, test);
+    const testInfo = await fs.readJson(path.join(testDir, "info.json"));
+
+    testInfo.touchPoints = testInfo.touchPoints.map((tp) => (tp === touchPoint ? newName : tp));
+    testInfo.lastUpdated = new Date().toISOString();
+    await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 });
+
+    const touchPointDir = path.join(testDir, touchPoint);
+    const touchPointInfo = await fs.readJson(path.join(touchPointDir, "info.json"));
+    touchPointInfo.name = newName;
+    touchPointInfo.lastUpdated = new Date().toISOString();
+    await fs.writeJson(path.join(touchPointDir, "info.json"), touchPointInfo, { spaces: 2 });
+    await fs.rename(touchPointDir, path.join(path.dirname(touchPointDir), newName));
+
+    console.log(kleur.green(`TouchPoint "${touchPoint}" renamed to "${newName}" successfully for test "${test}" in website "${website}".`));
+
+    return touchPointInfo;
+  } catch (error) {
+    console.error(kleur.red(`Failed to rename touchPoint: ${error.message}`));
+    throw error;
+  }
+}
+
+export async function removeVariation(website, test, variation) {
+  const testInfo = await getTestInfo(website, test)
+  if (testInfo.variations.length === 1) {
+    throw new Error('Cannot remove the only variation')
+  }
+
+  const variationDir = path.join(ROOT_DIR, website, test, variation)
+  await fs.remove(variationDir)
+
+  testInfo.variations = testInfo.variations.filter(v => v !== variation)
+  testInfo.lastUpdated = new Date().toISOString()
+  await fs.writeJson(path.join(ROOT_DIR, website, test, 'info.json'), testInfo, { spaces: 2 })
+
+  if (testInfo.type === 'Multi-touch') {
+    const touchPoints = testInfo.touchPoints
+    await Promise.all(touchPoints.map(async tp => {
+      const tpInfo = await fs.readJson(path.join(ROOT_DIR, website, test, tp, 'info.json'))
+      tpInfo.variations = tpInfo.variations.filter(v => v !== variation)
+      tpInfo.lastUpdated = new Date().toISOString()
+      await fs.writeJson(path.join(ROOT_DIR, website, test, tp, 'info.json'), tpInfo, { spaces: 2 })
+      const tpVariationDir = path.join(ROOT_DIR, website, test, tp, variation)
+      if (await fs.pathExists(tpVariationDir)) {
+        await fs.remove(tpVariationDir)
+      }
+    }))
+  }
+
+  return await getTestInfo(website, test)
+}
+
+export async function removeTouchPoint(website, test, touchPoint) {
+  const testInfo = await getTestInfo(website, test)
+  if (testInfo.touchPoints.length === 1) {
+    throw new Error('Cannot remove the only touchPoint')
+  }
+
+  const touchPointDir = path.join(ROOT_DIR, website, test, touchPoint)
+  await fs.remove(touchPointDir)
+
+  testInfo.touchPoints = testInfo.touchPoints.filter(tp => tp !== touchPoint)
+  testInfo.lastUpdated = new Date().toISOString()
+  await fs.writeJson(path.join(ROOT_DIR, website, test, 'info.json'), testInfo, { spaces: 2 })
+
+  return await getTestInfo(website, test)
 }

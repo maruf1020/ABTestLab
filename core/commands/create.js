@@ -1,7 +1,7 @@
 import { Command } from "commander"
 import prompts from "prompts"
-import { createWebsite, createTest, createTouchPoint, createVariation, renameVariation } from "../utils/creators.js"
-import { listWebsites, listTests, listTouchPoints, listVariations, listTouchPointsAndVariations, getTestInfo, getVariationInfo } from "../utils/fileUtils.js"
+import { createWebsite, createTest, createTouchPoint, createVariation, renameVariation, renameTouchPoint, removeVariation, removeTouchPoint } from "../utils/creators.js"
+import { listWebsites, listTests, listTouchPoints, listVariations, listTouchPointsAndVariations, getTestInfo, getVariationInfo, getTouchPointInfo } from "../utils/fileUtils.js"
 import chalk from "chalk"
 import kleur from "kleur"
 import Table from 'cli-table3';
@@ -279,7 +279,17 @@ async function selectVariationDetails(selectedWebsite, selectedTest, selectedVar
         break;
       case "remove":
         // Remove variation
-        console.log(kleur.yellow("Under development"));
+        const testInfo = await getTestInfo(selectedWebsite, selectedTest);
+        if (testInfo.variations.length > 1) {
+          const removeVariationResponse = await removeVariation(selectedWebsite, selectedTest, selectedVariation);
+          if (removeVariationResponse) {
+            console.log(chalk.green(`Variation "${selectedVariation}" removed successfully.`));
+          } else {
+            console.error(chalk.red('Failed to remove variation'));
+          }
+        } else {
+          console.log(kleur.yellow("You need minimum 1 variation to run the test. You can not delete the only variation available."));
+        }
         break;
       case "rename":
         // Rename variation
@@ -294,19 +304,15 @@ async function selectVariationDetails(selectedWebsite, selectedTest, selectedVar
 
         try {
           const renameVariationResponse = await renameVariation(selectedWebsite, selectedTest, selectedVariation, newName);
-          // if (renameVariationResponse) {
-          //   console.log(chalk.green(`Variation "${selectedVariation}" renamed to "${newName}" successfully.`));
-          // } else {
-          //   console.error(chalk.red('Failed to rename variation'));
-          // }
+          if (renameVariationResponse) {
+            console.log(chalk.green(`Variation "${selectedVariation}" renamed to "${newName}" successfully.`));
+          } else {
+            console.error(chalk.red('Failed to rename variation'));
+          }
         } catch (error) {
           console.error(chalk.red(`Failed to rename variation: ${error.message}`));
         }
 
-        break;
-      case "copy-to-another-test":
-        // Copy variation to another test
-        console.log(kleur.yellow("Under development"));
         break;
       case "back":
         // Go back
@@ -328,11 +334,9 @@ async function selectVariationDetails(selectedWebsite, selectedTest, selectedVar
 async function selectTouchPointDetails(selectedWebsite, selectedTest, selectedTouchPoint, goBack) {
   try {
     const options = [
-      { title: "See Test Details", value: "details" },
-      { title: "Remove Touch Point", value: "remove" },
+      { title: "See Touch Point Details", value: "details" },
       { title: "Rename Touch Point", value: "rename" },
-      { title: "Build All variation inside Touch Point", value: "build-all-variation" },
-      { title: "Copy Touch Point to Another Test", value: "copy-to-another-test" },
+      { title: "Remove Touch Point", value: "remove" },
       { title: "Go Back", value: "back" },
       { title: "Exit", value: "exit" },
     ];
@@ -347,23 +351,63 @@ async function selectTouchPointDetails(selectedWebsite, selectedTest, selectedTo
     switch (response.choice) {
       case "details":
         // See test details
-        console.log(kleur.yellow("Under development"));
-        break;
-      case "remove":
-        // Remove touch point
-        console.log(kleur.yellow("Under development"));
+        const touchPointInfo = await getTouchPointInfo(selectedWebsite, selectedTest, selectedTouchPoint);
+        if (touchPointInfo) {
+          const formattedCreatedAt = new Date(touchPointInfo.createdAt).toLocaleString();
+          const formattedLastUpdated = new Date(touchPointInfo.lastUpdated).toLocaleString();
+
+          const table = new Table({
+            head: ['Key', 'Value']
+          });
+
+          table.push(
+            ['ID', touchPointInfo.id],
+            ['Name', touchPointInfo.name],
+            ['Created At', formattedCreatedAt],
+            ['Last Updated', formattedLastUpdated]
+          );
+
+          console.log('Touch Point Details:');
+          console.log(table.toString());
+        } else {
+          console.log(chalk.red('Failed to get touch point details'));
+        }
         break;
       case "rename":
         // Rename touch point
-        console.log(kleur.yellow("Under development"));
+        const renameResponse = await prompts({
+          type: 'text',
+          name: 'newName',
+          message: 'Enter the new name for the touch point:',
+          validate: (input) => input.trim() !== '' || 'Touch point name cannot be empty',
+        });
+
+        const { newName } = renameResponse;
+
+        try {
+          const renameTouchPointResponse = await renameTouchPoint(selectedWebsite, selectedTest, selectedTouchPoint, newName);
+          if (renameTouchPointResponse) {
+            console.log(chalk.green(`Touch point "${selectedTouchPoint}" renamed to "${newName}" successfully.`));
+          } else {
+            console.error(chalk.red('Failed to rename touch point'));
+          }
+        } catch (error) {
+          console.error(chalk.red(`Failed to rename touch point: ${error.message}`));
+        }
         break;
-      case "build-all-variation":
-        // Build all variation inside touch point
-        console.log(kleur.yellow("Under development"));
-        break;
-      case "copy-to-another-test":
-        // Copy touch point to another test
-        console.log(kleur.yellow("Under development"));
+      case "remove":
+        // Remove touch point
+        const testInfo = await getTestInfo(selectedWebsite, selectedTest);
+        if (testInfo.touchPoints.length > 1) {
+          const removeTouchPointResponse = await removeTouchPoint(selectedWebsite, selectedTest, selectedTouchPoint);
+          if (removeTouchPointResponse) {
+            console.log(chalk.green(`Touch point "${selectedTouchPoint}" removed successfully.`));
+          } else {
+            console.error(chalk.red('Failed to remove touch point'));
+          }
+        } else {
+          console.log(kleur.yellow("You need minimum 1 touch point to run the test. You can not delete the only touch point available."));
+        }
         break;
       case "back":
         // Go back
