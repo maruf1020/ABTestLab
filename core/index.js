@@ -14,6 +14,7 @@ const availableCommands = {
     start: startCommand,
     create: createCommand,
     settings: settingsCommand,
+    exit: () => process.exit(0),
 };
 
 const commandAbbreviations = {
@@ -22,6 +23,7 @@ const commandAbbreviations = {
     s: 'start',
     c: 'create',
     set: 'settings',
+    e: 'exit',
 };
 
 const userFriendlyNames = {
@@ -30,6 +32,7 @@ const userFriendlyNames = {
     start: 'Start the server',
     create: 'Create a new item',
     settings: 'Update settings',
+    exit: 'Exit',
 };
 
 program.version("1.0.7").description("A CLI tool for A/B testing directly from a local machine");
@@ -49,7 +52,11 @@ async function promptUser() {
     });
 
     if (response.command) {
-        program.parse(["node", "cli", response.command]);
+        if (response.command === 'exit') {
+            process.exit(0);
+        } else {
+            program.parse(["node", "cli", response.command]);
+        }
     }
 }
 
@@ -63,7 +70,11 @@ export function runCLI() {
             command = commandAbbreviations[command];
         }
         if (availableCommands[command]) {
-            program.parse(["node", "cli", command]);
+            if (command === 'exit') {
+                process.exit(0);
+            } else {
+                program.parse(["node", "cli", command]);
+            }
         } else {
             console.error(`Unknown command: ${args[0]}`);
             process.exit(1);
