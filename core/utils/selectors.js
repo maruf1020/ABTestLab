@@ -6,6 +6,7 @@ import prompts from "prompts"
 import { renameVariation, renameTouchPoint, removeVariation, removeTouchPoint } from "./creators.js"
 import { listWebsites, listTests, listVariations, listTouchPointsAndVariations, getTestInfo, getVariationInfo, getTouchPointInfo } from "./fileUtils.js"
 import { createNewWebsiteWithPrompt, createNewTestWithPrompt, createNewTouchPointWithPrompt, createNewVariationWithPrompt } from "./creatorPrompts.js"
+import { runCLI } from "../index.js";
 
 export async function selectWebsite() {
     try {
@@ -30,8 +31,7 @@ export async function selectWebsite() {
                 const websiteInfo = await createNewWebsiteWithPrompt();
                 return websiteInfo ? websiteInfo.name : null;
             case "back":
-                // goBack();
-                console.log(kleur.yellow("npm run cli is now under development. Please run the command again to continue."));
+                runCLI();
                 return null;
             case "exit":
                 process.exit(0);

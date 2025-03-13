@@ -3,8 +3,8 @@ import path from "path"
 import kleur from "kleur"
 import prompts from "prompts"
 
+import { init } from "../commands/init.js"
 import { getTestInfo } from "./fileUtils.js"
-import { initializeSkeleton } from "../scripts/createSkeleton.js"
 import { ROOT_DIR, SKELETON_DIR } from "../global/config.js"
 import { changeVariationsNameOnHistory } from "./historyUtils.js"
 import { bundleVariation, bundleTargeting } from "./bundler.js"
@@ -26,7 +26,7 @@ async function ensureSkeletonExist() {
       initial: true,
     })
     if (response.initializeSkeleton) {
-      await initializeSkeleton()
+      await init()
     } else {
       throw new Error('Skeleton are required. Please run "npm run cli init" to create skeleton.')
     }
@@ -367,7 +367,7 @@ export async function renameTouchPoint(website, test, touchPoint, newName) {
 
 export async function removeVariation(website, test, variation) {
   const testInfo = await getTestInfo(website, test)
-  if (testInfo.variations.length === 1) {
+  if (testInfo.variations.length === 2) {
     throw new Error('Cannot remove the only variation')
   }
 
@@ -397,7 +397,7 @@ export async function removeVariation(website, test, variation) {
 
 export async function removeTouchPoint(website, test, touchPoint) {
   const testInfo = await getTestInfo(website, test)
-  if (testInfo.touchPoints.length === 1) {
+  if (testInfo.touchPoints.length === 2) {
     throw new Error('Cannot remove the only touchPoint')
   }
 

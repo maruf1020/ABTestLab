@@ -1,100 +1,12 @@
 (()=>{
         const abTestPilotMainInformation = {
-  "parentTargeting": [
-    {
-      "parentTargetingId": "1741814620038_7423_Multi_touch",
-      "targetingFiles": {
-        "customJS": function activator(active) {
-    // document.body.addEventListener('click', (e) => {
-    //   active(true);
-    // });
-    return true;
-},
-        "elementChecker": {
-          "multiple_rules_check_by_condition": "OR",
-          "rules": [],
-          "_comments": {
-            "EXAMPLE": [
-              {
-                "selector": "body",
-                "is_matched": true,
-                "waiting_time": 1000,
-                "total_element_count": 1
-              },
-              {
-                "selector": ".grid-plp",
-                "is_matched": false,
-                "waiting_time": 2000,
-                "total_element_count": 1
-              }
-            ],
-            "multiple_rules_check_by_condition": "Use 'AND' to run the test only if all conditions are met. Use 'OR' to run the test if any condition is met.",
-            "keep the array empty": "If you want to run the test on all pages, keep the array empty.",
-            "selector": "Define the CSS selector for the element you want to check.",
-            "is_matched": "Set to 'true' if the element should be present, 'false' if it should not be.",
-            "waiting_time": "Time in milliseconds to wait for the element to appear.",
-            "total_element_count": "Number of elements that should match the selector."
-          }
-        },
-        "urlChecker": {
-          "multiple_rules_check_by_condition": "OR",
-          "targeting_rules": [
-            {
-              "value": "\u002Fhttps?:\\\u002F\\\u002F(www\\.)?[^\\s\u002F$.?#].[^\\s]*\u002Fgi",
-              "match_type": "REGEX_MATCHED"
-            }
-          ],
-          "_comment": {
-            "description": "Use 'targeting_rules' to define conditions for matching URLs.",
-            "rules": [
-              "Use 'AND' to run the test only if all conditions are met. Use 'OR' to run the test if any condition is met.",
-              "Use 'EXACTLY_MATCHED' to match the exact URL.",
-              "Use 'URL_CONTAINS' to check if the URL contains a specific substring.",
-              "Use 'URL_DOES_NOT_CONTAIN' to check if the URL does NOT contain a specific substring.",
-              "Use 'REGEX_MATCHED' to apply a regex pattern for matching URLs.",
-              "Use 'REGEX_DOES_NOT_MATCH' to apply a regex pattern that should NOT match URLs.",
-              "If multiple conditions are added, all will be checked against the target URLs.",
-              "By default, your test will only run under the website's hostname unless specified otherwise."
-            ],
-            "example": {
-              "multiple_rules_check_by_condition": "OR",
-              "targeting_rules": [
-                {
-                  "value": "https:\u002F\u002Fwww.example.com",
-                  "match_type": "EXACTLY_MATCHED"
-                },
-                {
-                  "value": "example.com",
-                  "match_type": "URL_CONTAINS"
-                },
-                {
-                  "value": "blockedsite.com",
-                  "match_type": "URL_DOES_NOT_CONTAIN"
-                },
-                {
-                  "value": "\u002Fexample\\.com\u002Fgi",
-                  "match_type": "REGEX_MATCHED"
-                },
-                {
-                  "value": "\u002Fforbidden\\.com\u002Fgi",
-                  "match_type": "REGEX_DOES_NOT_MATCH"
-                }
-              ]
-            }
-          }
-        }
-      },
-      "variationIdList": [
-        "1741814620100_4487_v01"
-      ]
-    }
-  ],
+  "parentTargeting": [],
   "testInfo": [
     {
       "hostnames": [
-        "onlinenotepad.org"
+        "www.loopearplugs.com"
       ],
-      "id": "1741814620100_4487_v01",
+      "id": "1741896798040_9098_var_02",
       "targetingFiles": {
         "customJS": function activator(active) {
     // document.body.addEventListener('click', (e) => {
@@ -176,15 +88,15 @@
           }
         }
       },
-      "testType": "Multi-touch",
+      "testType": "A\u002FB",
       "variationFiles": {
-        "css": "html {\n  position: relative;\n}\nhtml::before {\n  content: \"AB test pilot CSS\";\n  position: fixed;\n  top: 0;\n  left: 0;\n  z-index: 99999999999;\n  background: #815858;\n  color: #ffffff;\n  padding: 10px;\n  border: 7px solid #269b11;\n}",
-        "js": "function waitForElem(waitFor, callback, minElements = 1, isVariable = false, timer = 10000, frequency = 25) {\r\n    let elements = isVariable ? window[waitFor] : document.querySelectorAll(waitFor);\r\n    if (timer \u003C= 0) return;\r\n    (!isVariable && elements.length \u003E= minElements) || (isVariable && typeof window[waitFor] !== \"undefined\") ? callback(elements) : setTimeout(() =\u003E waitForElem(waitFor, callback, minElements, isVariable, timer - frequency), frequency);\r\n}\r\n\r\n\r\nfunction mainJs([body]) {\r\n    console.log(\"selector body found and here is the element-----\");\r\n\r\n    console.log('%cname: v-01', 'background: black;border: 2px solid green;color: white;display: block;text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);text-align: center;font-weight: bold;padding : 10px;margin : 10px');\r\n    console.log('name: v-01');\r\n}\r\n\r\nwaitForElem('body', mainJs);\n"
+        "css": "html {\n  position: relative;\n}\nhtml::before {\n  content: \"AB test pilot CSS\";\n  position: fixed;\n  top: 0;\n  left: 0;\n  z-index: 99999999999;\n  background: #ff0000;\n  color: #ffffff;\n  padding: 10px;\n  border: 7px solid #269b11;\n}",
+        "js": "function waitForElem(waitFor, callback, minElements = 1, isVariable = false, timer = 10000, frequency = 25) {\r\n    let elements = isVariable ? window[waitFor] : document.querySelectorAll(waitFor);\r\n    if (timer \u003C= 0) return;\r\n    (!isVariable && elements.length \u003E= minElements) || (isVariable && typeof window[waitFor] !== \"undefined\") ? callback(elements) : setTimeout(() =\u003E waitForElem(waitFor, callback, minElements, isVariable, timer - frequency), frequency);\r\n}\r\n\r\n\r\nfunction mainJs([body]) {\r\n    console.log(\"selector body found and here is the element\", body);\r\n\r\n    console.log('%cname: v-01', 'background: black;border: 2px solid green;color: white;display: block;text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);text-align: center;font-weight: bold;padding : 10px;margin : 10px');\r\n    console.log('name: v-01');\r\n}\r\n\r\nwaitForElem('body', mainJs);\n"
       },
-      "websiteName": "onlinenotepad",
-      "testName": "Multi touch",
-      "touchPointName": "Header",
-      "variationName": "v01"
+      "websiteName": "loopearplugs",
+      "testName": "AB test",
+      "touchPointName": null,
+      "variationName": "variaiton 02"
     }
   ],
   "targetMet": {
