@@ -7,7 +7,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-export async function createSkeleton() {
+export async function initializeSkeleton() {
     const skeletonDir = path.resolve(__dirname, "..", "..", "skeleton")
 
     // Create skeleton directory

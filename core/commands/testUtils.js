@@ -1,6 +1,7 @@
-import path from "path"
 import fs from "fs-extra"
-import { ROOT_DIR } from "../config.js"
+import path from "path"
+
+import { ROOT_DIR } from "../global/config.js"
 
 export async function listTests(website) {
     try {

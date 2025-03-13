@@ -1,11 +1,11 @@
-import prompts from "prompts"
 import chalk from "chalk"
 import kleur from "kleur"
 import Table from 'cli-table3';
+import prompts from "prompts"
 
+import { renameVariation, renameTouchPoint, removeVariation, removeTouchPoint } from "./creators.js"
 import { listWebsites, listTests, listVariations, listTouchPointsAndVariations, getTestInfo, getVariationInfo, getTouchPointInfo } from "./fileUtils.js"
 import { createNewWebsiteWithPrompt, createNewTestWithPrompt, createNewTouchPointWithPrompt, createNewVariationWithPrompt } from "./creatorPrompts.js"
-import { renameVariation, renameTouchPoint, removeVariation, removeTouchPoint } from "./creators.js"
 
 export async function selectWebsite() {
     try {

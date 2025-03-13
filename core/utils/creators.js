@@ -1,12 +1,13 @@
 import fs from "fs-extra"
 import path from "path"
-import prompts from "prompts"
 import kleur from "kleur"
-import { ROOT_DIR, SKELETON_DIR } from "../config.js"
-import { initializeSkeleton } from "./init.js"
-import { bundleVariation, bundleTargeting } from "./bundler.js"
-import { changeVariationsNameOnHistory } from "./historyUtils.js"
+import prompts from "prompts"
+
 import { getTestInfo } from "./fileUtils.js"
+import { initializeSkeleton } from "../scripts/createSkeleton.js"
+import { ROOT_DIR, SKELETON_DIR } from "../global/config.js"
+import { changeVariationsNameOnHistory } from "./historyUtils.js"
+import { bundleVariation, bundleTargeting } from "./bundler.js"
 
 function generateId(name) {
   const timestamp = Date.now()

@@ -1,7 +1,8 @@
 import path from "path"
 import chalk from "chalk"
 import { Command } from "commander"
-import { listTests, getTestInfo } from "./testUtils.js" // Ensure the correct path and file extension
+
+import { listTests, getTestInfo } from "./testUtils.js"
 
 export const listCommand = new Command("list")
   .description("List websites or tests")

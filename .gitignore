@@ -135,6 +135,6 @@ skeleton/
 
 history.json
 settings.json
+!.vscode/settings.json
 core/browser-Runner.js
 core/public
-settings.json

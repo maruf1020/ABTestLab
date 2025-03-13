@@ -1,6 +1,7 @@
 import { Command } from "commander"
-import { selectWebsite, selectTest, selectVariation, selectTouchPointAndVariations, selectVariationDetails, selectTouchPointDetails } from "../utils/selectors.js"
+
 import { getTestInfo } from "../utils/fileUtils.js"
+import { selectWebsite, selectTest, selectVariation, selectTouchPointAndVariations, selectVariationDetails, selectTouchPointDetails } from "../utils/selectors.js"
 
 export const createCommand = new Command("create").description("Create a new website or test").action(create)
 

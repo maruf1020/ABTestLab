@@ -1,14 +1,15 @@
-import http from "http"
-import { Server } from "socket.io"
 import fs from "fs-extra"
 import path from "path"
-import chokidar from "chokidar"
-import { ROOT_DIR } from "../config.js"
+import http from "http"
 import debug from "debug"
-import { fileURLToPath } from "url"
 import kleur from "kleur"
-import { bundleVariation, bundleTargeting } from "./bundler.js"
+import chokidar from "chokidar"
+import { Server } from "socket.io"
+import { ROOT_DIR } from "../global/config.js"
+import { fileURLToPath } from "url"
+
 import browserScriptCreator from "./browserScriptCreator.js"
+import { bundleVariation, bundleTargeting } from "../utils/bundler.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -32,12 +33,12 @@ export async function startTestServer(selectedVariations) {
 
     const server = http.createServer(async (req, res) => {
         if (req.url === "/ab-pilot-script.js") {
-            const scriptPath = path.join(__dirname, "..", "browser-Runner.js");
+            const scriptPath = path.join(__dirname, "..", "client", "browser-Runner.js");
             const content = await fs.readFile(scriptPath, "utf-8");
             res.writeHead(200, { "Content-Type": "application/javascript" });
             res.end(content);
         } else if (req.url === "/ab-test-script.js") {
-            const scriptPath = path.join(__dirname, "..", "browser-script.js");
+            const scriptPath = path.join(__dirname, "..", "client", "browser-script.js");
             const content = await fs.readFile(scriptPath, "utf-8");
             res.writeHead(200, { "Content-Type": "application/javascript" });
             res.end(content);

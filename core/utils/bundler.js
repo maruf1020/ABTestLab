@@ -1,9 +1,9 @@
+import * as sass from "sass";
 import fs from "fs-extra"
 import path from "path"
-import * as sass from "sass";
-import { rollup } from "rollup"
 import resolve from "@rollup/plugin-node-resolve"
 import commonjs from "@rollup/plugin-commonjs"
+import { rollup } from "rollup"
 
 export async function bundleVariation(variationDir, UpdateFile) {
     try {

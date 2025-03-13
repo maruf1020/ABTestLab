@@ -1,7 +1,7 @@
 import fs from "fs-extra"
 import path from "path"
-import { fileURLToPath } from "url"
 import serialize from 'serialize-javascript';
+import { fileURLToPath } from "url"
 
 export default async function browserScriptCreator(testInfo) {
     const __filename = fileURLToPath(import.meta.url)
@@ -38,7 +38,7 @@ export default async function browserScriptCreator(testInfo) {
         }
     }
 
-    const browserRunnerPath = path.join(coreDir, "browser-runner.js");
+    const browserRunnerPath = path.join(coreDir, "client", "browser-runner.js");
     // const jsonString = JSON.stringify(browserData, null, 2); // Pretty print with 2 spaces
     const SerializeString = serialize(browserData, { space: 2 }); // Pretty print with 2 spaces
     await fs.writeFileSync(browserRunnerPath, `(()=>{

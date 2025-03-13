@@ -1,8 +1,8 @@
-import { Command } from "commander";
 import fs from "fs-extra";
 import path from "path";
 import kleur from "kleur";
 import readline from "readline";
+import { Command } from "commander";
 
 const settingsPath = path.join(process.cwd(), "settings.json");
 

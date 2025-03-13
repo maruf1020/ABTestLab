@@ -1,14 +1,15 @@
-import { Command } from "commander"
-import prompts from "prompts"
-import kleur from "kleur"
-import path from "path"
 import fs from "fs-extra"
-import { ROOT_DIR } from "../config.js"
-import { listWebsites, listTests } from "../utils/fileUtils.js"
-import { startTestServer } from "../utils/testServer.js"
-import { updateHistory, loadHistory } from "../utils/historyUtils.js"
-import debug from "debug"
+import path from "path"
 import Table from "cli-table3"
+import debug from "debug"
+import kleur from "kleur"
+import prompts from "prompts"
+import { Command } from "commander"
+
+import { ROOT_DIR } from "../global/config.js"
+import { listWebsites, listTests } from "../utils/fileUtils.js"
+import { startTestServer } from "../server/testServer.js"
+import { updateHistory, loadHistory } from "../utils/historyUtils.js"
 
 const log = debug("ab-testing-cli:start")
 
