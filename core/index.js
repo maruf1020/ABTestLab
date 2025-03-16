@@ -2,35 +2,35 @@
 
 import { program } from "commander";
 import prompts from "prompts";
-import { listCommand } from "./commands/list.js";
+// import { listCommand } from "./commands/list.js";
 import { initCommand } from "./commands/init.js";
 import { startCommand } from "./commands/start.js";
 import { createCommand } from "./commands/create.js";
 import { settingsCommand } from "./commands/settings.js";
 
 const availableCommands = {
-    list: listCommand,
-    init: initCommand,
-    start: startCommand,
+    // list: listCommand,
     create: createCommand,
+    start: startCommand,
+    init: initCommand,
     settings: settingsCommand,
     exit: () => process.exit(0),
 };
 
 const commandAbbreviations = {
-    l: 'list',
-    i: 'init',
-    s: 'start',
+    // l: 'list',
     c: 'create',
+    s: 'start',
+    i: 'init',
     set: 'settings',
     e: 'exit',
 };
 
 const userFriendlyNames = {
-    list: 'List all items',
-    init: 'Initialize project',
-    start: 'Start the server',
+    // list: 'List all items',
     create: 'Create a new item',
+    start: 'Start the server',
+    init: 'Initialize project',
     settings: 'Update settings',
     exit: 'Exit',
 };
@@ -39,7 +39,7 @@ program.version("1.0.7").description("A CLI tool for A/B testing directly from a
 
 program.addCommand(initCommand);
 program.addCommand(createCommand);
-program.addCommand(listCommand);
+// program.addCommand(listCommand);
 program.addCommand(startCommand);
 program.addCommand(settingsCommand);
 

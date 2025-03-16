@@ -33,7 +33,8 @@ export async function bundleVariation(variationDir, UpdateFile) {
                 if (await fs.pathExists(jsFile)) {
                     const bundle = await rollup({
                         input: jsFile,
-                        plugins: [resolve(), commonjs()],
+                        plugins: [resolve()],
+                        // plugins: [resolve(), commonjs()],
                         output: {
                             format: "esm", // Ensures the output is not wrapped in an IIFE
                             // format: "iife", // Wraps the output inside an IIFE  (Immediately Invoked Function Expression)
@@ -71,7 +72,8 @@ export async function bundleTargeting(targetingDir) {
 
         const bundle = await rollup({
             input: jsFile,
-            plugins: [resolve(), commonjs()],
+            plugins: [resolve()],
+            // plugins: [resolve(), commonjs()],
             output: {
                 format: "esm", // Ensures the output is not wrapped in an IIFE
                 // format: "iife", // Wraps the output inside an IIFE  (Immediately Invoked Function Expression)
