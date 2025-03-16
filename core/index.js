@@ -30,10 +30,10 @@ const commandAbbreviations = {
 
 const userFriendlyNames = {
     // list: 'List all items',
-    create: 'Create a new item',
-    start: 'Start the server',
-    init: 'Initialize project',
-    settings: 'Update settings',
+    create: chalk.green('➕ Create a new item'),
+    start: chalk.green('🚀 Start the server'),
+    init: chalk.yellow('🛠️  Initialize project'),
+    settings: chalk.yellow('⚙️  Update settings'),
     exit: chalk.red('❌ Exit'),
 };
 

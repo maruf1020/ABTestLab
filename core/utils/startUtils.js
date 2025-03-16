@@ -45,7 +45,6 @@ export async function handleLatestTest(lastTest, goBack) {
     switch (action) {
         case "run":
             if (lastTest.tests.length > 1) {
-                console.log(kleur.yellow("Running last active tests (group)..."))
                 await startMultipleTest(lastTest.tests.map((test) => ({
                     website: test.websiteName,
                     test: test.testName,
@@ -53,7 +52,6 @@ export async function handleLatestTest(lastTest, goBack) {
                     testType: test.testType
                 })))
             } else {
-                console.log(kleur.yellow("Running last active test (single)..."))
                 await startTest(testData.websiteName, testData.testName, testData.variationName, testData.testType)
             }
             break

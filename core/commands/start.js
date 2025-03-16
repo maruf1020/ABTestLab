@@ -1,5 +1,6 @@
 import debug from "debug"
 import kleur from "kleur"
+import chalk from "chalk"
 import prompts from "prompts"
 import { Command } from "commander"
 
@@ -26,22 +27,14 @@ async function mainMenu(options) {
     const history = await loadHistory()
 
     const initialChoices = [
-        { title: "Run a Single Test", value: "single" },
-        {
-            title: "Run Group Tests",
-            value: "group",
-            submenu: [
-                { title: "Create Group Test", value: "create" },
-                { title: "Run from History", value: "history" },
-                { title: "View Group Test History", value: "viewHistory" }
-            ]
-        },
-        { title: "🔙 Back", value: "back" },
-        { title: "❌ Exit", value: "exit" },
+        { title: "🎯 Run a Single Test", value: "single" },
+        { title: "🚀 Run Group Tests", value: "group" },
+        { title: chalk.magenta('🔙 Back'), value: "back" },
+        { title: chalk.red('❌ Exit'), value: "exit" },
     ]
 
     if (history.length > 0) {
-        initialChoices.unshift({ title: "Latest test", value: "latest" }, { title: "View Test History", value: "history" })
+        initialChoices.unshift({ title: "🕒 Latest test", value: "latest" }, { title: "📚 View Test History", value: "history" })
     }
 
     while (true) {
@@ -50,6 +43,12 @@ async function mainMenu(options) {
             name: "action",
             message: kleur.magenta("What would you like to do?"),
             choices: initialChoices,
+            suggest: (input, choices) =>
+                Promise.resolve(
+                    choices.filter(choice =>
+                        choice.title.toLowerCase().includes(input.toLowerCase())
+                    )
+                ),
         })
 
         switch (action) {
