@@ -2,6 +2,8 @@
 
 import { program } from "commander";
 import prompts from "prompts";
+import chalk from "chalk";
+
 // import { listCommand } from "./commands/list.js";
 import { initCommand } from "./commands/init.js";
 import { startCommand } from "./commands/start.js";
@@ -32,7 +34,7 @@ const userFriendlyNames = {
     start: 'Start the server',
     init: 'Initialize project',
     settings: 'Update settings',
-    exit: 'Exit',
+    exit: chalk.red('❌ Exit'),
 };
 
 program.version("1.0.7").description("A CLI tool for A/B testing directly from a local machine");
@@ -45,10 +47,17 @@ program.addCommand(settingsCommand);
 
 async function promptUser() {
     const response = await prompts({
-        type: 'select',
+        type: 'autocomplete',
         name: 'command',
         message: 'Select a command to run',
         choices: Object.keys(availableCommands).map(command => ({ title: userFriendlyNames[command], value: command })),
+        suggest: (input, choices) =>
+            Promise.resolve(
+                choices.filter(choice =>
+                    choice.title.toLowerCase().includes(input.toLowerCase()) // Match anywhere
+                )
+            ),
+
     });
 
     if (response.command) {

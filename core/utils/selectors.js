@@ -6,17 +6,16 @@ import prompts from "prompts"
 import { renameVariation, renameTouchPoint, removeVariation, removeTouchPoint } from "./creators.js"
 import { listWebsites, listTests, listVariations, listTouchPointsAndVariations, getTestInfo, getVariationInfo, getTouchPointInfo } from "./fileUtils.js"
 import { createNewWebsiteWithPrompt, createNewTestWithPrompt, createNewTouchPointWithPrompt, createNewVariationWithPrompt } from "./creatorPrompts.js"
-import { runCLI } from "../index.js";
 
-export async function selectWebsite() {
+export async function selectWebsite(goBack) {
     try {
         // List available websites
         const websites = await listWebsites();
         const options = [
             { title: "Create New Website", value: "create" },
             ...websites.map(w => ({ title: w, value: w })),
-            { title: "Go Back", value: "back" },
-            { title: "Exit", value: "exit" },
+            { title: chalk.magenta('🔙 Back'), value: "back" },
+            { title: chalk.red('❌ Exit'), value: "exit" },
         ];
 
         const response = await prompts({
@@ -24,6 +23,12 @@ export async function selectWebsite() {
             name: "choice",
             message: "Select an option:",
             choices: options,
+            suggest: (input, choices) =>
+                Promise.resolve(
+                    choices.filter(choice =>
+                        choice.title.toLowerCase().includes(input.toLowerCase())
+                    )
+                ),
         });
 
         switch (response.choice) {
@@ -31,7 +36,7 @@ export async function selectWebsite() {
                 const websiteInfo = await createNewWebsiteWithPrompt();
                 return websiteInfo ? websiteInfo.name : null;
             case "back":
-                runCLI();
+                goBack();
                 return null;
             case "exit":
                 process.exit(0);
@@ -51,8 +56,8 @@ export async function selectTest(selectedWebsite, goBack) {
         const options = [
             { title: "Create New Test", value: "create" },
             ...tests.map(t => ({ title: t, value: t })),
-            { title: "Go Back", value: "back" },
-            { title: "Exit", value: "exit" },
+            { title: chalk.magenta('🔙 Back'), value: "back" },
+            { title: chalk.red('❌ Exit'), value: "exit" },
         ];
 
         const response = await prompts({
@@ -60,6 +65,12 @@ export async function selectTest(selectedWebsite, goBack) {
             name: "choice",
             message: "Select an option:",
             choices: options,
+            suggest: (input, choices) =>
+                Promise.resolve(
+                    choices.filter(choice =>
+                        choice.title.toLowerCase().includes(input.toLowerCase())
+                    )
+                ),
         });
 
         switch (response.choice) {
@@ -88,8 +99,8 @@ export async function selectVariation(selectedWebsite, selectedTest, goBack) {
         const options = [
             { title: "Create New Variation", value: "create" },
             ...variations.map(v => ({ title: v.name, value: v })),
-            { title: "Go Back", value: "back" },
-            { title: "Exit", value: "exit" },
+            { title: chalk.magenta('🔙 Back'), value: "back" },
+            { title: chalk.red('❌ Exit'), value: "exit" },
         ];
 
         if (testInfo.type === 'Patch') {
@@ -101,6 +112,12 @@ export async function selectVariation(selectedWebsite, selectedTest, goBack) {
             name: "choice",
             message: "Select an option:",
             choices: options,
+            suggest: (input, choices) =>
+                Promise.resolve(
+                    choices.filter(choice =>
+                        choice.title.toLowerCase().includes(input.toLowerCase())
+                    )
+                ),
         });
 
         switch (response.choice) {
@@ -135,8 +152,8 @@ export async function selectTouchPointAndVariations(selectedWebsite, selectedTes
 
         options.push(
             ...touchPointsAndVariations.map(item => ({ title: item.name + ' (' + (item.type === "variation" ? kleur.blue(item.type) : kleur.magenta(item.type)) + ')', value: item.name + ' (' + item.type + ')' })),
-            { title: "Go Back", value: "back" },
-            { title: "Exit", value: "exit" }
+            { title: chalk.magenta('🔙 Back'), value: "back" },
+            { title: chalk.red('❌ Exit'), value: "exit" },
         );
 
         const response = await prompts({
@@ -144,6 +161,12 @@ export async function selectTouchPointAndVariations(selectedWebsite, selectedTes
             name: "choice",
             message: "Select an option:",
             choices: options,
+            suggest: (input, choices) =>
+                Promise.resolve(
+                    choices.filter(choice =>
+                        choice.title.toLowerCase().includes(input.toLowerCase())
+                    )
+                ),
         });
 
         switch (response.choice) {
@@ -177,8 +200,8 @@ export async function selectVariationDetails(selectedWebsite, selectedTest, sele
             { title: "Remove Variation", value: "remove" },
             { title: "Rename Variation", value: "rename" },
             { title: "Copy Variation to Another Test", value: "copy-to-another-test" },
-            { title: "Go Back", value: "back" },
-            { title: "Exit", value: "exit" },
+            { title: chalk.magenta('🔙 Back'), value: "back" },
+            { title: chalk.red('❌ Exit'), value: "exit" },
         ];
 
         const response = await prompts({
@@ -186,6 +209,12 @@ export async function selectVariationDetails(selectedWebsite, selectedTest, sele
             name: "choice",
             message: "Select an option:",
             choices: options,
+            suggest: (input, choices) =>
+                Promise.resolve(
+                    choices.filter(choice =>
+                        choice.title.toLowerCase().includes(input.toLowerCase())
+                    )
+                ),
         });
 
         switch (response.choice) {
@@ -280,8 +309,8 @@ export async function selectTouchPointDetails(selectedWebsite, selectedTest, sel
             { title: "See Touch Point Details", value: "details" },
             { title: "Rename Touch Point", value: "rename" },
             { title: "Remove Touch Point", value: "remove" },
-            { title: "Go Back", value: "back" },
-            { title: "Exit", value: "exit" },
+            { title: chalk.magenta('🔙 Back'), value: "back" },
+            { title: chalk.red('❌ Exit'), value: "exit" },
         ];
 
         const response = await prompts({
@@ -289,6 +318,12 @@ export async function selectTouchPointDetails(selectedWebsite, selectedTest, sel
             name: "choice",
             message: "Select an option:",
             choices: options,
+            suggest: (input, choices) =>
+                Promise.resolve(
+                    choices.filter(choice =>
+                        choice.title.toLowerCase().includes(input.toLowerCase())
+                    )
+                ),
         });
 
         switch (response.choice) {

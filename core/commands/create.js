@@ -2,11 +2,12 @@ import { Command } from "commander"
 
 import { getTestInfo } from "../utils/fileUtils.js"
 import { selectWebsite, selectTest, selectVariation, selectTouchPointAndVariations, selectVariationDetails, selectTouchPointDetails } from "../utils/selectors.js"
+import { runCLI } from "../index.js";
 
 export const createCommand = new Command("create").description("Create a new website or test").action(create)
 
 async function create() {
-  const selectedWebsite = await selectWebsite();
+  const selectedWebsite = await selectWebsite(() => runCLI());
   if (typeof selectedWebsite === 'string') {
     await handleTestSelection(selectedWebsite);
   }

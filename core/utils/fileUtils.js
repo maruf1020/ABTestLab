@@ -18,7 +18,6 @@ export async function listWebsites() {
 }
 
 export async function listTests(website) {
-  console.log("website", website)
   const websiteDir = path.join(ROOT_DIR, website)
   const tests = await fs.readdir(websiteDir)
   return tests
