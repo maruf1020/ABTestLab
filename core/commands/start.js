@@ -27,14 +27,17 @@ async function mainMenu(options) {
     const history = await loadHistory()
 
     const initialChoices = [
-        { title: "🎯 Run a Single Test", value: "single" },
-        { title: "🚀 Run Group Tests", value: "group" },
+        { title: chalk.blueBright('🎯 Run a Single Test'), value: "single" },
+        { title: chalk.blueBright('🚀 Run Group Tests'), value: "group" },
         { title: chalk.magenta('🔙 Back'), value: "back" },
-        { title: chalk.red('❌ Exit'), value: "exit" },
+        { title: chalk.red('❌ Exit'), value: "exit" }
     ]
 
     if (history.length > 0) {
-        initialChoices.unshift({ title: "🕒 Latest test", value: "latest" }, { title: "📚 View Test History", value: "history" })
+        initialChoices.unshift(
+            { title: chalk.green('🕒 Latest Test'), value: "latest" },
+            { title: chalk.green('📚 View Test History'), value: "history" }
+        );
     }
 
     while (true) {
@@ -59,7 +62,8 @@ async function mainMenu(options) {
                 await viewTestHistory(history, "allTest", () => mainMenu())
                 return
             case "single":
-                await runSingleTest(options, () => mainMenu())
+                // await runSingleTest(options, () => mainMenu())
+                await runSingleTest(() => mainMenu())
                 return
             case "group":
                 await groupTestMenu(history, () => mainMenu())

@@ -32,8 +32,8 @@ const userFriendlyNames = {
     // list: 'List all items',
     create: chalk.green('➕ Create a new item'),
     start: chalk.green('🚀 Start the server'),
-    init: chalk.yellow('🛠️  Initialize project'),
-    settings: chalk.yellow('⚙️  Update settings'),
+    init: chalk.blueBright('🛠️  Initialize project'),
+    settings: chalk.blueBright('⚙️  Update settings'),
     exit: chalk.red('❌ Exit'),
 };
 

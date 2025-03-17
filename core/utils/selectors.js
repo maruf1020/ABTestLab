@@ -49,6 +49,44 @@ export async function selectWebsite(goBack) {
     }
 }
 
+export async function selectMultipleWebsite(goBack) {
+    try {
+        // List available websites
+        const websites = await listWebsites();
+        const options = [
+            ...websites.map(w => ({ title: w, value: w })),
+            { title: chalk.magenta('🔙 Back'), value: "back" },
+            { title: chalk.red('❌ Exit'), value: "exit" },
+        ];
+
+        const response = await prompts({
+            type: "autocompleteMultiselect",
+            name: "choice",
+            message: "Select an option:",
+            choices: options,
+            suggest: (input, choices) =>
+                Promise.resolve(
+                    choices.filter(choice =>
+                        choice.title.toLowerCase().includes(input.toLowerCase())
+                    )
+                ),
+        });
+
+        switch (response.choice) {
+            case "back":
+                goBack();
+                return null;
+            case "exit":
+                process.exit(0);
+            default:
+                return response.choice;
+        }
+    } catch (error) {
+        console.log(chalk.red('Error selecting website:', error.message));
+        return null;
+    }
+}
+
 export async function selectTest(selectedWebsite, goBack) {
     try {
         // Get tests for selected website
@@ -85,6 +123,47 @@ export async function selectTest(selectedWebsite, goBack) {
             default:
                 return response.choice;
         }
+    } catch (error) {
+        console.log(chalk.red('Error selecting test:', error.message));
+        return null;
+    }
+}
+
+export async function selectMultipleTest(selectedWebsiteList, goBack) {
+    try {
+        const selectedTestList = [];
+        for (const selectedWebsite of selectedWebsiteList) {
+            const tests = await listTests(selectedWebsite);
+            const options = [
+                ...tests.map(t => ({ title: t, value: t })),
+                { title: chalk.magenta('🔙 Back'), value: "back" },
+                { title: chalk.red('❌ Exit'), value: "exit" },
+            ];
+
+            const response = await prompts({
+                type: "autocompleteMultiselect",
+                name: "choice",
+                message: `Select test(s) for website "${selectedWebsite}":`,
+                choices: options,
+                suggest: (input, choices) =>
+                    Promise.resolve(
+                        choices.filter(choice =>
+                            choice.title.toLowerCase().includes(input.toLowerCase())
+                        )
+                    ),
+            });
+
+            if (response.choice.includes("back")) {
+                goBack();
+                return null;
+            } else if (response.choice.includes("exit")) {
+                process.exit(0);
+            } else {
+                selectedTestList.push(response.choice);
+            }
+        }
+
+        return selectedTestList;
     } catch (error) {
         console.log(chalk.red('Error selecting test:', error.message));
         return null;
@@ -133,6 +212,49 @@ export async function selectVariation(selectedWebsite, selectedTest, goBack) {
             default:
                 return response.choice;
         }
+    } catch (error) {
+        console.log(chalk.red('Error selecting variation:', error.message));
+        return null;
+    }
+}
+
+export async function selectMultipleVariation(selectedWebsiteList, selectedTestList, goBack) {
+    try {
+        const selectedVariationList = [];
+        for (const selectedWebsite of selectedWebsiteList) {
+            for (const selectedTest of selectedTestList) {
+                const variations = await listVariations(selectedWebsite, selectedTest);
+                const options = [
+                    ...variations.map(v => ({ title: v.name, value: v })),
+                    { title: chalk.magenta('🔙 Back'), value: "back" },
+                    { title: chalk.red('❌ Exit'), value: "exit" },
+                ];
+
+                const response = await prompts({
+                    type: "autocompleteMultiselect",
+                    name: "choice",
+                    message: `Select variation(s) for test "${selectedTest}" in website "${selectedWebsite}":`,
+                    choices: options,
+                    suggest: (input, choices) =>
+                        Promise.resolve(
+                            choices.filter(choice =>
+                                choice.title.toLowerCase().includes(input.toLowerCase())
+                            )
+                        ),
+                });
+
+                if (response.choice.includes("back")) {
+                    goBack();
+                    return null;
+                } else if (response.choice.includes("exit")) {
+                    process.exit(0);
+                } else {
+                    selectedVariationList.push(response.choice);
+                }
+            }
+        }
+
+        return selectedVariationList;
     } catch (error) {
         console.log(chalk.red('Error selecting variation:', error.message));
         return null;
