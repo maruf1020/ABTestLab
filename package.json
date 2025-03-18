@@ -30,6 +30,7 @@
     "@rollup/plugin-commonjs": "^28.0.2",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-terser": "^0.4.4",
+    "prettier": "^3.5.3",
     "rollup": "^4.34.8",
     "rollup-plugin-scss": "^4.0.1"
   },

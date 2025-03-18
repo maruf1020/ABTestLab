@@ -7,10 +7,10 @@ import chalk from "chalk"
 import prompts from "prompts"
 
 import { ROOT_DIR } from "../global/config.js"
-import { listWebsites, listTests, getTestInfo } from "./fileUtils.js"
+import { getTestInfo } from "./fileUtils.js"
 import { startTestServer } from "../server/testServer.js"
 import { updateHistory } from "./historyUtils.js"
-import { selectWebsite, selectTest, selectVariation } from "./selectors.js"
+import { selectWebsite, selectTest, selectVariation, selectMultipleWebsites, selectMultipleTests, selectMultipleVariations } from "./selectors.js"
 
 const log = debug("ab-testing-cli:start")
 
@@ -390,128 +390,6 @@ async function runMultipleTests(goBack) {
     await startMultipleTest(selectedVariations)
 }
 
-async function selectMultipleWebsites(goBack) {
-    const websites = await listWebsites();
-    if (websites.length === 0) {
-        console.log(kleur.yellow("No websites found. Please create a website first."));
-        return [];
-    }
-
-    const choices = [
-        ...websites.map((website) => ({ title: website, value: website })),
-        { title: chalk.magenta('🔙 Back'), value: "back" },
-        { title: chalk.red('❌ Exit'), value: "exit" },
-    ];
-
-    const { selectedWebsites } = await prompts({
-        type: "autocompleteMultiselect",
-        name: "selectedWebsites",
-        message: "Select websites to run tests on:",
-        choices: choices,
-        min: 1,
-        suggest: (input, choices) =>
-            Promise.resolve(
-                choices.filter(choice =>
-                    choice.title.toLowerCase().includes(input.toLowerCase())
-                )
-            ),
-    });
-
-    if (selectedWebsites.includes("back")) {
-        return goBack();
-    } else if (selectedWebsites.includes("exit")) {
-        console.log(kleur.blue("See you soon!"));
-        process.exit(0);
-    }
-
-    return selectedWebsites.filter((website) => website !== "back" && website !== "exit");
-}
-
-async function selectMultipleTests(websites, goBack) {
-    const allTests = [];
-    for (const website of websites) {
-        const tests = await listTests(website);
-        allTests.push(...tests.map((test) => ({ website, test })));
-    }
-
-    const choices = [
-        ...allTests.map(({ website, test }) => ({ title: `${website} - ${test}`, value: { website, test } })),
-        { title: chalk.magenta('🔙 Back'), value: "back" },
-        { title: chalk.red('❌ Exit'), value: "exit" },
-    ];
-
-    const { selectedTests } = await prompts({
-        type: "autocompleteMultiselect",
-        name: "selectedTests",
-        message: "Select tests to run:",
-        choices: choices,
-        min: 1,
-        suggest: (input, choices) =>
-            Promise.resolve(
-                choices.filter(choice =>
-                    choice.title.toLowerCase().includes(input.toLowerCase())
-                )
-            ),
-    });
-
-    if (selectedTests.includes("back")) {
-        return goBack();
-    } else if (selectedTests.includes("exit")) {
-        console.log(kleur.blue("See you soon!"));
-        process.exit(0);
-    }
-
-    return selectedTests.filter((test) => test !== "back" && test !== "exit");
-}
-
-async function selectMultipleVariations(tests, goBack) {
-    const allVariations = [];
-    for (const { website, test } of tests) {
-        const testDir = path.join(ROOT_DIR, website, test);
-        const testInfo = await fs.readJson(path.join(testDir, "info.json"));
-        allVariations.push(
-            ...testInfo.variations.map((variation) => ({
-                website,
-                test,
-                variation,
-                testType: testInfo.type,
-            }))
-        );
-    }
-
-    const choices = [
-        ...allVariations.map(({ website, test, variation, testType }) => ({
-            title: `${website} - ${test} - ${variation} (${testType})`,
-            value: { website, test, variation, testType },
-        })),
-        { title: chalk.magenta('🔙 Back'), value: "back" },
-        { title: chalk.red('❌ Exit'), value: "exit" },
-    ];
-
-    const { selectedVariations } = await prompts({
-        type: "autocompleteMultiselect",
-        name: "selectedVariations",
-        message: "Select variations to run:",
-        choices: choices,
-        min: 1,
-        suggest: (input, choices) =>
-            Promise.resolve(
-                choices.filter(choice =>
-                    choice.title.toLowerCase().includes(input.toLowerCase())
-                )
-            ),
-    });
-
-    if (selectedVariations.includes("back")) {
-        return goBack();
-    } else if (selectedVariations.includes("exit")) {
-        console.log(kleur.blue("See you soon!"));
-        process.exit(0);
-    }
-
-    return selectedVariations.filter((variation) => variation !== "back" && variation !== "exit");
-}
-
 export async function startTest(website, test, variation, testType) {
     const testDir = path.join(ROOT_DIR, website, test)
     const testInfo = await fs.readJson(path.join(testDir, "info.json"))
@@ -605,4 +483,3 @@ export async function startMultipleTest(selectedVariations) {
     await startTestServer(selectedVariations)
     await updateHistory(selectedVariations.map((v) => ({ website: v.website, test: v.test, variation: v.variation, testType: v.testType })))
 }
-

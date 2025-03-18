@@ -4,8 +4,10 @@ import Table from 'cli-table3';
 import prompts from "prompts"
 
 import { renameVariation, renameTouchPoint, removeVariation, removeTouchPoint } from "./creators.js"
-import { listWebsites, listTests, listVariations, listTouchPointsAndVariations, getTestInfo, getVariationInfo, getTouchPointInfo } from "./fileUtils.js"
+import { listWebsites, listTests, listVariations, listTouchPointsAndVariations, getTestInfo, getVariationInfo, getTouchPointInfo, getVariationDir } from "./fileUtils.js"
 import { createNewWebsiteWithPrompt, createNewTestWithPrompt, createNewTouchPointWithPrompt, createNewVariationWithPrompt } from "./creatorPrompts.js"
+import { startTest } from "./startUtils.js";
+import { buildVariation } from "./bundler.js";
 
 export async function selectWebsite(goBack) {
     try {
@@ -218,10 +220,13 @@ export async function selectVariationDetails(selectedWebsite, selectedTest, sele
         });
 
         switch (response.choice) {
-            case "start":
+            case "start": {
                 // Start variation
-                console.log(kleur.yellow("Under development"));
+                const testInfo = await getTestInfo(selectedWebsite, selectedTest);
+                const testType = testInfo.type;
+                startTest(selectedWebsite, selectedTest, selectedVariation, testType);
                 break;
+            }
             case "details":
                 const variationInfo = await getVariationInfo(selectedWebsite, selectedTest, selectedVariation);
                 if (variationInfo) {
@@ -247,7 +252,8 @@ export async function selectVariationDetails(selectedWebsite, selectedTest, sele
                 return null;
             case "build":
                 // Build variation
-                console.log(kleur.yellow("Under development"));
+                const variationDir = getVariationDir(selectedWebsite, selectedTest, selectedVariation);
+                buildVariation(variationDir);
                 break;
             case "remove":
                 // Remove variation
@@ -401,4 +407,131 @@ export async function selectTouchPointDetails(selectedWebsite, selectedTest, sel
     } catch (error) {
         console.error(chalk.red(`Failed to get touch point details: ${error.message}`));
     }
+}
+
+export async function selectMultipleWebsites(goBack) {
+    const websites = await listWebsites();
+    if (websites.length === 0) {
+        console.log(kleur.yellow("No websites found. Please create a website first."));
+        return [];
+    }
+
+    const choices = [
+        ...websites.map((website) => ({ title: website, value: website })),
+        { title: chalk.magenta('🔙 Back'), value: "back" },
+        { title: chalk.red('❌ Exit'), value: "exit" },
+    ];
+
+    const { selectedWebsites } = await prompts({
+        type: "autocompleteMultiselect",
+        name: "selectedWebsites",
+        message: "Select websites to run tests on:",
+        choices: choices,
+        hint: 'Space to select, Enter to confirm',
+        instructions: false,
+        min: 1,
+        suggest: (input, choices) =>
+            Promise.resolve(
+                choices.filter(choice =>
+                    choice.title.toLowerCase().includes(input.toLowerCase())
+                )
+            ),
+    });
+
+    if (selectedWebsites.includes("exit")) {
+        console.log(kleur.blue("See you soon!"));
+        process.exit(0);
+    } else if (selectedWebsites.includes("back")) {
+        return goBack();
+    }
+
+    return selectedWebsites.filter((website) => website !== "back" && website !== "exit");
+}
+
+export async function selectMultipleTests(websites, goBack) {
+    const allTests = [];
+    for (const website of websites) {
+        const tests = await listTests(website);
+        allTests.push(...tests.map((test) => ({ website, test })));
+    }
+
+    const choices = [
+        ...allTests.map(({ website, test }) => ({ title: `${website} - ${test}`, value: { website, test } })),
+        { title: chalk.magenta('🔙 Back'), value: "back" },
+        { title: chalk.red('❌ Exit'), value: "exit" },
+    ];
+
+    const { selectedTests } = await prompts({
+        type: "autocompleteMultiselect",
+        name: "selectedTests",
+        message: "Select tests to run:",
+        choices: choices,
+        min: 1,
+        hint: 'Space to select, Enter to confirm',
+        instructions: false,
+        suggest: (input, choices) =>
+            Promise.resolve(
+                choices.filter(choice =>
+                    choice.title.toLowerCase().includes(input.toLowerCase())
+                )
+            ),
+    });
+
+    if (selectedTests.includes("exit")) {
+        console.log(kleur.blue("See you soon!"));
+        process.exit(0);
+    } else if (selectedTests.includes("back")) {
+        return goBack();
+    }
+
+    return selectedTests.filter((test) => test !== "back" && test !== "exit");
+}
+
+export async function selectMultipleVariations(tests, goBack) {
+    const allVariations = [];
+    for (const { website, test } of tests) {
+        const testInfo = await getTestInfo(website, test);
+        allVariations.push(
+            ...testInfo.variations.map((variation) => ({
+                website,
+                test,
+                variation,
+                testType: testInfo.type,
+            }))
+        );
+    }
+
+    const choices = [
+        ...allVariations.map(({ website, test, variation, testType }) => ({
+            title: `${website} - ${test} - ${variation} (${testType})`,
+            value: { website, test, variation, testType },
+        })),
+        { title: chalk.magenta('🔙 Back'), value: "back" },
+        { title: chalk.red('❌ Exit'), value: "exit" },
+    ];
+
+    const { selectedVariations } = await prompts({
+        type: "autocompleteMultiselect",
+        name: "selectedVariations",
+        message: "Select variations to run:",
+        choices: choices,
+        min: 1,
+        hint: 'Space to select, Enter to confirm',
+        instructions: false,
+        suggest: (input, choices) =>
+            Promise.resolve(
+                choices.filter(choice =>
+                    choice.title.toLowerCase().includes(input.toLowerCase())
+                )
+            ),
+    });
+
+    if (selectedVariations.includes("back")) {
+        console.log(kleur.blue("See you soon!"));
+        process.exit(0);
+    } else if (selectedVariations.includes("exit")) {
+        return goBack();
+    }
+
+    return selectedVariations.filter((variation) => variation !== "back" && variation !== "exit");
 }

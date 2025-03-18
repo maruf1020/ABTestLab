@@ -126,3 +126,7 @@ export async function getTouchPointsVariationInfo(website, test, touchPoint, var
     throw new Error(`Failed to get touchPoint info for ${variation} in touchPoint ${touchPoint} in test ${test} in website ${website}: ${error.message}`)
   }
 }
+
+export function getVariationDir(website, test, variation) {
+  return path.join(ROOT_DIR, website, test, variation)
+}
