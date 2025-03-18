@@ -4,7 +4,7 @@ import Table from 'cli-table3';
 import prompts from "prompts"
 
 import { renameVariation, renameTouchPoint, removeVariation, removeTouchPoint } from "./creators.js"
-import { listWebsites, listTests, listVariations, listTouchPointsAndVariations, getTestInfo, getVariationInfo, getTouchPointInfo, getVariationDir } from "./fileUtils.js"
+import { listWebsites, listTests, listVariations, listTouchPointsAndVariations, getTestInfo, getVariationInfo, getTouchPointInfo, getVariationDir, listTouchPoints, getVariationDirForTouchPoint } from "./fileUtils.js"
 import { createNewWebsiteWithPrompt, createNewTestWithPrompt, createNewTouchPointWithPrompt, createNewVariationWithPrompt } from "./creatorPrompts.js"
 import { startTest } from "./startUtils.js";
 import { buildVariation } from "./bundler.js";
@@ -198,7 +198,7 @@ export async function selectVariationDetails(selectedWebsite, selectedTest, sele
         const options = [
             { title: "Start Variation", value: "start" },
             { title: "See Test Details", value: "details" },
-            { title: "Build Variation", value: "build" },
+            { title: "Build this Variation to all Touch Points", value: "build" },
             { title: "Remove Variation", value: "remove" },
             { title: "Rename Variation", value: "rename" },
             { title: "Copy Variation to Another Test", value: "copy-to-another-test" },
@@ -250,11 +250,21 @@ export async function selectVariationDetails(selectedWebsite, selectedTest, sele
                     console.log(chalk.red('Failed to get variation details'));
                 }
                 return null;
-            case "build":
+            case "build": {
                 // Build variation
                 const variationDir = getVariationDir(selectedWebsite, selectedTest, selectedVariation);
-                buildVariation(variationDir);
+                const testInfo = await getTestInfo(selectedWebsite, selectedTest);
+                if (testInfo.type !== 'Multi-touch') {
+                    await buildVariation(variationDir);
+                } else {
+                    const touchPoints = await listTouchPoints(selectedWebsite, selectedTest);
+                    await Promise.all(touchPoints.map(async (touchPoint) => {
+                        const variationDir = getVariationDirForTouchPoint(selectedWebsite, selectedTest, touchPoint, selectedVariation);
+                        await buildVariation(variationDir);
+                    }));
+                }
                 break;
+            }
             case "remove":
                 // Remove variation
                 const testInfo = await getTestInfo(selectedWebsite, selectedTest);
@@ -313,6 +323,8 @@ export async function selectTouchPointDetails(selectedWebsite, selectedTest, sel
     try {
         const options = [
             { title: "See Touch Point Details", value: "details" },
+            // { title: "Build this Variation to all Touch Points", value: "build" },
+            { title: "Build all variations inside this Touch point", value: "build" },
             { title: "Rename Touch Point", value: "rename" },
             { title: "Remove Touch Point", value: "remove" },
             { title: chalk.magenta('🔙 Back'), value: "back" },
@@ -357,6 +369,13 @@ export async function selectTouchPointDetails(selectedWebsite, selectedTest, sel
                     console.log(chalk.red('Failed to get touch point details'));
                 }
                 break;
+            case "build":
+                // Build variations inside touch-point
+                const variations = await listVariations(selectedWebsite, selectedTest);
+                await Promise.all(variations.map(async (variation) => {
+                    const variationDir = getVariationDirForTouchPoint(selectedWebsite, selectedTest, selectedTouchPoint, variation);
+                    await buildVariation(variationDir);
+                }));
             case "rename":
                 // Rename touch point
                 const renameResponse = await prompts({

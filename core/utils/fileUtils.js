@@ -130,3 +130,7 @@ export async function getTouchPointsVariationInfo(website, test, touchPoint, var
 export function getVariationDir(website, test, variation) {
   return path.join(ROOT_DIR, website, test, variation)
 }
+
+export function getVariationDirForTouchPoint(website, test, touchPoint, variation) {
+  return path.join(ROOT_DIR, website, test, touchPoint, variation)
+}
