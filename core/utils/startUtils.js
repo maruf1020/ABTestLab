@@ -10,7 +10,7 @@ import { ROOT_DIR } from "../global/config.js"
 import { listWebsites, listTests, getTestInfo } from "./fileUtils.js"
 import { startTestServer } from "../server/testServer.js"
 import { updateHistory } from "./historyUtils.js"
-import { selectWebsite, selectTest, selectVariation, selectMultipleWebsite, selectMultipleTest, selectMultipleVariation } from "./selectors.js"
+import { selectWebsite, selectTest, selectVariation } from "./selectors.js"
 
 const log = debug("ab-testing-cli:start")
 
@@ -368,51 +368,26 @@ async function runGroupFromHistory(history) {
     await startMultipleTest(selectedVariations)
 }
 
-// async function runMultipleTests(goBack) {
-//     const selectedWebsites = await selectMultipleWebsites(goBack)
-//     if (selectedWebsites.length === 0) {
-//         console.log(kleur.yellow("No websites selected. Returning to main menu."))
-//         return
-//     }
-
-//     const selectedTests = await selectMultipleTests(selectedWebsites, goBack)
-//     if (selectedTests.length === 0) {
-//         console.log(kleur.yellow("No tests selected. Returning to main menu."))
-//         return
-//     }
-
-//     const selectedVariations = await selectMultipleVariations(selectedTests, goBack)
-//     if (selectedVariations.length === 0) {
-//         console.log(kleur.yellow("No variations selected. Returning to main menu."))
-//         return
-//     }
-
-//     await startMultipleTest(selectedVariations)
-// }
-
 async function runMultipleTests(goBack) {
-    const selectedWebsites = await selectMultipleWebsite(goBack);
-    console.log(selectedWebsites);
+    const selectedWebsites = await selectMultipleWebsites(goBack)
     if (selectedWebsites.length === 0) {
-        console.log(kleur.yellow("No websites selected. Returning to main menu."));
-        return;
+        console.log(kleur.yellow("No websites selected. Returning to main menu."))
+        return
     }
 
-    const selectedTests = await selectMultipleTest(selectedWebsites, goBack);
+    const selectedTests = await selectMultipleTests(selectedWebsites, goBack)
     if (selectedTests.length === 0) {
-        console.log(kleur.yellow("No tests selected. Returning to main menu."));
-        return;
+        console.log(kleur.yellow("No tests selected. Returning to main menu."))
+        return
     }
 
-    const selectedVariations = await selectMultipleVariation(selectedTests, goBack);
+    const selectedVariations = await selectMultipleVariations(selectedTests, goBack)
     if (selectedVariations.length === 0) {
-        console.log(kleur.yellow("No variations selected. Returning to main menu."));
-        return;
+        console.log(kleur.yellow("No variations selected. Returning to main menu."))
+        return
     }
 
-    // await startMultipleTest(selectedVariations);
-
-    console.log(selectedWebsites, selectedTests, selectedVariations);
+    await startMultipleTest(selectedVariations)
 }
 
 async function selectMultipleWebsites(goBack) {

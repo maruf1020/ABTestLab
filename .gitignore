@@ -137,5 +137,5 @@ history.json
 settings.json
 !.vscode/settings.json
 core/browser-Runner.js
-core/public
+core/public/js/vendor
 core/client/browser-Runner.js
