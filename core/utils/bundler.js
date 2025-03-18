@@ -31,7 +31,6 @@ async function formatFile(filePath) {
 
         // Write the formatted content back to the file
         await fs.writeFile(filePath, formatted);
-        console.log(`Formatted ${filePath}`);
 
     } catch (err) {
         console.warn(chalk.yellow(`⚠️ Could not format ${filePath}: ${err.message}`));
@@ -203,7 +202,6 @@ export async function buildVariation(variationDir) {
         console.error(chalk.red("❌ Error during build process:"), error);
     }
 }
-
 
 export async function bundleTargeting(targetingDir) {
     try {
