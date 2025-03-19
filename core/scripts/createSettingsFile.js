@@ -8,6 +8,14 @@ export async function createSettingsFile() {
         cssReload: false,
         jsReload: true,
         maxHistoryRecords: 10,
+        bundler: {
+            generatePureJS: true,
+            generatePureCSS: true,
+            generateMinifiedJS: true,
+            generateMinifiedCSS: true,
+            generateJSWithCSS: true,
+            generateMinifiedJSWithCSS: true
+        },
         _comments: {
             cssReload:
                 "If true, the page will reload when CSS changes are detected. If false, CSS changes will be applied without reloading.",

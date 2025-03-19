@@ -7,6 +7,7 @@ import commonjs from "@rollup/plugin-commonjs"
 import { rollup } from "rollup"
 import chalk from "chalk"
 import prettier from "prettier";
+import { SETTINGS_FILE } from "../global/config.js"
 
 async function formatFile(filePath) {
     try {
@@ -93,20 +94,15 @@ export async function bundleVariation(variationDir, UpdateFile) {
 
 export async function buildVariation(variationDir) {
     try {
+        console.log(chalk.yellow("🔨 Start Building files..."))
         const buildDir = path.join(variationDir, "build");
         await fs.ensureDir(buildDir);
 
         const scssFile = path.join(variationDir, "style.scss");
         const jsFile = path.join(variationDir, "index.js");
 
-        const outputConfig = {
-            generatePureJS: true,
-            generatePureCSS: true,
-            generateMinifiedJS: true,
-            generateMinifiedCSS: true,
-            generateJSWithCSS: true,
-            generateMinifiedJSWithCSS: true
-        };
+        const settingJson = await fs.readJson(SETTINGS_FILE);
+        const outputConfig = settingJson.bundler;
 
         // 1️⃣ Compile SCSS (Generate all CSS files)
         if (await fs.pathExists(scssFile)) {

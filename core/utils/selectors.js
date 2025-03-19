@@ -211,7 +211,7 @@ export async function selectVariationDetails(selectedWebsite, selectedTest, sele
         const options = [
             { title: chalk.green("🚀 Start Variation"), value: "start" },
             { title: chalk.blueBright("📜 See Test Details"), value: "details" },
-            { title: chalk.greenBright("📦 Build this Variation to all Touch Points"), value: "build" },
+            { title: chalk.greenBright("📦 Build variation"), value: "build" },
             { title: chalk.magenta("📤 Copy Variation to Another Test"), value: "copy-to-another-test" },
             { title: chalk.yellow("✏️  Rename Variation"), value: "rename" },
             { title: chalk.red("🗑️  Remove Variation"), value: "remove" },
