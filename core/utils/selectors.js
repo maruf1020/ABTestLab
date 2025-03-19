@@ -14,8 +14,8 @@ export async function selectWebsite(goBack) {
         // List available websites
         const websites = await listWebsites();
         const options = [
-            { title: "Create New Website", value: "create" },
-            ...websites.map(w => ({ title: w, value: w })),
+            { title: chalk.green("🆕 Create New Website"), value: "create" },
+            ...websites.map(w => ({ title: chalk.cyan("🌐 " + w), value: w })),
             { title: chalk.magenta('🔙 Back'), value: "back" },
             { title: chalk.red('❌ Exit'), value: "exit" },
         ];
@@ -52,18 +52,31 @@ export async function selectWebsite(goBack) {
 }
 
 export async function selectTest(selectedWebsite, goBack) {
+    const testTypeIcons = {
+        "A/B": "🆎",
+        "AA": "📊",
+        "Multi-touch": "🎯",
+        "Patch": "🩹"
+    };
     try {
-        // Get tests for selected website
         const tests = await listTests(selectedWebsite);
+        const testInfos = await Promise.all(tests.map(test => getTestInfo(selectedWebsite, test)));
         const options = [
-            { title: "Create New Test", value: "create" },
-            ...tests.map(t => ({ title: t, value: t })),
+            { title: chalk.green("🆕 Create New Test"), value: "create" },
+            ...tests.map((test, index) => {
+                const testInfo = testInfos[index];
+                const icon = testInfo && testInfo.type ? testTypeIcons[testInfo.type] || '🧪' : '🧪';
+                return {
+                    title: chalk.cyan(`${icon} ${test}`),
+                    value: test
+                };
+            }),
             { title: chalk.magenta('🔙 Back'), value: "back" },
             { title: chalk.red('❌ Exit'), value: "exit" },
         ];
 
         const response = await prompts({
-            type: "select",
+            type: "autocomplete",
             name: "choice",
             message: "Select an option:",
             choices: options,
@@ -99,8 +112,8 @@ export async function selectVariation(selectedWebsite, selectedTest, goBack) {
         const variations = await listVariations(selectedWebsite, selectedTest);
 
         const options = [
-            { title: "Create New Variation", value: "create" },
-            ...variations.map(v => ({ title: v.name, value: v })),
+            { title: chalk.green("🆕 Create New Variation"), value: "create" },
+            ...variations.map(v => ({ title: chalk.green("🎭 " + v), value: v })),
             { title: chalk.magenta('🔙 Back'), value: "back" },
             { title: chalk.red('❌ Exit'), value: "exit" },
         ];
@@ -145,15 +158,15 @@ export async function selectTouchPointAndVariations(selectedWebsite, selectedTes
     try {
         const touchPointsAndVariations = await listTouchPointsAndVariations(selectedWebsite, selectedTest);
         const options = [
-            { title: "Create New Touch Point", value: "create-touch-point" },
+            { title: chalk.green("🆕 Create New Touch Point"), value: "create-touch-point" },
         ];
 
         if (touchPointsAndVariations.some(item => item.type === "touchPoint")) {
-            options.push({ title: "Create New Variation", value: "create-variation" });
+            options.push({ title: chalk.green("🆕 Create New Variation"), value: "create-variation" });
         }
 
         options.push(
-            ...touchPointsAndVariations.map(item => ({ title: item.name + ' (' + (item.type === "variation" ? kleur.blue(item.type) : kleur.magenta(item.type)) + ')', value: item.name + ' (' + item.type + ')' })),
+            ...touchPointsAndVariations.map(item => ({ title: chalk.cyan((item.type === "variation" ? "🎭 " : "📍 ") + item.name) + ' (' + (item.type === "variation" ? kleur.blue(item.type) : kleur.magenta(item.type)) + ')', value: item.name + ' (' + item.type + ')' })),
             { title: chalk.magenta('🔙 Back'), value: "back" },
             { title: chalk.red('❌ Exit'), value: "exit" },
         );
@@ -196,18 +209,18 @@ export async function selectTouchPointAndVariations(selectedWebsite, selectedTes
 export async function selectVariationDetails(selectedWebsite, selectedTest, selectedVariation, goBack) {
     try {
         const options = [
-            { title: "Start Variation", value: "start" },
-            { title: "See Test Details", value: "details" },
-            { title: "Build this Variation to all Touch Points", value: "build" },
-            { title: "Remove Variation", value: "remove" },
-            { title: "Rename Variation", value: "rename" },
-            { title: "Copy Variation to Another Test", value: "copy-to-another-test" },
+            { title: chalk.green("🚀 Start Variation"), value: "start" },
+            { title: chalk.blueBright("📜 See Test Details"), value: "details" },
+            { title: chalk.greenBright("📦 Build this Variation to all Touch Points"), value: "build" },
+            { title: chalk.magenta("📤 Copy Variation to Another Test"), value: "copy-to-another-test" },
+            { title: chalk.yellow("✏️  Rename Variation"), value: "rename" },
+            { title: chalk.red("🗑️  Remove Variation"), value: "remove" },
             { title: chalk.magenta('🔙 Back'), value: "back" },
             { title: chalk.red('❌ Exit'), value: "exit" },
         ];
 
         const response = await prompts({
-            type: "select",
+            type: "autocomplete",
             name: "choice",
             message: "Select an option:",
             choices: options,
@@ -322,17 +335,16 @@ export async function selectVariationDetails(selectedWebsite, selectedTest, sele
 export async function selectTouchPointDetails(selectedWebsite, selectedTest, selectedTouchPoint, goBack) {
     try {
         const options = [
-            { title: "See Touch Point Details", value: "details" },
-            // { title: "Build this Variation to all Touch Points", value: "build" },
-            { title: "Build all variations inside this Touch point", value: "build" },
-            { title: "Rename Touch Point", value: "rename" },
-            { title: "Remove Touch Point", value: "remove" },
+            { title: chalk.blueBright("📜 See Touch Point Details"), value: "details" },
+            { title: chalk.blueBright("📦 Build all variations inside this Touch point"), value: "build" },
+            { title: chalk.yellow("✏️  Rename Touch Point"), value: "rename" },
+            { title: chalk.red("🗑️  Remove Touch Point"), value: "remove" },
             { title: chalk.magenta('🔙 Back'), value: "back" },
             { title: chalk.red('❌ Exit'), value: "exit" },
         ];
 
         const response = await prompts({
-            type: "select",
+            type: "autocomplete",
             name: "choice",
             message: "Select an option:",
             choices: options,

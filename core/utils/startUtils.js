@@ -185,7 +185,7 @@ export async function viewTestHistory(history, viewType, goBack) {
     const testTypeIcons = {
         "A/B": "🆎",
         "AA": "📊",
-        "Multi-touch": "🧭",
+        "Multi-touch": "🎯",
         "Patch": "🩹"
     };
 
