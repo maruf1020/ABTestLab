@@ -26,14 +26,13 @@ ABTestLab
 │   │   ├── create.js
 │   │   ├── init.js
 │   │   ├── settings.js
-│   │   ├── start.js
-│   │   └── global/                   # Global command-related helpers
+│   │   └── start.js
 │   ├── global/                       # Global configurations
 │   │   └── config.js
 │   ├── public/                       # Static assets for frontend
 │   │   ├── css/
 │   │   │   └── index.css
-│   │   ├── documents/                # Markdown documentation
+│   │   ├── documents/                # documentation
 │   │   │   ├── complete_todo.md
 │   │   │   └── todo.md
 │   │   ├── html/
@@ -52,12 +51,12 @@ ABTestLab
 │   ├── server/                         # Server-side scripts
 │   │   ├── browserScriptCreator.js
 │   │   └── testServer.js
-├── templates/                         # Templates for A/B tests
+├── templates/                         # Initial Templates for A/B tests
 │   ├── targeting/                     # Targeting rules
 │   │   ├── customJS.js
 │   │   ├── elementChecker.json
 │   │   └── urlChecker.json
-│   ├── targetMet/                     # When target conditions are met
+│   ├── targetMet/                     # When and how target conditions are met
 │   │   ├── customJS.js
 │   │   ├── elementChecker.js
 │   │   └── urlChecker.js

@@ -39,7 +39,6 @@ async function formatFile(filePath) {
 }
 
 export async function bundleVariation(variationDir, UpdateFile) {
-    console.log("🔨 Bundling variation:", variationDir)
     try {
         const compiledDir = path.join(variationDir, "compiled")
         await fs.ensureDir(compiledDir)
