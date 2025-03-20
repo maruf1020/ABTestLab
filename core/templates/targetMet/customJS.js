@@ -3,6 +3,7 @@ export default function checker(activator) {
     return new Promise((resolve) => {
         const startTime = Date.now();
         const result = {
+            type: 'customJS',
             status: false,
             messages: [],
             summary: '',

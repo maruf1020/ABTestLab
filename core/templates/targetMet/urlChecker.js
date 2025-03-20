@@ -2,6 +2,7 @@ export default function checker(rulesConfig) {
   return new Promise((resolve) => {
     const startTime = Date.now();
     const result = {
+      type: "urlChecker",
       status: true,
       messages: [],
       summary: "",
