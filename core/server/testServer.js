@@ -19,10 +19,10 @@ const log = debug("ab-testing-cli:testServer")
 export async function startTestServer(selectedVariations) {
     const testInfo = await Promise.all(selectedVariations.map(async selectedVariation => {
         if (selectedVariation.testType === "Multi-touch") {
-            const touchPointsDir = await getTouchPointsDir(selectedVariation);
+            const touchPointsDir = await getTouchPointsInfo(selectedVariation);
             return touchPointsDir;
         } else {
-            const variationDir = await getVariationDir(selectedVariation);
+            const variationDir = await getVariationInfo(selectedVariation);
             return variationDir;
         }
     })).then(results => results.flat());
@@ -60,7 +60,10 @@ export async function startTestServer(selectedVariations) {
         },
     });
 
-    const watchPaths = transformedTestInfo.testInfo.map(test => [test.variationDir, test.targetingDir]).flat().filter(Boolean);
+    const watchPaths = transformedTestInfo.testInfo.map(test => [test.variationDir, test.targetingDir, test.parentTargetingDir]
+    ).flat().filter(Boolean);
+
+
 
     const watcher = chokidar.watch(watchPaths, {
         ignored: /(^|[/\\])\../,
@@ -81,11 +84,23 @@ export async function startTestServer(selectedVariations) {
                     console.log(kleur.gray(`📦 JS File has been updated`))
                 }
             } else if (!filePath.includes("compiled") && filePath.includes("targeting")) {
-                const info = transformedTestInfo.testInfo.find(test => test.targetingDir === path.dirname(filePath))
-                if (info) {
-                    transformedTestInfo.testInfo.find(test => test.id === info.id).targetingFiles = await getTargetingFiles(info.targetingDir);
-                    await browserScriptCreator(transformedTestInfo);
-                    io.emit("reload_page", info.hostnames);
+                const initialInfo = transformedTestInfo.testInfo.find(test => test.targetingDir === path.dirname(filePath)) || transformedTestInfo.parentTargeting.find(test => test.parentTargetingDir === path.dirname(filePath))
+                const infoList = transformedTestInfo.testInfo.filter(test => test.targetingDir === path.dirname(filePath))
+                await Promise.all(infoList.map(async info => {
+                    if (info) {
+                        transformedTestInfo.testInfo.find(test => test.id === info.id).targetingFiles = await getTargetingFiles(info.targetingDir);
+                        await browserScriptCreator(transformedTestInfo);
+                    }
+                }))
+                const infoListParent = transformedTestInfo.parentTargeting.filter(test => test.parentTargetingDir === path.dirname(filePath))
+                await Promise.all(infoListParent.map(async info => {
+                    if (info) {
+                        transformedTestInfo.parentTargeting.find(test => test.parentTargetingId === info.parentTargetingId).targetingFiles = await getTargetingFiles(info.parentTargetingDir);
+                        await browserScriptCreator(transformedTestInfo);
+                    }
+                }))
+                if (infoList.length > 0 || infoListParent.length > 0) {
+                    io.emit("reload_page", initialInfo.hostnames);
                     console.log(kleur.gray(`🎯 Targeting files have been updated`))
                 }
             } else if (filePath.includes("compiled") && !filePath.includes("targeting")) {
@@ -150,11 +165,13 @@ async function transformTestInfo(testInfo) {
 
     for (const item of itemsWithParentTargeting) {
         if (!parentTargetingMap.has(item.parentTargetingId)) {
-            const targetingFiles = await getTargetingFiles(item.parentTargeting);
+            const targetingFiles = await getTargetingFiles(item.parentTargetingDir);
             parentTargetingMap.set(item.parentTargetingId, {
-                targeting: item.parentTargeting,
+                targeting: item.parentTargetingDir,
+                parentTargetingDir: item.parentTargetingDir,
                 parentTargetingId: item.parentTargetingId,
                 variationIdList: [],
+                hostnames: item.hostnames,
                 targetingFiles
             });
         }
@@ -168,6 +185,7 @@ async function transformTestInfo(testInfo) {
             variationDir: item.variationDir,
             compiledDir: path.join(item.variationDir, "compiled"),
             targetingDir: item.targetingDir,
+            parentTargetingDir: item.parentTargetingDir,
             id: item.id,
             testType: item.testType,
             hostnames: item.hostnames,
@@ -287,7 +305,7 @@ async function getTargetMetFiles(targetingCheckDir) {
     }
 }
 
-async function getVariationDir(selectedVariation) {
+async function getVariationInfo(selectedVariation) {
     const variationDir = path.join(ROOT_DIR, selectedVariation.website, selectedVariation.test, selectedVariation.variation);
     const infoPath = path.join(variationDir, "info.json");
     const targetingDir = path.join(ROOT_DIR, selectedVariation.website, selectedVariation.test, "targeting");
@@ -327,7 +345,7 @@ async function getVariationDir(selectedVariation) {
     }
 }
 
-async function getTouchPointsDir(selectedVariation) {
+async function getTouchPointsInfo(selectedVariation) {
     const testDir = path.join(ROOT_DIR, selectedVariation.website, selectedVariation.test);
     const testInfo = await fs.readJson(path.join(testDir, "info.json"));
     const testName = testInfo.name;
@@ -337,51 +355,53 @@ async function getTouchPointsDir(selectedVariation) {
     const hostnames = websiteInfo.hostnames;
     const websiteName = websiteInfo.name;
     const touchPointsDir = await Promise.all(
-        touchPoints.filter(touchPoint => touchPoint !== "targeting" && touchPoint !== "info.json").map(async touchPoint => {
-            const touchPointDir = path.join(testDir, touchPoint);
-            const touchPointInfoPath = path.join(touchPointDir, "info.json");
-            const touchPointInfo = await fs.readJson(touchPointInfoPath);
-            const touchPointName = touchPointInfo.name;
-            const variationDir = path.join(testDir, touchPoint, selectedVariation.variation);
-            const infoPath = path.join(variationDir, "info.json");
-            const variationName = selectedVariation.variation;
-            const targetingDir = path.join(testDir, touchPoint, "targeting");
-            const parentTargetingDir = path.join(testDir, "targeting");
-            let parentTargetingId = null;
+        touchPoints
+            .filter(touchPoint => touchPoint !== "targeting" && touchPoint !== "info.json")
+            .map(async touchPoint => {
+                const touchPointDir = path.join(testDir, touchPoint);
+                const touchPointInfoPath = path.join(touchPointDir, "info.json");
+                const touchPointInfo = await fs.readJson(touchPointInfoPath);
+                const touchPointName = touchPointInfo.name;
+                const variationDir = path.join(testDir, touchPoint, selectedVariation.variation);
+                const infoPath = path.join(variationDir, "info.json");
+                const variationName = selectedVariation.variation;
+                const targetingDir = path.join(testDir, touchPoint, "targeting");
+                const parentTargetingDir = path.join(testDir, "targeting");
+                let parentTargetingId = null;
 
-            try {
-                // Check if info file exists
-                if (await fs.existsSync(infoPath)) {
-                    const info = await fs.readJson(infoPath);
-                    if (info.id) {
-                        // Get parent targeting info
-                        const parentInfoPath = path.join(testDir, "info.json");
-                        if (await fs.existsSync(parentInfoPath)) {
-                            const parentInfo = await fs.readJson(parentInfoPath);
-                            parentTargetingId = parentInfo.id;
+                try {
+                    // Check if info file exists
+                    if (await fs.existsSync(infoPath)) {
+                        const info = await fs.readJson(infoPath);
+                        if (info.id) {
+                            // Get parent targeting info
+                            const parentInfoPath = path.join(testDir, "info.json");
+                            if (await fs.existsSync(parentInfoPath)) {
+                                const parentInfo = await fs.readJson(parentInfoPath);
+                                parentTargetingId = parentInfo.id;
+                            }
+
+                            return {
+                                variationDir,
+                                targetingDir: await fs.existsSync(targetingDir) ? targetingDir : null,
+                                id: info.id,
+                                parentTargetingDir: await fs.existsSync(parentTargetingDir) ? parentTargetingDir : null,
+                                parentTargetingId,
+                                testType: selectedVariation.testType,
+                                hostnames,
+                                websiteName,
+                                touchPointName,
+                                testName,
+                                variationName
+                            };
                         }
-
-                        return {
-                            variationDir,
-                            targetingDir: await fs.existsSync(targetingDir) ? targetingDir : null,
-                            id: info.id,
-                            parentTargeting: await fs.existsSync(parentTargetingDir) ? parentTargetingDir : null,
-                            parentTargetingId,
-                            testType: selectedVariation.testType,
-                            hostnames,
-                            websiteName,
-                            touchPointName,
-                            testName,
-                            variationName
-                        };
                     }
+                    return null;
+                } catch (error) {
+                    console.error(`Error reading info file for ${touchPoint}:`, error);
+                    return null;
                 }
-                return null;
-            } catch (error) {
-                console.error(`Error reading info file for ${touchPoint}:`, error);
-                return null;
-            }
-        })
+            })
     ).then(results => results.filter(Boolean));
     return touchPointsDir;
 }
