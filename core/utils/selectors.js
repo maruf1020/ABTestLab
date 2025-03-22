@@ -545,10 +545,10 @@ export async function selectMultipleVariations(tests, goBack) {
     const { selectedVariations } = await prompts({
         type: "autocompleteMultiselect",
         name: "selectedVariations",
-        message: "Select variations to run:",
+        message: `Select variations to run: ${chalk.yellow("(You can not select multiple variations of the same test)")}`,
         choices: choices,
         min: 1,
-        warn: 'You can not select multiple variations of the same test.',
+        warn: null,
         hint: 'Space to select, Enter to confirm',
         instructions: false,
         suggest: (input, choices) =>
@@ -558,28 +558,33 @@ export async function selectMultipleVariations(tests, goBack) {
                 )
             ),
         onRender() {
-            if (!this.value) return;
+            if (!this.value || this.value.length < 1 || !this.value.some(option => option.value && option.value.website && option.value.test && option.value.variation && option.value.testType)) return;
 
             if (lastOptionsState.length === 0) {
-                // Store a deep copy of the initial state to track changes properly
                 lastOptionsState = JSON.parse(JSON.stringify(this.value));
             } else {
-                const currentOptionsState = JSON.parse(JSON.stringify(this.value)); // Deep copy
+                const currentOptionsState = JSON.parse(JSON.stringify(this.value));
 
                 if (lastOptionsState.length < 1 || currentOptionsState.length < 1) return;
 
-                // Find the last modified option
-                const lastModifiedOption = currentOptionsState.find(option =>
-                    lastOptionsState.some(prevOption =>
-                        prevOption.title === option.title && prevOption.selected !== option.selected
-                    )
-                );
+                const lastModifiedOption = currentOptionsState.find(option => lastOptionsState.some(prevOption => prevOption.value.website === option.value.website
+                    && prevOption.value.test === option.value.test
+                    && prevOption.value.variation === option.value.variation
+                    && prevOption.value.testType === option.value.testType
+                    && prevOption.selected !== option.selected));
 
-                // Update lastOptionsState for the next render
-                lastOptionsState = currentOptionsState;
+                if (lastModifiedOption?.selected !== true) {
+                    lastOptionsState = currentOptionsState;
+                    return;
+                }
 
+                const isMultipleVariationsSelected = currentOptionsState.filter(option => option.selected).some((option) => {
+                    return currentOptionsState.filter(option => option.selected).filter((selectedOption) => selectedOption.value.website === option.value.website && selectedOption.value.test === option.value.test).length > 1;
+                });
 
-                if (lastModifiedOption?.selected !== true) return;
+                if (isMultipleVariationsSelected) {
+                    this.warn = 'You can not select multiple variations of the same test.';
+                }
 
                 const selectedOptions = this.value.filter(option => option?.selected);
                 selectedOptions.forEach((selectedOption) => {
@@ -592,34 +597,8 @@ export async function selectMultipleVariations(tests, goBack) {
                     }
                 });
 
-                lastOptionsState = JSON.parse(JSON.stringify(this.value)); // Update lastOptionsState
-
-                // if (selectedOptions.length > 1) {
-                //     const [firstSelected, secondSelected] = selectedOptions;
-                //     if (firstSelected.value.website === secondSelected.value.website && firstSelected.value.test === secondSelected.value.test) {
-                //         firstSelected.selected = false;
-                //     }
-                // }
-
+                lastOptionsState = JSON.parse(JSON.stringify(this.value));
             }
-
-
-            // const selectedOption = this.value.find(option => option.selected);
-
-            // if (selectedOption) {
-            //     const { website, test } = selectedOption.value;
-            //     this.value.forEach(option => {
-            //         if (option.value.website === website && option.value.test === test && option.value.variation !== selectedOption.value.variation) {
-            //             option.disabled = true;
-            //         } else {
-            //             option.disabled = false;
-            //         }
-            //     });
-            // } else {
-            //     this.value.forEach(option => {
-            //         option.disabled = false;
-            //     });
-            // }
         }
 
     });
