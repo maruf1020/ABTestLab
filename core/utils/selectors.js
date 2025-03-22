@@ -541,6 +541,7 @@ export async function selectMultipleVariations(tests, goBack) {
         { title: chalk.red('❌ Exit'), value: "exit" },
     ];
 
+    let lastOptionsState = [];
     const { selectedVariations } = await prompts({
         type: "autocompleteMultiselect",
         name: "selectedVariations",
@@ -557,31 +558,68 @@ export async function selectMultipleVariations(tests, goBack) {
                 )
             ),
         onRender() {
-            const selectedOptions = this.value.filter(option => option.selected);
+            if (!this.value) return;
 
-            if (selectedOptions.length > 1) {
-                const [firstSelected, secondSelected] = selectedOptions;
-                if (firstSelected.value.website === secondSelected.value.website && firstSelected.value.test === secondSelected.value.test) {
-                    firstSelected.selected = false;
-                }
-            }
+            if (lastOptionsState.length === 0) {
+                // Store a deep copy of the initial state to track changes properly
+                lastOptionsState = JSON.parse(JSON.stringify(this.value));
+            } else {
+                const currentOptionsState = JSON.parse(JSON.stringify(this.value)); // Deep copy
 
-            const selectedOption = this.value.find(option => option.selected);
+                if (lastOptionsState.length < 1 || currentOptionsState.length < 1) return;
 
-            if (selectedOption) {
-                const { website, test } = selectedOption.value;
-                this.value.forEach(option => {
-                    if (option.value.website === website && option.value.test === test && option.value.variation !== selectedOption.value.variation) {
-                        option.disabled = true;
-                    } else {
-                        option.disabled = false;
+                // Find the last modified option
+                const lastModifiedOption = currentOptionsState.find(option =>
+                    lastOptionsState.some(prevOption =>
+                        prevOption.title === option.title && prevOption.selected !== option.selected
+                    )
+                );
+
+                // Update lastOptionsState for the next render
+                lastOptionsState = currentOptionsState;
+
+
+                if (lastModifiedOption?.selected !== true) return;
+
+                const selectedOptions = this.value.filter(option => option?.selected);
+                selectedOptions.forEach((selectedOption) => {
+                    const { website, test, variation } = selectedOption?.value;
+                    if (website === lastModifiedOption?.value?.website && test === lastModifiedOption?.value?.test) {
+                        if (variation !== lastModifiedOption?.value?.variation) {
+                            if (!selectedOption.selected) return;
+                            selectedOption.selected = false;
+                        }
                     }
                 });
-            } else {
-                this.value.forEach(option => {
-                    option.disabled = false;
-                });
+
+                lastOptionsState = JSON.parse(JSON.stringify(this.value)); // Update lastOptionsState
+
+                // if (selectedOptions.length > 1) {
+                //     const [firstSelected, secondSelected] = selectedOptions;
+                //     if (firstSelected.value.website === secondSelected.value.website && firstSelected.value.test === secondSelected.value.test) {
+                //         firstSelected.selected = false;
+                //     }
+                // }
+
             }
+
+
+            // const selectedOption = this.value.find(option => option.selected);
+
+            // if (selectedOption) {
+            //     const { website, test } = selectedOption.value;
+            //     this.value.forEach(option => {
+            //         if (option.value.website === website && option.value.test === test && option.value.variation !== selectedOption.value.variation) {
+            //             option.disabled = true;
+            //         } else {
+            //             option.disabled = false;
+            //         }
+            //     });
+            // } else {
+            //     this.value.forEach(option => {
+            //         option.disabled = false;
+            //     });
+            // }
         }
 
     });
