@@ -8,6 +8,7 @@ import { rollup } from "rollup"
 import chalk from "chalk"
 import prettier from "prettier";
 import { SETTINGS_FILE } from "../global/config.js"
+import json from '@rollup/plugin-json';
 
 async function formatFile(filePath) {
     try {
@@ -66,7 +67,8 @@ export async function bundleVariation(variationDir, UpdateFile) {
                 if (await fs.pathExists(jsFile)) {
                     const bundle = await rollup({
                         input: jsFile,
-                        plugins: [resolve()],
+                        plugins: [resolve(), json()],
+                        // plugins: [resolve()],
                         // plugins: [resolve(), commonjs()],
                         output: {
                             format: "esm", // Ensures the output is not wrapped in an IIFE
