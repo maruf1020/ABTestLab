@@ -547,6 +547,7 @@ export async function selectMultipleVariations(tests, goBack) {
         message: "Select variations to run:",
         choices: choices,
         min: 1,
+        warn: 'You can not select multiple variations of the same test.',
         hint: 'Space to select, Enter to confirm',
         instructions: false,
         suggest: (input, choices) =>
@@ -555,6 +556,34 @@ export async function selectMultipleVariations(tests, goBack) {
                     choice.title.toLowerCase().includes(input.toLowerCase())
                 )
             ),
+        onRender() {
+            const selectedOptions = this.value.filter(option => option.selected);
+
+            if (selectedOptions.length > 1) {
+                const [firstSelected, secondSelected] = selectedOptions;
+                if (firstSelected.value.website === secondSelected.value.website && firstSelected.value.test === secondSelected.value.test) {
+                    firstSelected.selected = false;
+                }
+            }
+
+            const selectedOption = this.value.find(option => option.selected);
+
+            if (selectedOption) {
+                const { website, test } = selectedOption.value;
+                this.value.forEach(option => {
+                    if (option.value.website === website && option.value.test === test && option.value.variation !== selectedOption.value.variation) {
+                        option.disabled = true;
+                    } else {
+                        option.disabled = false;
+                    }
+                });
+            } else {
+                this.value.forEach(option => {
+                    option.disabled = false;
+                });
+            }
+        }
+
     });
 
     if (selectedVariations.includes("back")) {
