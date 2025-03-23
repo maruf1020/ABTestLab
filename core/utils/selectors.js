@@ -448,7 +448,7 @@ export async function selectMultipleWebsites(goBack) {
     }
 
     const choices = [
-        ...websites.map((website) => ({ title: website, value: website })),
+        ...websites.map((website) => ({ title: "🌐 " + chalk.cyan(website), value: website })),
         { title: chalk.magenta('🔙 Back'), value: "back" },
         { title: chalk.red('❌ Exit'), value: "exit" },
     ];
@@ -480,14 +480,35 @@ export async function selectMultipleWebsites(goBack) {
 }
 
 export async function selectMultipleTests(websites, goBack) {
-    const allTests = [];
+    const testTypeIcons = {
+        "A/B": "🆎",
+        "AA": "📊",
+        "Multi-touch": "🎯",
+        "Patch": "🩹"
+    };
+    let allTests = [];
     for (const website of websites) {
         const tests = await listTests(website);
         allTests.push(...tests.map((test) => ({ website, test })));
     }
 
+    // get test info for all tests
+    const testInfos = await Promise.all(allTests.map(({ website, test }) => getTestInfo(website, test)));
+    allTests = allTests.map((test, index) => {
+        const testInfo = testInfos[index];
+        const icon = testInfo && testInfo.type ? testTypeIcons[testInfo.type] || '🧪' : '🧪';
+        return {
+            website: test.website,
+            test: test.test,
+            icon,
+        };
+    });
+
     const choices = [
-        ...allTests.map(({ website, test }) => ({ title: `${website} - ${test}`, value: { website, test } })),
+        ...allTests.map(({ website, test, icon }) => ({
+            title: `${icon} ${website} - ${test}`,
+            value: { website, test }
+        })),
         { title: chalk.magenta('🔙 Back'), value: "back" },
         { title: chalk.red('❌ Exit'), value: "exit" },
     ];
@@ -519,6 +540,12 @@ export async function selectMultipleTests(websites, goBack) {
 }
 
 export async function selectMultipleVariations(tests, goBack) {
+    const testTypeIcons = {
+        "A/B": "🆎",
+        "AA": "📊",
+        "Multi-touch": "🎯",
+        "Patch": "🩹"
+    };
     const allVariations = [];
     for (const { website, test } of tests) {
         const testInfo = await getTestInfo(website, test);
@@ -534,7 +561,7 @@ export async function selectMultipleVariations(tests, goBack) {
 
     const choices = [
         ...allVariations.map(({ website, test, variation, testType }) => ({
-            title: `${website} - ${test} - ${variation} (${testType})`,
+            title: `🎭 ${website} - ${test} - ${variation} (${testTypeIcons[testType] || '🧪'} ${testType})`,
             value: { website, test, variation, testType },
         })),
         { title: chalk.magenta('🔙 Back'), value: "back" },
