@@ -30,6 +30,7 @@ export const settingsCommand = new Command('settings')
                     choices: [
                         { title: chalk.cyan('📚 History records count: ') + `${chalk.blue(settings.maxHistoryRecords)}`, value: 'maxHistoryRecords' },
                         { title: chalk.cyan('🎨 CSS Reload: ') + `${settings.cssReload ? chalk.green('Yes') : chalk.red('No')}`, value: 'cssReload' },
+                        { title: chalk.cyan('🖼️  Display UI: ') + `${settings.displayUI ? chalk.green('Yes') : chalk.red('No')}`, value: 'displayUI' },
                         { title: chalk.cyan('📜 JS Reload: ') + `${settings.jsReload ? chalk.green('Yes') : chalk.red('No')}`, value: 'jsReload' },
                         { title: chalk.cyan('📦 Bundler Settings'), value: 'bundlerSettings' },
                         { title: chalk.magenta('🔙 Back'), value: 'back' },
@@ -136,11 +137,11 @@ export const settingsCommand = new Command('settings')
 
                     newValue = historyResponse.maxHistoryRecords;
                     settings.maxHistoryRecords = newValue;
-                } else if (response.setting === 'cssReload' || response.setting === 'jsReload') {
+                } else if (response.setting === 'cssReload' || response.setting === 'jsReload' || response.setting === 'displayUI') {
                     const reloadResponse = await prompts({
                         type: 'select',
                         name: 'reload',
-                        message: `Choose new value for ${response.setting === 'cssReload' ? 'CSS' : 'JS'} reload:`,
+                        message: `Choose new value for ${response.setting === 'cssReload' ? 'CSS' : response.setting === 'jsReload' ? 'JS' : 'UI'} reload:`,
                         choices: [
                             { title: chalk.green('✅ Yes'), value: true },
                             { title: chalk.red('🔴 No'), value: false },

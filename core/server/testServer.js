@@ -128,18 +128,16 @@ export async function startTestServer(selectedVariations) {
     io.on("connection", async (socket) => {
         log("Browser connected");
 
-
         try {
+            const config = await fs.readJson(path.join(process.cwd(), "settings.json"));
+            log("Config sent to client:", config);
+            socket.emit("config", config);
+
             //send UI code to client
             const uiJsFilePath = path.join(__dirname, "..", "public", "js", "main", "ui.js");
             const uiCssFilePath = path.join(__dirname, "..", "public", "style", "ui.scss");
             const uiJs = await getBundlerData(uiJsFilePath, uiCssFilePath, false);
             socket.emit("ui", uiJs);
-
-            const config = await fs.readJson(path.join(process.cwd(), "settings.json"));
-            log("Config sent to client:", config);
-
-            socket.emit("config", config);
 
         } catch (error) {
             console.error(`Error reading config: ${error.message}`);

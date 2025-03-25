@@ -27,15 +27,20 @@
 
         socket.on("config", (browserConfig) => {
             config = browserConfig
-        });
-        socket.on("ui", (uiJs) => {
-            const script = document.createElement("script")
-            script.textContent = uiJs
-            document.head.appendChild(script)
+
         });
 
+        socket.on("ui", (uiJs) => {
+            if (config.displayUI === true) {
+                const script = document.createElement("script")
+                script.textContent = uiJs
+                document.head.appendChild(script)
+            }
+        });
+
+
         socket.emit("checkWebsite", { url: window.location.href }, (response) => {
-            console.log("Server response: ", response)
+            console.log("Test found for this website")
         })
 
         socket.on('reload_page', (hostnames) => {
