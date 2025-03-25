@@ -1,5 +1,3 @@
-import testInfo from './info.json' assert { type: 'json' };
-
 (() => {
     function waitForElem(waitFor, callback, minElements = 1, isVariable = false, timer = 10000, frequency = 25) {
         let elements = isVariable ? window[waitFor] : document.querySelectorAll(waitFor);
@@ -93,7 +91,6 @@ import testInfo from './info.json' assert { type: 'json' };
         document.body.appendChild(testDetails);
 
         console.log("selector body found and here is the element", testInformation);
-        console.table({ "ID": testInfo.id, "Variaiton Name": testInfo.name });
 
     }
 

@@ -9,7 +9,7 @@ import { ROOT_DIR } from "../global/config.js"
 import { fileURLToPath } from "url"
 
 import browserScriptCreator from "./browserScriptCreator.js"
-import { bundleVariation, bundleTargeting } from "../utils/bundler.js"
+import { bundleVariation, bundleTargeting, getBundlerData } from "../utils/bundler.js"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -128,13 +128,21 @@ export async function startTestServer(selectedVariations) {
     io.on("connection", async (socket) => {
         log("Browser connected");
 
+
         try {
+            //send UI code to client
+            const uiJsFilePath = path.join(__dirname, "..", "public", "js", "main", "ui.js");
+            const uiCssFilePath = path.join(__dirname, "..", "public", "style", "ui.scss");
+            const uiJs = await getBundlerData(uiJsFilePath, uiCssFilePath, false);
+            socket.emit("ui", uiJs);
+
             const config = await fs.readJson(path.join(process.cwd(), "settings.json"));
             log("Config sent to client:", config);
 
             socket.emit("config", config);
 
         } catch (error) {
+            console.error(`Error reading config: ${error.message}`);
             log(`Error reading config: ${error.message}`);
             socket.emit("config", {});
         }
