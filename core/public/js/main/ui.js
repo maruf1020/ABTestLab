@@ -52,6 +52,7 @@
 
 
     function mainJs(testInformation) {
+        if (Object.keys(testInformation).length === 0) return;
 
         if (document.querySelector('.ab-Test-Pilot-test-details')) {
             document.querySelector('.ab-Test-Pilot-test-details').remove();
