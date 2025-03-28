@@ -1,9 +1,11 @@
 import fs from 'fs-extra';
 import path from 'path';
 import kleur from 'kleur';
-import { Command } from 'commander';
 import prompts from 'prompts';
 import chalk from 'chalk';
+import { Command } from 'commander';
+
+import { runCLI } from "../index.js";
 
 const settingsPath = path.join(process.cwd(), 'settings.json');
 
@@ -53,7 +55,8 @@ export const settingsCommand = new Command('settings')
                 }
 
                 if (response.setting === 'back') {
-                    continue;
+                    runCLI();
+                    return null;
                 }
 
                 if (response.setting === 'bundlerSettings') {

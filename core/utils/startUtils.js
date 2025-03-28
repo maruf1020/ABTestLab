@@ -338,25 +338,94 @@ async function handleTestDetailsWithHistory(selectedWebsite, selectedTest, lastT
 }
 
 async function runGroupFromHistory(history) {
+    const testTypeIcons = {
+        "A/B": "🆎",
+        "AA": "📊",
+        "Multi-touch": "🎯",
+        "Patch": "🩹"
+    };
+
     // Filter history to show only single tests
     const singleTestHistory = history.filter(entry => entry.tests.length === 1)
 
-    if (singleTestHistory.length === 0) {
-        console.log(kleur.yellow("No single tests found in history."))
+    if (singleTestHistory.length < 1) {
+        console.log(kleur.yellow("Not enough single tests in history to create a group test."))
         return
     }
 
-    const choices = singleTestHistory.map((entry, index) => ({
-        title: `${index + 1}. ${entry.tests[0].websiteName} - ${entry.tests[0].testName} - ${entry.tests[0].variationName}`,
-        value: entry,
-    }))
+    const choices = [
+        ...singleTestHistory.map((entry, index) => {
+            const test = entry.tests[0];
+            const icon = testTypeIcons[test.testType] || "🧪"; // Default icon
+            return {
+                title: `${icon} ${test.websiteName} - ${test.testName} - ${test.variationName} (${test.testType})`,
+                value: entry,
+            };
+        }),
+        { title: chalk.magenta('🔙 Back'), value: "back" },
+        { title: chalk.red('❌ Exit'), value: "exit" },
+    ]
 
+
+    let lastOptionsState = [];
     const { selectedTests } = await prompts({
         type: "autocompleteMultiselect",
         name: "selectedTests",
+        hint: null,
+        instructions: `Select variations to run: ${chalk.yellow("(You can not select multiple variations of the same test)")}`,
         message: "Select tests to add to your group:",
         choices: choices,
-        min: 1,
+        min: 2,
+        suggest: (input, choices) =>
+            Promise.resolve(
+                choices.filter(choice =>
+                    choice.title.toLowerCase().includes(input.toLowerCase())
+                )
+            ),
+        onRender() {
+            if (!this.value || this.value.length < 1 || !this.value.some(option => option.value && option.value.website && option.value.test && option.value.variation && option.value.testType)) return;
+
+            if (lastOptionsState.length === 0) {
+                lastOptionsState = JSON.parse(JSON.stringify(this.value));
+            } else {
+                const currentOptionsState = JSON.parse(JSON.stringify(this.value));
+
+                if (lastOptionsState.length < 1 || currentOptionsState.length < 1) return;
+
+                const lastModifiedOption = currentOptionsState.find(option => lastOptionsState.some(prevOption => prevOption.value.website === option.value.website
+                    && prevOption.value.test === option.value.test
+                    && prevOption.value.variation === option.value.variation
+                    && prevOption.value.testType === option.value.testType
+                    && prevOption.selected !== option.selected));
+
+                if (lastModifiedOption?.selected !== true) {
+                    lastOptionsState = currentOptionsState;
+                    return;
+                }
+
+                const isMultipleVariationsSelected = currentOptionsState.filter(option => option.selected).some((option) => {
+                    return currentOptionsState.filter(option => option.selected).filter((selectedOption) => selectedOption.value.website === option.value.website && selectedOption.value.test === option.value.test).length > 1;
+                });
+
+                if (isMultipleVariationsSelected) {
+                    this.warn = 'You can not select multiple variations of the same test.';
+                }
+
+                const selectedOptions = this.value.filter(option => option?.selected);
+                selectedOptions.forEach((selectedOption) => {
+                    const { website, test, variation } = selectedOption?.value;
+                    if (website === lastModifiedOption?.value?.website && test === lastModifiedOption?.value?.test) {
+                        if (variation !== lastModifiedOption?.value?.variation) {
+                            if (!selectedOption.selected) return;
+                            selectedOption.selected = false;
+                        }
+                    }
+                });
+
+                lastOptionsState = JSON.parse(JSON.stringify(this.value));
+            }
+        }
+
     })
 
     // Create a group of selected tests
@@ -366,6 +435,13 @@ async function runGroupFromHistory(history) {
         variation: entry.tests[0].variationName,
         testType: entry.tests[0].testType,
     }))
+
+    if (selectedTests.includes("back")) {
+        console.log(kleur.blue("See you soon!"));
+        process.exit(0);
+    } else if (selectedTests.includes("exit")) {
+        return goBack();
+    }
 
     // Run the selected group
     await startMultipleTest(selectedVariations)
