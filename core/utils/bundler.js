@@ -8,6 +8,7 @@ import { rollup } from "rollup"
 import chalk from "chalk"
 import prettier from "prettier";
 import { SETTINGS_FILE } from "../global/config.js"
+import json from '@rollup/plugin-json';
 
 async function formatFile(filePath) {
     try {
@@ -38,8 +39,73 @@ async function formatFile(filePath) {
     }
 }
 
+export async function getBundlerData(jsFilePath, scssFilePath, isMinified = false) {
+    try {
+        // Compile SCSS to CSS
+        let cssContent = "";
+        if (await fs.pathExists(scssFilePath)) {
+            const sassOptions = isMinified ? { style: "compressed" } : { style: "expanded" };
+            const result = sass.compile(scssFilePath, sassOptions);
+            cssContent = result.css;
+        } else {
+            console.warn(chalk.yellow(`⚠️ SCSS file not found: ${scssFilePath}`));
+        }
+
+        // Bundle JS
+        let jsContent = "";
+        if (await fs.pathExists(jsFilePath)) {
+            const bundle = await rollup({
+                input: jsFilePath,
+                plugins: [resolve(), json()],
+                output: {
+                    format: "esm",
+                },
+            });
+
+            const { output } = await bundle.generate({
+                format: "esm",
+                plugins: isMinified ? [terser()] : [],
+            });
+
+            jsContent = output[0].code;
+            await bundle.close();
+        } else {
+            console.warn(chalk.yellow(`⚠️ JS file not found: ${jsFilePath}`));
+        }
+
+        // Create the self-invoking function with the waitForElem utility and compiled code
+        const bundledCode = `
+(function() {
+    // Utility function to wait for elements
+    function waitForElem(waitFor, callback, minElements = 1, isVariable = false, timer = 10000, frequency = 25) {
+        let elements = isVariable ? window[waitFor] : document.querySelectorAll(waitFor);
+        if (timer <= 0) return;
+        (!isVariable && elements.length >= minElements) || (isVariable && typeof window[waitFor] !== "undefined") ? callback(elements) : setTimeout(() => waitForElem(waitFor, callback, minElements, isVariable, timer - frequency), frequency);
+    }
+
+    // CSS injection function
+    function mainCss() {
+        var styles = document.createElement("style");
+        styles.setAttribute("type", "text/css");
+        document.head.appendChild(styles).textContent =
+            "" +
+            ${JSON.stringify(cssContent)} +
+            "";
+    };
+    waitForElem('head', mainCss);
+
+    // JS code
+    ${jsContent}
+})();`;
+
+        return bundledCode;
+    } catch (error) {
+        console.error(chalk.red("❌ Error in getBundlerData:"), error);
+        throw error;
+    }
+}
+
 export async function bundleVariation(variationDir, UpdateFile) {
-    console.log("🔨 Bundling variation:", variationDir)
     try {
         const compiledDir = path.join(variationDir, "compiled")
         await fs.ensureDir(compiledDir)
@@ -67,7 +133,8 @@ export async function bundleVariation(variationDir, UpdateFile) {
                 if (await fs.pathExists(jsFile)) {
                     const bundle = await rollup({
                         input: jsFile,
-                        plugins: [resolve()],
+                        plugins: [resolve(), json()],
+                        // plugins: [resolve()],
                         // plugins: [resolve(), commonjs()],
                         output: {
                             format: "esm", // Ensures the output is not wrapped in an IIFE

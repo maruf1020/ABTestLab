@@ -1,5 +1,4 @@
 ; (() => {
-    // Load Socket.IO client
     var script = document.createElement("script")
     script.src = "http://localhost:3000/socket-io-client.js"
     script.onload = initializeABTest
@@ -28,41 +27,28 @@
 
         socket.on("config", (browserConfig) => {
             config = browserConfig
+
         });
 
-        // function loadTest(testId) {
-        //     // if (testId && activeTests[testId]) {
-        //     //     console.log(`Test ${testId} is already active`)
-        //     //     return
-        //     // }
+        socket.on("ui", (uiJs) => {
+            if (config.displayUI === true) {
+                const script = document.createElement("script")
+                script.textContent = uiJs
+                document.head.appendChild(script)
+            }
+        });
+
 
         socket.emit("checkWebsite", { url: window.location.href }, (response) => {
-            console.log("Server response: ", response)
+            console.log("Test found for this website")
         })
-        // }
 
-        // Listen for the 'reload_page' event
         socket.on('reload_page', (hostnames) => {
-            // remove last / from side
             if (hostnames.some(hostname => window.location.hostname.replace(/\/$/, '').includes(hostname.replace(/\/$/, '')) || window.location.hostname.replace(/\/$/, '') == hostname.replace(/\/$/, ''))) {
                 window.location.reload();
             }
         });
-        // // socket.on("testData", ({ testId, data, isMultiTouch }) => {
-        // socket.on("testData", ({ data }) => {
-        //     console.log(`Received initial test data`, data)
-        //     data.forEach(test => {
-        //         const { testInfo, files, isMultiTouch } = test;
 
-        //         if (isMultiTouch) {
-        //             applyMultiTouchTestData(testInfo, files)
-        //         } else {
-        //             applyTestData(testInfo, files)
-        //         }
-        //     })
-        // })
-
-        // { type: "css", content: css, id: info.id }
         socket.on("update", ({ type, content, id }) => {
             if (abTestPilotVariaTionInfo && abTestPilotVariaTionInfo[id] && abTestPilotVariaTionInfo[id].status == "Active") {
                 if (type === "css") {
@@ -72,42 +58,6 @@
                 }
             }
         });
-
-        // function applyTestData(testInfo, data) {
-        //     if (data.css && data.css["style.css"]) {
-        //         console.log("testInfo", testInfo)
-        //         const id = `ab-test-pilot-${testInfo.website.replace(/[^a-zA-Z0-9]/g, '_') + "_" + testInfo.test.replace(/[^a-zA-Z0-9]/g, '_') + "_" + testInfo.variation.replace(/[^a-zA-Z0-9]/g, '_')}`
-        //         updateStyle("style.css", data.css["style.css"], id)
-        //     }
-
-        //     // Object.entries(data.js || {}).forEach(([file, content]) => {
-        //     //     updateScript(file, content, testInfo)
-        //     // })
-
-        //     if (data.js && data.js["index.js"]) {
-        //         const id = `ab-test-pilot-${testInfo.website.replace(/[^a-zA-Z0-9]/g, '_') + "_" + testInfo.test.replace(/[^a-zA-Z0-9]/g, '_') + "_" + testInfo.variation.replace(/[^a-zA-Z0-9]/g, '_')}`
-        //         updateScript("index.js", data.js["index.js"], id)
-        //     }
-        // }
-
-        // function applyMultiTouchTestData(testInfo, data) {
-        //     console.log("Applying multi-touch test data: ---", data)
-        //     Object.entries(data).forEach(([touchPoint, touchPointData]) => {
-        //         if (touchPointData.css && touchPointData.css["style.css"]) {
-        //             const id = `ab-test-pilot-${testInfo.website.replace(/[^a-zA-Z0-9]/g, '_') + "_" + testInfo.test.replace(/[^a-zA-Z0-9]/g, '_') + "_" + touchPoint.replace(/[^a-zA-Z0-9]/g, '_') + "_" + testInfo.variation.replace(/[^a-zA-Z0-9]/g, '_')}`
-        //             updateStyle("style.css", touchPointData.css["style.css"], id, touchPoint)
-        //         }
-
-        //         // Object.entries(touchPointData.js || {}).forEach(([file, content]) => {
-        //         //     updateScript(file, content, touchPoint)
-        //         // })
-
-        //         if (touchPointData.js && touchPointData.js["index.js"]) {
-        //             const id = `ab-test-pilot-${testInfo.website.replace(/[^a-zA-Z0-9]/g, '_') + "_" + testInfo.test.replace(/[^a-zA-Z0-9]/g, '_') + "_" + touchPoint.replace(/[^a-zA-Z0-9]/g, '_') + "_" + testInfo.variation.replace(/[^a-zA-Z0-9]/g, '_')}`
-        //             updateScript("index.js", touchPointData.js["index.js"], id, touchPoint)
-        //         }
-        //     })
-        // }
 
         function updateStyle(id, content) {
             const style = document.querySelector(`style#abTestPilot-${id}`)
@@ -144,8 +94,5 @@
                 document.head.appendChild(newScript)
             }
         }
-
-        // // // Expose a method to load additional tests
-        // // window.loadABTest = loadTest
     }
 })()

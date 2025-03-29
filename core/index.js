@@ -4,45 +4,45 @@ import { program } from "commander";
 import prompts from "prompts";
 import chalk from "chalk";
 
-// import { listCommand } from "./commands/list.js";
 import { initCommand } from "./commands/init.js";
 import { startCommand } from "./commands/start.js";
+import { buildCommand } from "./commands/build.js";
 import { createCommand } from "./commands/create.js";
 import { settingsCommand } from "./commands/settings.js";
 
 const availableCommands = {
-    // list: listCommand,
-    create: createCommand,
     start: startCommand,
+    build: buildCommand,
+    create: createCommand,
     init: initCommand,
     settings: settingsCommand,
     exit: () => process.exit(0),
 };
 
 const commandAbbreviations = {
-    // l: 'list',
-    c: 'create',
     s: 'start',
+    b: 'build',
+    c: 'create',
     i: 'init',
     set: 'settings',
     e: 'exit',
 };
 
 const userFriendlyNames = {
-    // list: 'List all items',
-    create: chalk.green('➕ Create a new item'),
     start: chalk.green('🚀 Start the server'),
-    init: chalk.blueBright('🛠️  Initialize project'),
+    build: chalk.green('📦 Build Test'),
+    create: chalk.green('➕ Create a new item'),
+    init: chalk.yellowBright('🛠️  Initialize project'),
     settings: chalk.blueBright('⚙️  Update settings'),
     exit: chalk.red('❌ Exit'),
 };
 
 program.version("1.0.7").description("A CLI tool for A/B testing directly from a local machine");
 
-program.addCommand(initCommand);
-program.addCommand(createCommand);
-// program.addCommand(listCommand);
 program.addCommand(startCommand);
+program.addCommand(buildCommand);
+program.addCommand(createCommand);
+program.addCommand(initCommand);
 program.addCommand(settingsCommand);
 
 async function promptUser() {

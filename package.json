@@ -11,6 +11,7 @@
     "dev": "DEBUG=ab-testing-cli:* node core/index.js"
   },
   "dependencies": {
+    "@rollup/plugin-json": "^6.1.0",
     "chokidar": "^3.5.3",
     "cli-table3": "^0.6.3",
     "commander": "^11.1.0",
