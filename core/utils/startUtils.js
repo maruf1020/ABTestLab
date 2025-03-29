@@ -294,7 +294,7 @@ export async function groupTestMenu(history, goBack) {
             await runMultipleTests(() => groupTestMenu(history), goBack)
             return
         case "history":
-            await runGroupFromHistory(history)
+            await runGroupFromHistory(history, () => groupTestMenu(history))
             return
         case "runHistory":
             await viewTestHistory(history, "groupTest", () => groupTestMenu(history), goBack)
@@ -337,7 +337,7 @@ async function handleTestDetailsWithHistory(selectedWebsite, selectedTest, lastT
     }
 }
 
-async function runGroupFromHistory(history) {
+async function runGroupFromHistory(history, goBack) {
     const testTypeIcons = {
         "A/B": "🆎",
         "AA": "📊",
@@ -371,11 +371,12 @@ async function runGroupFromHistory(history) {
     const { selectedTests } = await prompts({
         type: "autocompleteMultiselect",
         name: "selectedTests",
-        hint: null,
+        hint: 'Space to select, Enter to confirm',
         instructions: `Select variations to run: ${chalk.yellow("(You can not select multiple variations of the same test)")}`,
         message: "Select tests to add to your group:",
         choices: choices,
-        min: 2,
+        min: 1,
+        warn: null,
         suggest: (input, choices) =>
             Promise.resolve(
                 choices.filter(choice =>
@@ -383,7 +384,7 @@ async function runGroupFromHistory(history) {
                 )
             ),
         onRender() {
-            if (!this.value || this.value.length < 1 || !this.value.some(option => option.value && option.value.website && option.value.test && option.value.variation && option.value.testType)) return;
+            if (!this.value || this.value.length < 1 || !this.value.some(option => option.value && option.value.tests && option.value.tests[0])) return;
 
             if (lastOptionsState.length === 0) {
                 lastOptionsState = JSON.parse(JSON.stringify(this.value));
@@ -392,19 +393,33 @@ async function runGroupFromHistory(history) {
 
                 if (lastOptionsState.length < 1 || currentOptionsState.length < 1) return;
 
-                const lastModifiedOption = currentOptionsState.find(option => lastOptionsState.some(prevOption => prevOption.value.website === option.value.website
-                    && prevOption.value.test === option.value.test
-                    && prevOption.value.variation === option.value.variation
-                    && prevOption.value.testType === option.value.testType
-                    && prevOption.selected !== option.selected));
+                const lastModifiedOption = currentOptionsState.find(option =>
+                    lastOptionsState.some(prevOption =>
+                        option.value && prevOption.value &&
+                        option.value.tests && prevOption.value.tests &&
+                        option.value.tests[0] && prevOption.value.tests[0] &&
+                        prevOption.value.tests[0].websiteName === option.value.tests[0].websiteName &&
+                        prevOption.value.tests[0].testName === option.value.tests[0].testName &&
+                        prevOption.value.tests[0].variationName === option.value.tests[0].variationName &&
+                        prevOption.value.tests[0].testType === option.value.tests[0].testType &&
+                        prevOption.selected !== option.selected
+                    )
+                );
 
-                if (lastModifiedOption?.selected !== true) {
+                if (!lastModifiedOption || lastModifiedOption.selected !== true) {
                     lastOptionsState = currentOptionsState;
                     return;
                 }
 
-                const isMultipleVariationsSelected = currentOptionsState.filter(option => option.selected).some((option) => {
-                    return currentOptionsState.filter(option => option.selected).filter((selectedOption) => selectedOption.value.website === option.value.website && selectedOption.value.test === option.value.test).length > 1;
+                const isMultipleVariationsSelected = currentOptionsState.filter(option =>
+                    option.selected && option.value && option.value.tests && option.value.tests[0]
+                ).some((option) => {
+                    return currentOptionsState.filter(opt =>
+                        opt.selected && opt.value && opt.value.tests && opt.value.tests[0]
+                    ).filter((selectedOption) =>
+                        selectedOption.value.tests[0].websiteName === option.value.tests[0].websiteName &&
+                        selectedOption.value.tests[0].testName === option.value.tests[0].testName
+                    ).length > 1;
                 });
 
                 if (isMultipleVariationsSelected) {
@@ -413,9 +428,13 @@ async function runGroupFromHistory(history) {
 
                 const selectedOptions = this.value.filter(option => option?.selected);
                 selectedOptions.forEach((selectedOption) => {
-                    const { website, test, variation } = selectedOption?.value;
-                    if (website === lastModifiedOption?.value?.website && test === lastModifiedOption?.value?.test) {
-                        if (variation !== lastModifiedOption?.value?.variation) {
+                    if (!selectedOption.value || !selectedOption.value.tests || !selectedOption.value.tests[0] ||
+                        !lastModifiedOption.value || !lastModifiedOption.value.tests || !lastModifiedOption.value.tests[0]) return;
+
+                    const { websiteName, testName, variationName } = selectedOption.value.tests[0];
+                    if (websiteName === lastModifiedOption.value.tests[0].websiteName &&
+                        testName === lastModifiedOption.value.tests[0].testName) {
+                        if (variationName !== lastModifiedOption.value.tests[0].variationName) {
                             if (!selectedOption.selected) return;
                             selectedOption.selected = false;
                         }
@@ -425,27 +444,37 @@ async function runGroupFromHistory(history) {
                 lastOptionsState = JSON.parse(JSON.stringify(this.value));
             }
         }
+    });
 
-    })
+    if (selectedTests.includes("back")) {
+        return goBack ? goBack() : process.exit(0);
+    } else if (selectedTests.includes("exit")) {
+        console.log(kleur.blue("See you soon!"));
+        process.exit(0);
+    }
+
+    // Either back or exit is selected to return to the previous menu or exit the command
+    if (selectedTests.some(test => test === "back")) {
+        return goBack();
+    }
+    if (selectedTests.some(test => test === "exit")) {
+        console.log(kleur.blue("See you soon!"));
+        process.exit(0);
+    }
 
     // Create a group of selected tests
-    const selectedVariations = selectedTests.flatMap(entry => ({
+    const filteredTests = selectedTests.filter(test => test !== "back" && test !== "exit");
+    const selectedVariations = filteredTests.map(entry => ({
         website: entry.tests[0].websiteName,
         test: entry.tests[0].testName,
         variation: entry.tests[0].variationName,
         testType: entry.tests[0].testType,
-    }))
-
-    if (selectedTests.includes("back")) {
-        console.log(kleur.blue("See you soon!"));
-        process.exit(0);
-    } else if (selectedTests.includes("exit")) {
-        return goBack();
-    }
-
+    }));
+    console.log("selectedVariations", selectedVariations);
     // Run the selected group
-    await startMultipleTest(selectedVariations)
+    await startMultipleTest(selectedVariations);
 }
+
 
 async function runMultipleTests(goBack) {
     const selectedWebsites = await selectMultipleWebsites(goBack)
