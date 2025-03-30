@@ -3,10 +3,18 @@
 // Variables
 $ab--test-pilot-primary-color: #0D9488;
 $ab--test-pilot-hover-color: #609e99;
-$ab--test-pilot-status-success: #28A745;
-$ab--test-pilot-status-warning: #FFC107;
-$ab--test-pilot-status-danger: #FF4545;
-$ab--test-pilot-status-default: #6C757D;
+$ab--test-pilot-status-success-dark: #28A745;
+$ab--test-pilot-status-success-default: #9BD5A8;
+$ab--test-pilot-status-success-light: #EAF7ED;
+$ab--test-pilot-status-warning-dark: #EAB000;
+$ab--test-pilot-status-warning-default: #FFD180;
+$ab--test-pilot-status-warning-light: #FFF4E5;
+$ab--test-pilot-status-danger-dark: #FF4545;
+$ab--test-pilot-status-danger-default: #FFA8A8;
+$ab--test-pilot-status-danger-light: #FFEDED;
+$ab--test-pilot-status-default-dark: #6C757D;
+$ab--test-pilot-status-default-default: #C4C4C4;
+$ab--test-pilot-status-default-light: #F2F2F2;
 $ab--test-pilot-white-color: #FFF;
 $ab--test-pilot-red-color: #E71111;
 $ab--test-pilot-box-shadow: 2px 4px 15px 0px #CFCFCF;
@@ -136,6 +144,67 @@ $ab--test-pilot-transition: 0.3s ease;
     transition: box-shadow 0.3s ease, opacity 0.3s ease;
     font-family: "Inter", sans-serif;
 
+    .ab--test-pilot-badge {
+        border-radius: 4px;
+        display: flex;
+        padding: 4px 8px;
+        justify-content: center;
+        align-items: center;
+        gap: 4px;
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 130%;
+    }
+
+    .ab--test-pilot-badge-circle {
+        height: 8px;
+        width: 8px;
+        border-radius: 50%;
+    }
+
+    .ab--test-pilot-badge-boxy {
+        &.ab--test-pilot-success {
+            border: 1px solid $ab--test-pilot-status-success-default;
+            background: $ab--test-pilot-status-success-light;
+            color: $ab--test-pilot-status-success-dark;
+
+            &>.ab--test-pilot-badge-circle {
+                background: $ab--test-pilot-status-success-dark;
+            }
+        }
+
+        &.ab--test-pilot-warning {
+            border: 1px solid $ab--test-pilot-status-warning-default;
+            background: $ab--test-pilot-status-warning-light;
+            color: $ab--test-pilot-status-warning-dark;
+
+            &>.ab--test-pilot-badge-circle {
+                background: $ab--test-pilot-status-warning-dark;
+            }
+        }
+
+        &.ab--test-pilot-danger {
+            border: 1px solid $ab--test-pilot-status-danger-default;
+            background: $ab--test-pilot-status-danger-light;
+            color: $ab--test-pilot-status-danger-dark;
+
+            &>.ab--test-pilot-badge-circle {
+                background: $ab--test-pilot-status-danger-dark;
+            }
+        }
+
+        &.ab--test-pilot-default {
+            border: 1px solid $ab--test-pilot-status-default-default;
+            background: $ab--test-pilot-status-default-light;
+            color: $ab--test-pilot-status-default-dark;
+
+            &>.ab--test-pilot-badge-circle {
+                background: $ab--test-pilot-status-default-dark;
+            }
+        }
+    }
+
     &-main {
         width: 65%;
         display: flex;
@@ -153,12 +222,21 @@ $ab--test-pilot-transition: 0.3s ease;
     }
 
     &-main-body {
-        display: grid;
+        display: flex;
         flex-direction: column;
 
         &>[data-type="ab--grid-table-row"]:not(:hover):nth-of-type(odd) {
             background: #FCFCFC;
             border-color: #FCFCFC;
+        }
+
+        &-table-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            overflow-y: scroll;
+            overflow-y: auto;
+            max-height: 360px;
         }
 
         &-table-head {

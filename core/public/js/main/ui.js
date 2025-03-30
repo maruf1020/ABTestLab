@@ -88,9 +88,9 @@
         }
 
         return `
-        <div class="ab--test-pilot-badge ${types[type] ? types[type].class : types.default.class} ${variations[variation] ? variations[variation].class : variations.default.class}">${text}</div>
-            <div class="ab--test-pilot-badge-circle "></div>
-            <span class="ab--test-pilot-badge">${text}</span>
+        <div class="ab--test-pilot-badge ${types[type] ? types[type].class : types.default.class} ${variations[variation] ? variations[variation].class : variations.default.class}">
+            <div class="ab--test-pilot-badge-circle"></div>
+            <span class="ab--test-pilot-badge-text">${text}</span>
         </div>`
 
     }
@@ -197,119 +197,121 @@
                                 ${asset.sortIcon}
                             </button>
                         </div>
-                    </div>                    
-                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                            <span>BULGARI - Product recomendation you may also like PDP</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                            <span>AB</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                            <span>Active</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                            <span>Variation 02</span>
-                        </div>
-                    </button>                    
-                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                            <span>BVLGARI - Access to finder</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                            <span>Multi Touch</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                            <span>Active</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                            <span>Variation 02</span>
-                        </div>
-                    </button>                   
-                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                            <span>Recently viewed products in HP</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                            <span>Multi Touch</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                            <span>Active</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                            <span>Variation 02</span>
-                        </div>
-                    </button>                    
-                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                            <span>Gift Finder Valentines Day</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                            <span>Multi Touch</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                            <span>Active</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                            <span>Variation 02</span>
-                        </div>
-                    </button>
-                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                            <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                            <span>Multi Touch</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                            <span>Active</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                            <span>Variation 02</span>
-                        </div>
-                    </button>
-                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                            <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                            <span>Multi Touch</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                            <span>Active</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                            <span>Variation 02</span>
-                        </div>
-                    </button>
-                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                            <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                            <span>Multi Touch</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                            <span>Active</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                            <span>Variation 02</span>
-                        </div>
-                    </button>
-                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                            <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                            <span>Multi Touch</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                            <span>Active</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                            <span>Variation 02</span>
-                        </div>
-                    </button>
+                    </div>    
+                    <div class="ab--pilot-test-details-ui-main-body-table-container">                   
+                        <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-title">
+                                <span>BULGARI - Product recomendation you may also like PDP</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-type">
+                                <span>AB</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-status">
+                                <span>${getBadgeHTML("boxy", "Active", "success")}</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
+                                <span>Variation 02</span>
+                            </div>
+                        </button>                    
+                        <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-title">
+                                <span>BVLGARI - Access to finder</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-type">
+                                <span>Multi Touch</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-status">
+                                <span>${getBadgeHTML("boxy", "Failed", "danger")}</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
+                                <span>Variation 02</span>
+                            </div>
+                        </button>                   
+                        <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-title">
+                                <span>Recently viewed products in HP</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-type">
+                                <span>Multi Touch</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-status">
+                                <span>${getBadgeHTML("boxy", "Active", "success")}</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
+                                <span>Variation 02</span>
+                            </div>
+                        </button>                    
+                        <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-title">
+                                <span>Gift Finder Valentines Day</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-type">
+                                <span>Multi Touch</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-status">
+                                <span>${getBadgeHTML("boxy", "Waiting", "warning")}</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
+                                <span>Variation 02</span>
+                            </div>
+                        </button>
+                        <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-title">
+                                <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-type">
+                                <span>Multi Touch</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-status">
+                                <span>${getBadgeHTML("boxy", "Active", "success")}</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
+                                <span>Variation 02</span>
+                            </div>
+                        </button>
+                        <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-title">
+                                <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-type">
+                                <span>Multi Touch</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-status">
+                                <span>${getBadgeHTML("boxy", "Waiting", "warning")}</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
+                                <span>Variation 02</span>
+                            </div>
+                        </button>
+                        <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-title">
+                                <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-type">
+                                <span>Multi Touch</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-status">
+                                <span>${getBadgeHTML("boxy", "Waiting", "warning")}</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
+                                <span>Variation 02</span>
+                            </div>
+                        </button>
+                        <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-title">
+                                <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-type">
+                                <span>Multi Touch</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-status">
+                                <span>${getBadgeHTML("boxy", "Active", "success")}</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
+                                <span>Variation 02</span>
+                            </div>
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="ab--pilot-test-details-ui-details"></div>
@@ -319,6 +321,7 @@
     }
 
     function mainJs([body]) {
+        if (Object.keys(window.abTestPilot).length === 0) return;
         const popUp = getPopUpElement()
         body.insertAdjacentElement("beforeend", popUp);
 
@@ -330,6 +333,8 @@
         console.log('name: v-01');
     }
 
-    waitForElem('body', mainJs);
+    waitForElem('abTestPilot', () => {
+        waitForElem('body', mainJs);
+    }, 1, true);
 
 })()
