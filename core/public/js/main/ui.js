@@ -56,6 +56,45 @@
         `
     }
 
+    function getBadgeHTML(type, text, variation) {
+        const variations = {
+            "success": {
+                "class": "ab--test-pilot-success",
+            },
+            "warning": {
+                "class": "ab--test-pilot-warning",
+            },
+            "danger": {
+                "class": "ab--test-pilot-danger",
+            },
+            default: {
+                "class": "ab--test-pilot-default",
+            }
+        }
+
+        const types = {
+            boxy: {
+                "class": "ab--test-pilot-badge-boxy",
+            },
+            circle: {
+                "class": "ab--test-pilot-badge-circle",
+            },
+            plain: {
+                "class": "ab--test-pilot-badge-plain",
+            },
+            default: {
+                "class": "ab--test-pilot-badge-plain",
+            }
+        }
+
+        return `
+        <div class="ab--test-pilot-badge ${types[type] ? types[type].class : types.default.class} ${variations[variation] ? variations[variation].class : variations.default.class}">${text}</div>
+            <div class="ab--test-pilot-badge-circle "></div>
+            <span class="ab--test-pilot-badge">${text}</span>
+        </div>`
+
+    }
+
     function getPopUpOpenerElement(popUp) {
         if (document.querySelector("#ab--pilot-test-details-ui-opener")) {
             document.querySelector("#ab--pilot-test-details-ui-opener").remove();
@@ -78,13 +117,13 @@
         `;
         opener.onclick = function (e) {
             if (e.target.closest(".ab--pilot-test-details-ui-opener-close")) {
-                opener.classList.add(" ");
+                opener.classList.add("ab--test-pilot-hide");
                 setTimeout(() => {
                     opener.remove();
                 }, 300);
                 return;
             }
-            popUp.classList.toggle("open");
+            popUp.classList.toggle("ab--test-pilot-open");
             console.log('clicked');
         }
 
@@ -101,15 +140,15 @@
         popUp.classList.add("ab--pilot-test-details-ui");
         popUp.innerHTML = `
             <div class="ab--pilot-test-details-ui-main">
-                <div class="ab--pilot-test-details-ui-header">
+                <div class="ab--pilot-test-details-ui-main-header">
                     <h2>AB test Pilot</h2>
-                    <div class="ab--pilot-test-details-ui-header-search">
+                    <div class="ab--pilot-test-details-ui-main-header-search">
                         <button>
                             ${asset.searchIcon}
                         </button>
                         <input type="text" placeholder="Search test by name or status">
                     </div>
-                    <ul class="ab--pilot-test-details-ui-header-icons">
+                    <ul class="ab--pilot-test-details-ui-main-header-icons">
                         <li>
                             <button>
                                 ${asset.minusIcon}
@@ -132,35 +171,35 @@
                         </li>
                     </ul>
                 </div>
-                <div class="ab--pilot-test-details-ui-main-body">
-                    <div class="ab--pilot-test-details-ui-main-body-table-header">
-                        <div class="ab--pilot-test-details-ui-main-body-table-header-title">
-                            <button class="ab--pilot-test-details-ui-main-body-table-header-title-button">    
-                                ${asset.sortIcon}
+                <div class="ab--pilot-test-details-ui-main-body" data-type="ab--grid-table">
+                    <div class="ab--pilot-test-details-ui-main-body-table-head" data-type="ab--grid-table-head">
+                        <div class="ab--pilot-test-details-ui-main-body-table-head-title">
+                            <button class="ab--pilot-test-details-ui-main-body-table-head-title-button">    
                                 <h3>Name</h3>
+                                ${asset.sortIcon}
                             </button>
                         </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-header-type">
-                            <button class="ab--pilot-test-details-ui-main-body-table-header-title-button">    
-                                ${asset.sortIcon}
+                        <div class="ab--pilot-test-details-ui-main-body-table-head-type">
+                            <button class="ab--pilot-test-details-ui-main-body-table-head-title-button">    
                                 <h3>Type</h3>
+                                ${asset.sortIcon}
                             </button>
                         </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-header-status">
-                            <button class="ab--pilot-test-details-ui-main-body-table-header-title-button">    
-                                ${asset.sortIcon}
+                        <div class="ab--pilot-test-details-ui-main-body-table-head-status">
+                            <button class="ab--pilot-test-details-ui-main-body-table-head-title-button">    
                                 <h3>Status</h3>
+                                ${asset.sortIcon}
                             </button>
                         </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-header-variation">
-                            <button class="ab--pilot-test-details-ui-main-body-table-header-title-button">    
-                                ${asset.sortIcon}
+                        <div class="ab--pilot-test-details-ui-main-body-table-head-variation">
+                            <button class="ab--pilot-test-details-ui-main-body-table-head-title-button">    
                                 <h3>variation</h3>
+                                ${asset.sortIcon}
                             </button>
                         </div>
                     </div>                    
-                    <div class="ab--pilot-test-details-ui-main-body-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-name">
+                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
+                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
                             <span>BULGARI - Product recomendation you may also like PDP</span>
                         </div>
                         <div class="ab--pilot-test-details-ui-main-body-table-row-type">
@@ -172,9 +211,9 @@
                         <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
                             <span>Variation 02</span>
                         </div>
-                    </div>                    
-                    <div class="ab--pilot-test-details-ui-main-body-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-name">
+                    </button>                    
+                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
+                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
                             <span>BVLGARI - Access to finder</span>
                         </div>
                         <div class="ab--pilot-test-details-ui-main-body-table-row-type">
@@ -186,9 +225,9 @@
                         <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
                             <span>Variation 02</span>
                         </div>
-                    </div>                   
-                    <div class="ab--pilot-test-details-ui-main-body-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-name">
+                    </button>                   
+                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
+                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
                             <span>Recently viewed products in HP</span>
                         </div>
                         <div class="ab--pilot-test-details-ui-main-body-table-row-type">
@@ -200,9 +239,9 @@
                         <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
                             <span>Variation 02</span>
                         </div>
-                    </div>                    
-                    <div class="ab--pilot-test-details-ui-main-body-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-name">
+                    </button>                    
+                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
+                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
                             <span>Gift Finder Valentines Day</span>
                         </div>
                         <div class="ab--pilot-test-details-ui-main-body-table-row-type">
@@ -214,9 +253,9 @@
                         <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
                             <span>Variation 02</span>
                         </div>
-                    </div>
-                    <div class="ab--pilot-test-details-ui-main-body-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-name">
+                    </button>
+                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
+                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
                             <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
                         </div>
                         <div class="ab--pilot-test-details-ui-main-body-table-row-type">
@@ -228,7 +267,49 @@
                         <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
                             <span>Variation 02</span>
                         </div>
-                    </div>
+                    </button>
+                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
+                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
+                            <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
+                        </div>
+                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
+                            <span>Multi Touch</span>
+                        </div>
+                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
+                            <span>Active</span>
+                        </div>
+                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
+                            <span>Variation 02</span>
+                        </div>
+                    </button>
+                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
+                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
+                            <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
+                        </div>
+                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
+                            <span>Multi Touch</span>
+                        </div>
+                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
+                            <span>Active</span>
+                        </div>
+                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
+                            <span>Variation 02</span>
+                        </div>
+                    </button>
+                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
+                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
+                            <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
+                        </div>
+                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
+                            <span>Multi Touch</span>
+                        </div>
+                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
+                            <span>Active</span>
+                        </div>
+                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
+                            <span>Variation 02</span>
+                        </div>
+                    </button>
                 </div>
             </div>
             <div class="ab--pilot-test-details-ui-details"></div>
