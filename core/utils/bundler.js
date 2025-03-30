@@ -185,7 +185,7 @@ export async function buildVariation(variationDir) {
         if (await fs.pathExists(jsFile)) {
             const bundle = await rollup({
                 input: jsFile,
-                plugins: [resolve()],
+                plugins: [resolve(), json()],
             });
 
             await bundle.write({
