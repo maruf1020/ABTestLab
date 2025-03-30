@@ -1,376 +1,113 @@
-html::before {
-    content: unset !important;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+// Variables
+$primary-color: #0D9488;
+$hover-color: #609e99;
+$white-color: #FFF;
+$red-color: #E71111;
+$box-shadow: 2px 4px 15px 0px #CFCFCF;
+$font-family: 'Inter', sans-serif;
+$border-radius: 32px;
+$transition: 0.3s ease;
+
+// Mixins
+@mixin flex-center($gap: 0) {
+    display: flex;
+    align-items: center;
+    gap: $gap;
 }
 
-// .ab-Test-Pilot-test-details {
-//     position: fixed;
-//     bottom: 0;
-//     left: 0;
-//     width: 100vw;
-//     height: 400px;
-//     background: white;
-//     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-//     z-index: 999999999999999;
-//     overflow-y: scroll;
-//     padding: 20px;
-//     display: flex;
-//     flex-direction: column;
-//     gap: 20px;
-
-//     &__container {
-//         display: flex;
-//         flex-direction: column;
-//         gap: 20px;
-//         width: 100%;
-//         border-bottom: 1px solid #e5e5e5;
-//         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-//     }
-
-//     &__content {
-//         display: flex;
-//         flex-direction: column;
-//         justify-content: space-between;
-//         align-items: start;
-//         padding: 20px;
-//         border: 1px solid #e5e5e5;
-//         width: 100%;
-//     }
-
-//     &__content-details {
-//         display: flex;
-//         gap: 20px;
-//         width: 100%;
-
-//         &>div {
-//             flex: 1;
-//             padding: 10px;
-//         }
-//     }
-// }
-
-
-// Material Design Variables
-$primary-color: #6200ee;
-$primary-variant: #3700b3;
-$secondary-color: #03dac6;
-$secondary-variant: #018786;
-$background: #ffffff;
-$surface: #ffffff;
-$error: #b00020;
-$on-primary: #ffffff;
-$on-secondary: #000000;
-$on-background: #000000;
-$on-surface: #000000;
-$on-error: #ffffff;
-
-// Elevation shadows
-@mixin elevation($level) {
-    @if $level ==1 {
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-    }
-
-    @else if $level ==2 {
-        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-    }
-
-    @else if $level ==3 {
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
-    }
-
-    @else if $level ==4 {
-        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-    }
-
-    @else if $level ==5 {
-        box-shadow: 0 19px 38px rgba(0, 0, 0, 0.30), 0 15px 12px rgba(0, 0, 0, 0.22);
-    }
+@mixin transition($properties...) {
+    transition: $properties;
 }
 
-// Typography
-@mixin headline1 {
-    font-size: 96px;
-    font-weight: 300;
-    letter-spacing: -1.5px;
-}
-
-@mixin headline2 {
-    font-size: 60px;
-    font-weight: 300;
-    letter-spacing: -0.5px;
-}
-
-@mixin headline3 {
-    font-size: 48px;
-    font-weight: 400;
-    letter-spacing: 0;
-}
-
-@mixin headline4 {
-    font-size: 34px;
-    font-weight: 400;
-    letter-spacing: 0.25px;
-}
-
-@mixin headline5 {
-    font-size: 24px;
-    font-weight: 400;
-    letter-spacing: 0;
-}
-
-@mixin headline6 {
-    font-size: 20px;
-    font-weight: 500;
-    letter-spacing: 0.15px;
-}
-
-@mixin subtitle1 {
-    font-size: 16px;
-    font-weight: 400;
-    letter-spacing: 0.15px;
-}
-
-@mixin subtitle2 {
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 0.1px;
-}
-
-@mixin body1 {
-    font-size: 16px;
-    font-weight: 400;
-    letter-spacing: 0.5px;
-}
-
-@mixin body2 {
-    font-size: 14px;
-    font-weight: 400;
-    letter-spacing: 0.25px;
-}
-
-@mixin button {
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: 1.25px;
-    text-transform: uppercase;
-}
-
-@mixin caption {
-    font-size: 12px;
-    font-weight: 400;
-    letter-spacing: 0.4px;
-}
-
-@mixin overline {
-    font-size: 10px;
-    font-weight: 400;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-}
-
-// Main Styles
-.ab-Test-Pilot-test-details {
-    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
-    color: #000000;
-    max-width: 1200px;
-    padding: 0 16px;
+.ab--pilot-test-details-ui-opener {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100vw;
-    min-width: 100vw;
-    box-sizing: border-box;
-    height: 500px;
-    overflow-y: scroll;
-    background: white;
-    z-index: 9999999999999999;
-    // padding-top: 60px;
+    bottom: 12px;
+    right: 12px;
+    z-index: 2147483647;
+    @include flex-center(16px);
+    flex-shrink: 0;
+    padding: 8px 16px 8px 32px;
+    border: unset;
+    border-radius: $border-radius;
+    background: $primary-color;
+    box-shadow: $box-shadow;
+    @include transition(box-shadow $transition, opacity $transition);
+    font-family: $font-family;
 
+    &.hide,
+    & .hide {
+        opacity: 0;
+    }
 
-    // AB Test Pilot Header Styles
-    .ab-test-header {
+    &:hover:not(:has(.ab--pilot-test-details-ui-opener-close:hover)) {
+        box-shadow: 2px 4px 15px 0px $hover-color;
+    }
+
+    &-opener {
+        @include flex-center(16px);
+    }
+
+    &-content {
         display: flex;
-        justify-content: space-between;
+        flex-direction: column;
         align-items: center;
-        background-color: #f5f5f5;
-        padding: 10px 15px;
-        border-bottom: 1px solid #ddd;
-        border-top-left-radius: 4px;
-        border-top-right-radius: 4px;
-        user-select: none;
-        margin-bottom: 20px;
-        position: sticky;
-        top: 0;
-        width: 100%;
-        left: 0;
 
-        .ab-test-title {
+        &>span:first-child {
+            color: $white-color;
+            font-family: $font-family;
             font-size: 16px;
             font-weight: 600;
-            color: #333;
-            margin: 0;
+            line-height: 130%;
+            letter-spacing: -0.064px;
         }
 
-        .ab-test-controls {
-            display: flex;
-            gap: 12px;
-
-            .control-btn {
-                cursor: pointer;
-                transition: all 0.2s ease;
-
-                &:hover {
-                    transform: scale(1.1);
-                }
-
-                &.minimize-btn:hover rect {
-                    fill: #0066cc;
-                }
-
-                &.fullscreen-btn:hover path {
-                    fill: #0066cc;
-                }
-
-                &.close-btn:hover path {
-                    stroke: #cc0000;
-                }
-            }
+        &>span:last-child {
+            color: $white-color;
+            font-family: $font-family;
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 130%;
+            letter-spacing: -0.12px;
         }
     }
 
-    // Ensure this matches with your existing class if needed
-    .ab-Test-Pilot-header {
-        @extend .ab-test-header;
+    &-icon {
+        @include flex-center();
+        height: 24px;
+        width: 24px;
+
+        &>svg {
+            height: 100%;
+            width: 100%;
+        }
     }
 
-
-    &__container {
-        @include elevation(1);
-        background-color: $surface;
-        border-radius: 4px;
-        margin-bottom: 24px;
-        overflow: hidden;
-        transition: box-shadow 0.3s ease;
+    &-close {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 24px;
+        width: 24px;
+        background: $white-color;
+        border-radius: 50%;
+        transform: translateY(-40%);
+        @include transition(transform $transition, background $transition, fill $transition);
+        padding: 6px;
 
         &:hover {
-            @include elevation(2);
+            transform: translateY(-40%) scale(1.1);
+            background: $red-color;
+
+            svg path {
+                fill: $white-color;
+            }
         }
 
-        &.active {
-            border-left: 4px solid $primary-color;
-        }
-
-        &.inactive {
-            border-left: 4px solid $error;
-            opacity: 0.8;
-        }
-
-        &.pending {
-            border-left: 4px solid $secondary-color;
-        }
-    }
-
-    &__header {
-        background-color: $primary-color;
-        color: $on-primary;
-        padding: 16px 24px;
-    }
-
-    &__title {
-        @include headline6;
-        margin: 0;
-    }
-
-    &__content {
-        padding: 16px 24px;
-    }
-
-    &__content-details {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 24px;
-
-        &-main {
-            flex: 1;
-            min-width: 300px;
-        }
-
-        &-targeting {
-            flex: 1;
-            min-width: 300px;
-        }
-    }
-
-    &__name,
-    &__type,
-    &__status,
-    &__touch-point,
-    &__variation,
-    &__message {
-        @include body1;
-        margin: 8px 0;
-        padding-bottom: 8px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-
-        &:last-child {
-            border-bottom: none;
-        }
-    }
-
-    &__targeting {
-        @include body1;
-        margin-top: 16px;
-
-        b {
-            color: $primary-color;
-        }
-    }
-
-    &__targeting-type {
-        @include subtitle2;
-        margin: 16px 0 8px;
-        color: $primary-variant;
-    }
-
-    &__targeting-status {
-        @include body2;
-        margin: 4px 0;
-
-        &:before {
-            content: "• ";
-        }
-    }
-
-    &__targeting-messages {
-        background-color: rgba(0, 0, 0, 0.04);
-        border-radius: 4px;
-        padding: 12px 12px 12px 32px;
-        margin: 8px 0;
-    }
-
-    &__targeting-message {
-        @include body2;
-        margin: 4px 0;
-        position: relative;
-
-        &:before {
-            content: "";
-            position: absolute;
-            left: -12px;
-            top: 8px;
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            background-color: $primary-color;
-        }
-    }
-}
-
-
-// Responsive adjustments
-@media (max-width: 768px) {
-    .ab-Test-Pilot-test-details {
-        &__content-details {
-            flex-direction: column;
+        svg {
+            height: 12px;
+            width: 12px;
         }
     }
 }
