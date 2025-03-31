@@ -53,7 +53,13 @@
                 </clipPath>
             </defs>
          </svg>
-        `
+        `,
+        leftArrow: `
+            
+        `,
+        rightArrow: `
+            
+        `,
     }
 
     function getBadgeHTML(type, text, variation) {
@@ -137,16 +143,16 @@
 
         const popUp = document.createElement("div");
         popUp.id = "ab--pilot-test-details-ui";
-        popUp.classList.add("ab--pilot-test-details-ui");
+        popUp.classList.add("ab--pilot-test-details-ui", "ab--details-visible");
         popUp.innerHTML = `
             <div class="ab--pilot-test-details-ui-main">
                 <div class="ab--pilot-test-details-ui-main-header">
-                    <h2>AB test Pilot</h2>
+                    <h2>AB Test Pilot</h2>
                     <div class="ab--pilot-test-details-ui-main-header-search">
                         <button>
                             ${asset.searchIcon}
                         </button>
-                        <input type="text" placeholder="Search test by name or status">
+                        <input type="text" placeholder="Search by name or status">
                     </div>
                     <ul class="ab--pilot-test-details-ui-main-header-icons">
                         <li>
@@ -204,13 +210,13 @@
                                 <span>BULGARI - Product recomendation you may also like PDP</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                                <span>AB</span>
+                                <span>A/B</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-status">
                                 <span>${getBadgeHTML("boxy", "Active", "success")}</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                                <span>Variation 02</span>
+                                <span>Ver 1</span>
                             </div>
                         </button>                    
                         <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
@@ -218,13 +224,13 @@
                                 <span>BVLGARI - Access to finder</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                                <span>Multi Touch</span>
+                                <span>A/A</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-status">
                                 <span>${getBadgeHTML("boxy", "Failed", "danger")}</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                                <span>Variation 02</span>
+                                <span>V 02</span>
                             </div>
                         </button>                   
                         <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
@@ -238,7 +244,7 @@
                                 <span>${getBadgeHTML("boxy", "Active", "success")}</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                                <span>Variation 02</span>
+                                <span>Veriation 1.5</span>
                             </div>
                         </button>                    
                         <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
@@ -252,7 +258,7 @@
                                 <span>${getBadgeHTML("boxy", "Waiting", "warning")}</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                                <span>Variation 02</span>
+                                <span>Variation 8</span>
                             </div>
                         </button>
                         <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
@@ -260,13 +266,13 @@
                                 <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                                <span>Multi Touch</span>
+                                <span>Patch</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-status">
                                 <span>${getBadgeHTML("boxy", "Active", "success")}</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                                <span>Variation 02</span>
+                                <span>V-01</span>
                             </div>
                         </button>
                         <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
@@ -274,13 +280,13 @@
                                 <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                                <span>Multi Touch</span>
+                                <span>A/B</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-status">
                                 <span>${getBadgeHTML("boxy", "Waiting", "warning")}</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                                <span>Variation 02</span>
+                                <span>Variation 1</span>
                             </div>
                         </button>
                         <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
@@ -288,13 +294,13 @@
                                 <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                                <span>Multi Touch</span>
+                                <span>A/B</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-status">
                                 <span>${getBadgeHTML("boxy", "Waiting", "warning")}</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                                <span>Variation 02</span>
+                                <span>VAR 2</span>
                             </div>
                         </button>
                         <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
@@ -302,13 +308,13 @@
                                 <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                                <span>Multi Touch</span>
+                                <span>Patch</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-status">
                                 <span>${getBadgeHTML("boxy", "Active", "success")}</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                                <span>Variation 02</span>
+                                <span>Var 05</span>
                             </div>
                         </button>
                     </div>
