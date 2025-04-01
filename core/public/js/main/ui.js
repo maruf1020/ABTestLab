@@ -55,11 +55,15 @@
          </svg>
         `,
         leftArrow: `
-            
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M15 10L5 10M5 10L8.75 7.25M5 10L8.75 12.75" stroke="#555555" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
         `,
         rightArrow: `
-            
-        `,
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M5 10L15 10M15 10L11.25 7.25M15 10L11.25 12.75" stroke="#555555" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        `
     }
 
     function getBadgeHTML(type, text, variation) {
@@ -320,8 +324,57 @@
                     </div>
                 </div>
             </div>
-            <div class="ab--pilot-test-details-ui-details"></div>
+            <div class="ab--pilot-test-details-ui-details">
+                <nav class="ab--pilot-test-details-ui-details-navigation">
+                    <button class="ab--test-pilot-nav-button ab--test-pilot-nav-button-active">Parent</button>
+                    <button class="ab--test-pilot-nav-button">Header</button>
+                    <button class="ab--test-pilot-nav-button">Footer</button>
+                </nav>
+                <h2 class="ab--pilot-test-details-ui-details-title">Targeting</h2>
+                <h1>Accordion</h1>
+                <div class="ab--test-pilot-accordion">
+                    <div class="ab--test-pilot-heading">Accordion #1</div>
+                    <div class="ab--test-pilot-contents">"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt utiusmod tempor incididunt utiusmod tempor incididunt utiusmod tempor incididunt utiusmod tempor incididunt ut labore et dolore magna aliqua.</div>
+                
+                    <div class="ab--test-pilot-heading">Accordion #2</div>
+                    <div class="ab--test-pilot-contents">"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</div>
+                
+                    <div class="ab--test-pilot-heading">Accordion #3</div>
+                    <div class="ab--test-pilot-contents">"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</div>
+                </div>               
+            </div>
         `;
+
+        popUp.querySelectorAll(".ab--test-pilot-accordion .ab--test-pilot-heading").forEach(function (heading) {
+            heading.addEventListener("click", function () {
+                // Toggle active class
+                this.classList.toggle("ab--test-pilot-active");
+
+                // Toggle next sibling (contents)
+                let content = this.nextElementSibling;
+                if (content) {
+                    if (content.style.display === "block") {
+                        content.style.display = "none";
+                    } else {
+                        content.style.display = "block";
+                    }
+                }
+
+                // Close other open contents
+                document.querySelectorAll(".ab--test-pilot-accordion .ab--test-pilot-contents").forEach(function (otherContent) {
+                    if (otherContent !== content) {
+                        otherContent.style.display = "none";
+                    }
+                });
+
+                // Remove active class from other headings
+                document.querySelectorAll(".ab--test-pilot-accordion .ab--test-pilot-heading").forEach(function (otherHeading) {
+                    if (otherHeading !== heading) {
+                        otherHeading.classList.remove("active");
+                    }
+                });
+            });
+        });
 
         return popUp;
     }

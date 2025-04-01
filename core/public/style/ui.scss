@@ -386,6 +386,79 @@ $ab--test-pilot-transition: 0.3s ease;
 
     &-details {
         width: 30%;
+
+        .ab--test-pilot-accordion {
+            max-width: 300px;
+            background: linear-gradient(to bottom right, #FFF, #f7f7f7);
+            background: #0097a7;
+            margin: 0 auto;
+            border-radius: 3px;
+            box-shadow: 0 10px 15px -20px rgba(0, 0, 0, 0.3), 0 30px 45px -30px rgba(0, 0, 0, 0.3), 0 80px 55px -30px rgba(0, 0, 0, 0.1);
+        }
+
+        .ab--test-pilot-heading {
+            color: #FFF;
+            font-size: 14px;
+            border-bottom: 1px solid #e7e7e7;
+            letter-spacing: 0.8px;
+            padding: 15px;
+            cursor: pointer;
+        }
+
+        .ab--test-pilot-heading:nth-last-child(2) {
+            border-bottom: 0;
+        }
+
+        .ab--test-pilot-heading:hover {
+            background: #00838f;
+            border-radius: 0;
+        }
+
+        .ab--test-pilot-heading:first-child:hover {
+            border-radius: 3px 3px 0 0;
+        }
+
+        .ab--test-pilot-heading:nth-last-child(2):hover {
+            border-radius: 0 0 3px 3px;
+        }
+
+        .ab--test-pilot-heading::before {
+            content: '';
+            vertical-align: middle;
+            display: inline-block;
+            border-top: 7px solid #f5f5f5;
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            float: right;
+            transform: rotate(0);
+            transition: all 0.5s;
+            margin-top: 5px;
+        }
+
+        .ab--test-pilot-active.heading::before {
+            transform: rotate(-180deg);
+        }
+
+        .ab--test-pilot-not-active.heading::before {
+            transform: rotate(0deg);
+        }
+
+        .ab--test-pilot-contents {
+            display: none;
+            background: #FFFAFA;
+            padding: 15px;
+            color: #7f8fa4;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        h1 {
+            font-size: 40px;
+            color: #000;
+            font-weight: normal;
+            text-align: center;
+            margin: 50px 0;
+        }
     }
 }
 
