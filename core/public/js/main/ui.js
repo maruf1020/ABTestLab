@@ -17,12 +17,12 @@
         </svg>
         `,
         minusIcon: `
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <svg class="ab--test-pilot-minus-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M6 13C5.71667 13 5.47917 12.9042 5.2875 12.7125C5.09583 12.5208 5 12.2833 5 12C5 11.7167 5.09583 11.4792 5.2875 11.2875C5.47917 11.0958 5.71667 11 6 11H18C18.2833 11 18.5208 11.0958 18.7125 11.2875C18.9042 11.4792 19 11.7167 19 12C19 12.2833 18.9042 12.5208 18.7125 12.7125C18.5208 12.9042 18.2833 13 18 13H6Z" fill="#121212"/>
         </svg> 
         `,
         plusIcon: `
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="21" viewBox="0 0 20 21" fill="none">
+        <svg class="ab--test-pilot-plus-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="21" viewBox="0 0 20 21" fill="none">
             <path d="M9.16667 11.3333H5.00001C4.76389 11.3333 4.56598 11.2535 4.40626 11.0937C4.24653 10.934 4.16667 10.7361 4.16667 10.5C4.16667 10.2639 4.24653 10.066 4.40626 9.90624C4.56598 9.74652 4.76389 9.66666 5.00001 9.66666H9.16667V5.49999C9.16667 5.26388 9.24653 5.06596 9.40626 4.90624C9.56598 4.74652 9.76389 4.66666 10 4.66666C10.2361 4.66666 10.434 4.74652 10.5938 4.90624C10.7535 5.06596 10.8333 5.26388 10.8333 5.49999V9.66666H15C15.2361 9.66666 15.434 9.74652 15.5938 9.90624C15.7535 10.066 15.8333 10.2639 15.8333 10.5C15.8333 10.7361 15.7535 10.934 15.5938 11.0937C15.434 11.2535 15.2361 11.3333 15 11.3333H10.8333V15.5C10.8333 15.7361 10.7535 15.934 10.5938 16.0937C10.434 16.2535 10.2361 16.3333 10 16.3333C9.76389 16.3333 9.56598 16.2535 9.40626 16.0937C9.24653 15.934 9.16667 15.7361 9.16667 15.5V11.3333Z" fill="#525252"/>
         </svg>`,
         minimiseIcon: `
@@ -55,13 +55,13 @@
          </svg>
         `,
         leftArrow: `
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M15 10L5 10M5 10L8.75 7.25M5 10L8.75 12.75" stroke="#555555" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <svg style="padding: 4px;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000" height="24px" width="24px" version="1.1" id="Layer_1" viewBox="0 0 330 330" xml:space="preserve">
+            <path id="XMLID_92_" d="M111.213,165.004L250.607,25.607c5.858-5.858,5.858-15.355,0-21.213c-5.858-5.858-15.355-5.858-21.213,0.001  l-150,150.004C76.58,157.211,75,161.026,75,165.004c0,3.979,1.581,7.794,4.394,10.607l150,149.996  C232.322,328.536,236.161,330,240,330s7.678-1.464,10.607-4.394c5.858-5.858,5.858-15.355,0-21.213L111.213,165.004z"/>
         </svg>
         `,
         rightArrow: `
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-            <path d="M5 10L15 10M15 10L11.25 7.25M15 10L11.25 12.75" stroke="#555555" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <svg style="padding: 4px;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000" height="24px" width="24px" version="1.1" id="Layer_1" viewBox="0 0 330 330" xml:space="preserve">
+            <path id="XMLID_222_" d="M250.606,154.389l-150-149.996c-5.857-5.858-15.355-5.858-21.213,0.001  c-5.857,5.858-5.857,15.355,0.001,21.213l139.393,139.39L79.393,304.394c-5.857,5.858-5.857,15.355,0.001,21.213  C82.322,328.536,86.161,330,90,330s7.678-1.464,10.607-4.394l149.999-150.004c2.814-2.813,4.394-6.628,4.394-10.606  C255,161.018,253.42,157.202,250.606,154.389z"/>
         </svg>
         `
     }
@@ -92,8 +92,11 @@
             plain: {
                 "class": "ab--test-pilot-badge-plain",
             },
+            minimal: {
+                "class": "ab--test-pilot-badge-minimal",
+            },
             default: {
-                "class": "ab--test-pilot-badge-plain",
+                "class": "ab--test-pilot-badge-default",
             }
         }
 
@@ -324,57 +327,135 @@
                     </div>
                 </div>
             </div>
+            <div class="ab--pilot-test-details-ui-divider">
+                <button class="ab--pilot-test-details-ui-divider-close-button">
+                    ${asset.closeIcon}
+                </button>
+            </div>
             <div class="ab--pilot-test-details-ui-details">
-                <nav class="ab--pilot-test-details-ui-details-navigation">
-                    <button class="ab--test-pilot-nav-button ab--test-pilot-nav-button-active">Parent</button>
-                    <button class="ab--test-pilot-nav-button">Header</button>
-                    <button class="ab--test-pilot-nav-button">Footer</button>
-                </nav>
+                <div class="ab--pilot-test-details-ui-details-navigation-wrapper">
+                    <button class="ab--pilot-test-details-ui-details-navigation-button ab--pilot-test-navigation-left">${asset.leftArrow}</button>
+                    <ul class="ab--pilot-test-details-ui-details-navigation">
+                        <li class="ab--pilot-test-details-ui-details-navigation-item">
+                            <button class="ab--test-pilot-nav-button ab--test-pilot-nav-button-active">Parent</button>
+                        </li>
+                        <li class="ab--pilot-test-details-ui-details-navigation-item">
+                            <button class="ab--test-pilot-nav-button">Header</button>
+                        </li>
+                        <li class="ab--pilot-test-details-ui-details-navigation-item">
+                            <button class="ab--test-pilot-nav-button">Footer</button>
+                        </li>
+                        <li class="ab--pilot-test-details-ui-details-navigation-item">
+                            <button class="ab--test-pilot-nav-button">Footer</button>
+                        </li>
+                    </ul>
+                    <button class="ab--pilot-test-details-ui-details-navigation-button ab--pilot-test-navigation-right">${asset.rightArrow}</button>
+                </div>
                 <h2 class="ab--pilot-test-details-ui-details-title">Targeting</h2>
-                <h1>Accordion</h1>
                 <div class="ab--test-pilot-accordion">
-                    <div class="ab--test-pilot-heading">Accordion #1</div>
+                    <button class="ab--test-pilot-accordion-header">
+                        <span>Custom Java Script Condition</span>
+                        ${getBadgeHTML("minimal", "Active", "success")}
+                        ${asset.plusIcon}
+                        ${asset.minusIcon}
+                    </button>
                     <div class="ab--test-pilot-contents">"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt utiusmod tempor incididunt utiusmod tempor incididunt utiusmod tempor incididunt utiusmod tempor incididunt ut labore et dolore magna aliqua.</div>
                 
-                    <div class="ab--test-pilot-heading">Accordion #2</div>
+                    <button class="ab--test-pilot-accordion-header">
+                        <span>CSS Checker</span>
+                        ${getBadgeHTML("minimal", "Active", "success")}
+                        ${asset.plusIcon}
+                        ${asset.minusIcon}
+                    </button>
                     <div class="ab--test-pilot-contents">"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</div>
                 
-                    <div class="ab--test-pilot-heading">Accordion #3</div>
+                    <button class="ab--test-pilot-accordion-header">
+                        <span>URL Checker</span>
+                        ${getBadgeHTML("minimal", "Faild", "danger")}
+                        ${asset.plusIcon}
+                        ${asset.minusIcon}
+                    </button>
                     <div class="ab--test-pilot-contents">"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</div>
-                </div>               
+                </div>   
+                <h2 class="ab--pilot-test-details-ui-details-message">Message</h2>  
+                <span class="ab--pilot-test-details-ui-details-message-content">Targeting Met and Variation Applied</span>          
             </div>
         `;
 
-        popUp.querySelectorAll(".ab--test-pilot-accordion .ab--test-pilot-heading").forEach(function (heading) {
+        popUp.querySelectorAll(".ab--test-pilot-accordion .ab--test-pilot-accordion-header").forEach(function (heading) {
             heading.addEventListener("click", function () {
-                // Toggle active class
-                this.classList.toggle("ab--test-pilot-active");
-
-                // Toggle next sibling (contents)
                 let content = this.nextElementSibling;
                 if (content) {
                     if (content.style.display === "block") {
                         content.style.display = "none";
+                        this.classList.remove("ab--test-pilot-accordion-active");
                     } else {
                         content.style.display = "block";
+                        this.classList.add("ab--test-pilot-accordion-active");
+                    }
+                }
+            });
+        });
+
+
+        const prevButton = popUp.querySelector(".ab--pilot-test-navigation-left");
+        const nextButton = popUp.querySelector(".ab--pilot-test-navigation-right");
+
+        function updateNavigationButtons() {
+            const currentActive = popUp.querySelector(".ab--test-pilot-nav-button-active");
+            const buttons = Array.from(popUp.querySelectorAll(".ab--test-pilot-nav-button"));
+            const activeIndex = buttons.indexOf(currentActive);
+            const total = buttons.length;
+            const isNextAvailable = activeIndex < total - 1;
+            const isPrevAvailable = activeIndex > 0;
+
+            if (!isPrevAvailable) {
+                prevButton.classList.add("ab--test-pilot-navigation-hidden");
+            } else {
+                prevButton.classList.remove("ab--test-pilot-navigation-hidden");
+            }
+
+            if (!isNextAvailable) {
+                nextButton.classList.add("ab--test-pilot-navigation-hidden");
+            } else {
+                nextButton.classList.remove("ab--test-pilot-navigation-hidden");
+            }
+        }
+
+        updateNavigationButtons();
+
+        popUp.querySelectorAll(".ab--pilot-test-details-ui-details-navigation-button").forEach(function (button) {
+            button.addEventListener("click", function () {
+                const currentActive = popUp.querySelector(".ab--test-pilot-nav-button-active");
+                const buttons = Array.from(popUp.querySelectorAll(".ab--test-pilot-nav-button"));
+                const activeIndex = buttons.indexOf(currentActive);
+
+                if (button.classList.contains("ab--pilot-test-navigation-left")) {
+                    if (activeIndex > 0) {
+                        currentActive.classList.remove("ab--test-pilot-nav-button-active");
+                        buttons[activeIndex - 1].classList.add("ab--test-pilot-nav-button-active");
+                    }
+                } else {
+                    if (activeIndex < buttons.length - 1) {
+                        currentActive.classList.remove("ab--test-pilot-nav-button-active");
+                        buttons[activeIndex + 1].classList.add("ab--test-pilot-nav-button-active");
                     }
                 }
 
-                // Close other open contents
-                document.querySelectorAll(".ab--test-pilot-accordion .ab--test-pilot-contents").forEach(function (otherContent) {
-                    if (otherContent !== content) {
-                        otherContent.style.display = "none";
-                    }
-                });
-
-                // Remove active class from other headings
-                document.querySelectorAll(".ab--test-pilot-accordion .ab--test-pilot-heading").forEach(function (otherHeading) {
-                    if (otherHeading !== heading) {
-                        otherHeading.classList.remove("active");
-                    }
-                });
+                updateNavigationButtons();
             });
         });
+
+        popUp.querySelectorAll(".ab--test-pilot-nav-button").forEach(function (button) {
+            button.addEventListener("click", function () {
+                popUp.querySelectorAll(".ab--test-pilot-nav-button").forEach(function (button) {
+                    button.classList.remove("ab--test-pilot-nav-button-active");
+                });
+                button.classList.add("ab--test-pilot-nav-button-active");
+                updateNavigationButtons();
+            });
+        });
+
 
         return popUp;
     }
