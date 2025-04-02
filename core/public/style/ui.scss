@@ -179,7 +179,8 @@ $ab--test-pilot-table-top: 153px;
     }
 
     .ab--test-pilot-badge-boxy,
-    .ab--test-pilot-badge-minimal {
+    .ab--test-pilot-badge-minimal,
+    .ab--test-pilot-badge-plain {
         &.ab--test-pilot-success {
             border: 1px solid $ab--test-pilot-status-success-default;
             background: $ab--test-pilot-status-success-light;
@@ -235,8 +236,34 @@ $ab--test-pilot-table-top: 153px;
                 }
             }
         }
+
     }
 
+    .ab--test-pilot-badge-plain {
+        &.ab--test-pilot-badge {
+            background: unset;
+            border: unset;
+            gap: 8px;
+        }
+
+        .ab--test-pilot-badge-circle {
+            position: relative;
+            height: 6px;
+            width: 6px;
+
+            &::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                height: 12px;
+                width: 12px;
+                border-radius: 50%;
+                z-index: -1;
+            }
+        }
+    }
 
     .ab--test-pilot-badge-minimal {
         &.ab--test-pilot-badge {
@@ -594,6 +621,12 @@ $ab--test-pilot-table-top: 153px;
                 display: flex;
                 padding: 14px 0;
 
+                &.ab--test-pilot-accordion-active {
+                    &+.ab--test-pilot-contents-wrapper {
+                        display: block;
+                    }
+                }
+
                 .ab--test-pilot-minus-icon {
                     display: none;
                 }
@@ -611,6 +644,7 @@ $ab--test-pilot-table-top: 153px;
 
                 &.ab--test-pilot-accordion-active {
                     border-bottom: unset;
+                    padding: 8px 0;
 
                     .ab--test-pilot-badge,
                     .ab--test-pilot-plus-icon {
@@ -624,12 +658,44 @@ $ab--test-pilot-table-top: 153px;
             }
 
             .ab--test-pilot-contents {
-                display: none;
-                background: #FFFAFA;
-                padding: 15px;
-                color: #7f8fa4;
-                font-size: 13px;
-                line-height: 1.5;
+                &-wrapper {
+                    display: none;
+                }
+
+                &-status {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 8px 0;
+
+                    &>span {
+                        color: #121212;
+                        font-family: Inter;
+                        font-size: 14px;
+                        font-style: normal;
+                        font-weight: 400;
+                        line-height: 130%;
+                    }
+                }
+
+                &-details {
+                    padding-bottom: 24px;
+                    padding-top: 8px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+
+                    li {
+                        list-style: none;
+                        color: #121212;
+                        font-family: Inter;
+                        font-size: 14px;
+                        font-style: normal;
+                        font-weight: 400;
+                        line-height: 130%;
+                        padding-left: 12px;
+                    }
+                }
             }
         }
 

@@ -355,27 +355,52 @@
                 <div class="ab--test-pilot-accordion">
                     <button class="ab--test-pilot-accordion-header">
                         <span>Custom Java Script Condition</span>
-                        ${getBadgeHTML("minimal", "Active", "success")}
+                        ${getBadgeHTML("minimal", "True", "success")}
                         ${asset.plusIcon}
                         ${asset.minusIcon}
                     </button>
-                    <div class="ab--test-pilot-contents">"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt utiusmod tempor incididunt utiusmod tempor incididunt utiusmod tempor incididunt utiusmod tempor incididunt ut labore et dolore magna aliqua.</div>
-                
+                    <div class="ab--test-pilot-contents-wrapper">
+                        <div class="ab--test-pilot-contents-status">
+                            <span>Status</span>
+                            ${getBadgeHTML("plain", "True", "success")}
+                        </div>
+                        <ul class="ab--test-pilot-contents-details">
+                            <li>immediate activation from return value</li>
+                            <li>Call back function is geting true response</li>
+                        </ul>
+                    </div>                
                     <button class="ab--test-pilot-accordion-header">
                         <span>CSS Checker</span>
-                        ${getBadgeHTML("minimal", "Active", "success")}
+                        ${getBadgeHTML("minimal", "True", "success")}
                         ${asset.plusIcon}
                         ${asset.minusIcon}
                     </button>
-                    <div class="ab--test-pilot-contents">"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</div>
-                
+                    <div class="ab--test-pilot-contents-wrapper">
+                        <div class="ab--test-pilot-contents-status">
+                            <span>Status</span>
+                            ${getBadgeHTML("plain", "True", "success")}
+                        </div>
+                        <ul class="ab--test-pilot-contents-details">
+                            <li>immediate activation from return value</li>
+                            <li>Call back function is geting true response</li>
+                        </ul>
+                    </div>               
                     <button class="ab--test-pilot-accordion-header">
                         <span>URL Checker</span>
-                        ${getBadgeHTML("minimal", "Faild", "danger")}
+                        ${getBadgeHTML("minimal", "False", "danger")}
                         ${asset.plusIcon}
                         ${asset.minusIcon}
                     </button>
-                    <div class="ab--test-pilot-contents">"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</div>
+                    <div class="ab--test-pilot-contents-wrapper">
+                        <div class="ab--test-pilot-contents-status">
+                            <span>Status</span>
+                            ${getBadgeHTML("plain", "False", "danger")}
+                        </div>
+                        <ul class="ab--test-pilot-contents-details">
+                            <li>immediate activation from return value</li>
+                            <li>Call back function is geting true response</li>
+                        </ul>
+                    </div> 
                 </div>   
                 <h2 class="ab--pilot-test-details-ui-details-message">Message</h2>  
                 <span class="ab--pilot-test-details-ui-details-message-content">Targeting Met and Variation Applied</span>          
@@ -387,6 +412,7 @@
         // ab--pilot-test-details-ui-main-header-short-screen                            
         // ab--pilot-test-details-ui-main-header-close
 
+        //Minimise Button listener
         popUp.querySelector(".ab--pilot-test-details-ui-main-header-minimise").addEventListener("click", function () {
             waitForElem(".ab--pilot-test-details-ui-opener", function ([opener]) {
                 popUp.classList.remove("ab--test-pilot-open");
@@ -394,14 +420,31 @@
             });
         });
 
+        //Full Screen Button listener
         popUp.querySelector(".ab--pilot-test-details-ui-main-header-full-screen").addEventListener("click", function () {
             popUp.classList.add("ab--test-pilot-full-screen");
         });
 
+        //Short Screen Button listener
         popUp.querySelector(".ab--pilot-test-details-ui-main-header-short-screen").addEventListener("click", function () {
             popUp.classList.remove("ab--test-pilot-full-screen");
         });
 
+        //Close Button listener
+        popUp.querySelector(".ab--pilot-test-details-ui-main-header-close").addEventListener("click", function () {
+            waitForElem(".ab--pilot-test-details-ui-opener", function ([opener]) {
+                popUp.classList.remove("ab--test-pilot-open");
+                setTimeout(() => {
+                    popUp.remove();
+                    opener.remove();
+                }, 300);
+            })
+        });
+
+
+
+
+        //Accordion Listener
         popUp.querySelectorAll(".ab--test-pilot-accordion .ab--test-pilot-accordion-header").forEach(function (heading) {
             heading.addEventListener("click", function () {
                 let content = this.nextElementSibling;
