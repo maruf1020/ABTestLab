@@ -136,8 +136,8 @@
                 }, 300);
                 return;
             }
-            popUp.classList.toggle("ab--test-pilot-open");
-            console.log('clicked');
+            popUp.classList.add("ab--test-pilot-open");
+            opener.classList.add("ab--test-pilot-hide");
         }
 
         return opener;
@@ -162,22 +162,22 @@
                         <input type="text" placeholder="Search by name or status">
                     </div>
                     <ul class="ab--pilot-test-details-ui-main-header-icons">
-                        <li>
+                        <li class="ab--pilot-test-details-ui-main-header-icon ab--pilot-test-details-ui-main-header-minimise">
                             <button>
                                 ${asset.minusIcon}
                             </button>
                         </li>
-                        <li>
+                        <li class="ab--pilot-test-details-ui-main-header-icon  ab--pilot-test-details-ui-main-header-short-screen">
                             <button>
                                 ${asset.minimiseIcon}
                             </button>
                         </li>
-                        <li>
+                        <li class="ab--pilot-test-details-ui-main-header-icon ab--pilot-test-details-ui-main-header-full-screen">
                             <button>
                                 ${asset.maximizeIcon}
                             </button>
                         </li>
-                        <li>
+                        <li class="ab--pilot-test-details-ui-main-header-icon ab--pilot-test-details-ui-main-header-close">
                             <button>
                                 ${asset.closeIcon}
                             </button>
@@ -329,7 +329,7 @@
             </div>
             <div class="ab--pilot-test-details-ui-divider">
                 <button class="ab--pilot-test-details-ui-divider-close-button">
-                    ${asset.closeIcon}
+                    ${asset.leftArrow}
                 </button>
             </div>
             <div class="ab--pilot-test-details-ui-details">
@@ -381,6 +381,26 @@
                 <span class="ab--pilot-test-details-ui-details-message-content">Targeting Met and Variation Applied</span>          
             </div>
         `;
+
+        // ab--pilot-test-details-ui-main-header-minimise                          
+        // ab--pilot-test-details-ui-main-header-full-screen                          
+        // ab--pilot-test-details-ui-main-header-short-screen                            
+        // ab--pilot-test-details-ui-main-header-close
+
+        popUp.querySelector(".ab--pilot-test-details-ui-main-header-minimise").addEventListener("click", function () {
+            waitForElem(".ab--pilot-test-details-ui-opener", function ([opener]) {
+                popUp.classList.remove("ab--test-pilot-open");
+                opener.classList.remove("ab--test-pilot-hide");
+            });
+        });
+
+        popUp.querySelector(".ab--pilot-test-details-ui-main-header-full-screen").addEventListener("click", function () {
+            popUp.classList.add("ab--test-pilot-full-screen");
+        });
+
+        popUp.querySelector(".ab--pilot-test-details-ui-main-header-short-screen").addEventListener("click", function () {
+            popUp.classList.remove("ab--test-pilot-full-screen");
+        });
 
         popUp.querySelectorAll(".ab--test-pilot-accordion .ab--test-pilot-accordion-header").forEach(function (heading) {
             heading.addEventListener("click", function () {
