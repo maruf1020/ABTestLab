@@ -190,7 +190,7 @@ $ab--test-pilot-table-top: 153px;
                 background: $ab--test-pilot-status-success-dark;
 
                 &::after {
-                    background: $ab--test-pilot-status-success-default;
+                    background: $ab--test-pilot-status-success-light;
                 }
             }
         }
@@ -204,7 +204,7 @@ $ab--test-pilot-table-top: 153px;
                 background: $ab--test-pilot-status-warning-dark;
 
                 &::after {
-                    background: $ab--test-pilot-status-warning-default;
+                    background: $ab--test-pilot-status-warning-light;
                 }
             }
         }
@@ -218,7 +218,7 @@ $ab--test-pilot-table-top: 153px;
                 background: $ab--test-pilot-status-danger-dark;
 
                 &::after {
-                    background: $ab--test-pilot-status-danger-default;
+                    background: $ab--test-pilot-status-danger-light;
                 }
             }
         }
@@ -232,7 +232,7 @@ $ab--test-pilot-table-top: 153px;
                 background: $ab--test-pilot-status-default-dark;
 
                 &::after {
-                    background: $ab--test-pilot-status-default-default;
+                    background: $ab--test-pilot-status-default-light;
                 }
             }
         }
@@ -300,6 +300,7 @@ $ab--test-pilot-table-top: 153px;
         display: flex;
         flex-direction: column;
         height: 100%;
+        transition: width .3s ease;
 
         &-header-icons {
             display: flex;
@@ -530,6 +531,7 @@ $ab--test-pilot-table-top: 153px;
         scrollbar-width: none;
         -ms-overflow-style: none;
         position: relative;
+        transition: width .3s ease;
 
         &::before {
             content: '';
@@ -569,6 +571,13 @@ $ab--test-pilot-table-top: 153px;
             width: calc(100% - (10px + 48px));
             overflow: hidden;
 
+            // &>div:not(:nth-child(3)) {
+            //     .ab--pilot-test-details-ui-details-navigation-item {
+            //         // Add your styles here
+            //         margin-right: 8px;
+            //         min-width: 50%;
+            //     }
+            // }
 
             &-item {
                 list-style: none;
@@ -608,6 +617,7 @@ $ab--test-pilot-table-top: 153px;
             font-weight: 500;
             line-height: 130%;
             margin-top: 28px;
+            word-wrap: normal;
         }
 
         .ab--test-pilot-accordion {
@@ -640,6 +650,7 @@ $ab--test-pilot-table-top: 153px;
                     line-height: 130%;
                     flex: 1;
                     text-align: left;
+                    white-space: nowrap;
                 }
 
                 &.ab--test-pilot-accordion-active {
@@ -671,10 +682,14 @@ $ab--test-pilot-table-top: 153px;
                     &>span {
                         color: #121212;
                         font-family: Inter;
-                        font-size: 14px;
+                        font-size: 12px;
                         font-style: normal;
                         font-weight: 400;
                         line-height: 130%;
+                    }
+
+                    span {
+                        font-size: 12px;
                     }
                 }
 
@@ -689,7 +704,7 @@ $ab--test-pilot-table-top: 153px;
                         list-style: none;
                         color: #121212;
                         font-family: Inter;
-                        font-size: 14px;
+                        font-size: 12px;
                         font-style: normal;
                         font-weight: 400;
                         line-height: 130%;
@@ -708,6 +723,7 @@ $ab--test-pilot-table-top: 153px;
             line-height: 130%;
             padding: 8px 0;
             margin-top: 16px;
+            word-wrap: normal;
 
             &-content {
                 display: flex;
@@ -763,6 +779,10 @@ $ab--test-pilot-table-top: 153px;
 
         .ab--pilot-test-details-ui-details {
             width: 0;
+        }
+
+        .ab--pilot-test-details-ui-divider {
+            display: none;
         }
     }
 }

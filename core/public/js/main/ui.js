@@ -346,7 +346,7 @@
                             <button class="ab--test-pilot-nav-button">Footer</button>
                         </li>
                         <li class="ab--pilot-test-details-ui-details-navigation-item">
-                            <button class="ab--test-pilot-nav-button">Footer</button>
+                            <button class="ab--test-pilot-nav-button">Extra Item</button>
                         </li>
                     </ul>
                     <button class="ab--pilot-test-details-ui-details-navigation-button ab--pilot-test-navigation-right">${asset.rightArrow}</button>
@@ -355,14 +355,14 @@
                 <div class="ab--test-pilot-accordion">
                     <button class="ab--test-pilot-accordion-header">
                         <span>Custom Java Script Condition</span>
-                        ${getBadgeHTML("minimal", "True", "success")}
+                        ${getBadgeHTML("minimal", "Success", "success")}
                         ${asset.plusIcon}
                         ${asset.minusIcon}
                     </button>
                     <div class="ab--test-pilot-contents-wrapper">
                         <div class="ab--test-pilot-contents-status">
                             <span>Status</span>
-                            ${getBadgeHTML("plain", "True", "success")}
+                            ${getBadgeHTML("plain", "Success", "success")}
                         </div>
                         <ul class="ab--test-pilot-contents-details">
                             <li>immediate activation from return value</li>
@@ -371,14 +371,14 @@
                     </div>                
                     <button class="ab--test-pilot-accordion-header">
                         <span>CSS Checker</span>
-                        ${getBadgeHTML("minimal", "True", "success")}
+                        ${getBadgeHTML("minimal", "Success", "success")}
                         ${asset.plusIcon}
                         ${asset.minusIcon}
                     </button>
                     <div class="ab--test-pilot-contents-wrapper">
                         <div class="ab--test-pilot-contents-status">
                             <span>Status</span>
-                            ${getBadgeHTML("plain", "True", "success")}
+                            ${getBadgeHTML("plain", "Success", "success")}
                         </div>
                         <ul class="ab--test-pilot-contents-details">
                             <li>immediate activation from return value</li>
@@ -387,14 +387,14 @@
                     </div>               
                     <button class="ab--test-pilot-accordion-header">
                         <span>URL Checker</span>
-                        ${getBadgeHTML("minimal", "False", "danger")}
+                        ${getBadgeHTML("minimal", "Faild", "danger")}
                         ${asset.plusIcon}
                         ${asset.minusIcon}
                     </button>
                     <div class="ab--test-pilot-contents-wrapper">
                         <div class="ab--test-pilot-contents-status">
                             <span>Status</span>
-                            ${getBadgeHTML("plain", "False", "danger")}
+                            ${getBadgeHTML("plain", "Faild", "danger")}
                         </div>
                         <ul class="ab--test-pilot-contents-details">
                             <li>immediate activation from return value</li>
@@ -406,11 +406,6 @@
                 <span class="ab--pilot-test-details-ui-details-message-content">Targeting Met and Variation Applied</span>          
             </div>
         `;
-
-        // ab--pilot-test-details-ui-main-header-minimise                          
-        // ab--pilot-test-details-ui-main-header-full-screen                          
-        // ab--pilot-test-details-ui-main-header-short-screen                            
-        // ab--pilot-test-details-ui-main-header-close
 
         //Minimise Button listener
         popUp.querySelector(".ab--pilot-test-details-ui-main-header-minimise").addEventListener("click", function () {
@@ -441,9 +436,6 @@
             })
         });
 
-
-
-
         //Accordion Listener
         popUp.querySelectorAll(".ab--test-pilot-accordion .ab--test-pilot-accordion-header").forEach(function (heading) {
             heading.addEventListener("click", function () {
@@ -465,12 +457,16 @@
         const nextButton = popUp.querySelector(".ab--pilot-test-navigation-right");
 
         function updateNavigationButtons() {
+            const MAX_DISPLAYED_ITEMS = 3;
             const currentActive = popUp.querySelector(".ab--test-pilot-nav-button-active");
             const buttons = Array.from(popUp.querySelectorAll(".ab--test-pilot-nav-button"));
             const activeIndex = buttons.indexOf(currentActive);
             const total = buttons.length;
+            const visibleItem = buttons.length < MAX_DISPLAYED_ITEMS ? buttons.length : MAX_DISPLAYED_ITEMS;
             const isNextAvailable = activeIndex < total - 1;
             const isPrevAvailable = activeIndex > 0;
+            const isNextHidden = total - activeIndex < visibleItem;
+            const isPrevHidden = activeIndex < visibleItem;
 
             if (!isPrevAvailable) {
                 prevButton.classList.add("ab--test-pilot-navigation-hidden");
@@ -482,6 +478,16 @@
                 nextButton.classList.add("ab--test-pilot-navigation-hidden");
             } else {
                 nextButton.classList.remove("ab--test-pilot-navigation-hidden");
+            }
+
+            if (isNextHidden) {
+                //smooth scroll 33% 
+                popUp.querySelector(".ab--pilot-test-details-ui-details-navigation").scrollLeft = popUp.querySelector(".ab--pilot-test-details-ui-details-navigation").scrollWidth;
+            }
+
+            if (isPrevHidden) {
+                //smooth scroll 33% 
+                popUp.querySelector(".ab--pilot-test-details-ui-details-navigation").scrollLeft = 0;
             }
         }
 
