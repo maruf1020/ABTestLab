@@ -108,7 +108,7 @@
 
     }
 
-    function getPopUpOpenerElement(popUp) {
+    function getPopUpOpenerElement(popUp, InitialTestInfo) {
         if (document.querySelector("#ab--pilot-test-details-ui-opener")) {
             document.querySelector("#ab--pilot-test-details-ui-opener").remove();
         }
@@ -119,7 +119,7 @@
         opener.innerHTML = `
         <div class="ab--pilot-test-details-ui-opener-content">
             <span>AB test Pilot</span>
-            <span>5/7 test running</span>
+            <span>0/${InitialTestInfo.length} test running</span>
         </div>
         <div class="ab--pilot-test-details-ui-opener-icon">
             ${asset.tapIcon}
@@ -143,14 +143,15 @@
         return opener;
     }
 
-    function getPopUpElement() {
+    function getPopUpElement(initialTestInfo) {
+        console.log("initialTestInfo", initialTestInfo);
         if (document.querySelector("#ab--pilot-test-details-ui")) {
             document.querySelector("#ab--pilot-test-details-ui").remove();
         }
 
         const popUp = document.createElement("div");
         popUp.id = "ab--pilot-test-details-ui";
-        popUp.classList.add("ab--pilot-test-details-ui", "ab--details-visible");
+        popUp.classList.add("ab--pilot-test-details-ui", "ab--details-visible", "ab--test-pilot-open");
         popUp.innerHTML = `
             <div class="ab--pilot-test-details-ui-main">
                 <div class="ab--pilot-test-details-ui-main-header">
@@ -211,125 +212,28 @@
                             </button>
                         </div>
                     </div>    
-                    <div class="ab--pilot-test-details-ui-main-body-table-container">                   
-                        <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
+                    <div class="ab--pilot-test-details-ui-main-body-table-container">
+                        ${initialTestInfo.map((test) => `                   
+                        <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row" data-id="${test.id}">
                             <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                                <span>BULGARI - Product recomendation you may also like PDP</span>
+                                <span>${test.testName}</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                                <span>A/B</span>
+                                <span>${test.testType}</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                                <span>${getBadgeHTML("boxy", "Active", "success")}</span>
+                                <span>${getBadgeHTML("boxy", "Pending", "warning")}</span>
                             </div>
                             <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                                <span>Ver 1</span>
+                                <span>${test.variationName}</span>
                             </div>
-                        </button>                    
-                        <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                                <span>BVLGARI - Access to finder</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                                <span>A/A</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                                <span>${getBadgeHTML("boxy", "Failed", "danger")}</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                                <span>V 02</span>
-                            </div>
-                        </button>                   
-                        <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                                <span>Recently viewed products in HP</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                                <span>Multi Touch</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                                <span>${getBadgeHTML("boxy", "Active", "success")}</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                                <span>Veriation 1.5</span>
-                            </div>
-                        </button>                    
-                        <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                                <span>Gift Finder Valentines Day</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                                <span>Multi Touch</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                                <span>${getBadgeHTML("boxy", "Waiting", "warning")}</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                                <span>Variation 8</span>
-                            </div>
-                        </button>
-                        <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                                <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                                <span>Patch</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                                <span>${getBadgeHTML("boxy", "Active", "success")}</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                                <span>V-01</span>
-                            </div>
-                        </button>
-                        <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                                <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                                <span>A/B</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                                <span>${getBadgeHTML("boxy", "Waiting", "warning")}</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                                <span>Variation 1</span>
-                            </div>
-                        </button>
-                        <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                                <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                                <span>A/B</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                                <span>${getBadgeHTML("boxy", "Waiting", "warning")}</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                                <span>VAR 2</span>
-                            </div>
-                        </button>
-                        <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                                <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                                <span>Patch</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                                <span>${getBadgeHTML("boxy", "Active", "success")}</span>
-                            </div>
-                            <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                                <span>Var 05</span>
-                            </div>
-                        </button>
+                        </button>`).join("")}                
                     </div>
                 </div>
             </div>
             <div class="ab--pilot-test-details-ui-divider">
                 <button class="ab--pilot-test-details-ui-divider-close-button">
-                    ${asset.leftArrow}
+                    ${asset.rightArrow}
                 </button>
             </div>
             <div class="ab--pilot-test-details-ui-details">
@@ -481,12 +385,10 @@
             }
 
             if (isNextHidden) {
-                //smooth scroll 33% 
                 popUp.querySelector(".ab--pilot-test-details-ui-details-navigation").scrollLeft = popUp.querySelector(".ab--pilot-test-details-ui-details-navigation").scrollWidth;
             }
 
             if (isPrevHidden) {
-                //smooth scroll 33% 
                 popUp.querySelector(".ab--pilot-test-details-ui-details-navigation").scrollLeft = 0;
             }
         }
@@ -525,25 +427,39 @@
             });
         });
 
+        popUp.querySelector(".ab--pilot-test-details-ui-divider-close-button").addEventListener("click", function () {
+            popUp.classList.remove("ab--details-visible");
+        });
+
+        popUp.querySelectorAll(".ab--pilot-test-details-ui-main-body-table-row").forEach(function (row) {
+            row.addEventListener("click", function () {
+                popUp.classList.add("ab--details-visible");
+            });
+        });
 
         return popUp;
     }
 
-    function mainJs([body]) {
-        if (Object.keys(window.abTestPilot).length === 0) return;
-        const popUp = getPopUpElement()
+    function mainJs(body, InitialTestInfo) {
+        if (InitialTestInfo.length === 0) return;
+
+        const popUp = getPopUpElement(InitialTestInfo)
         body.insertAdjacentElement("beforeend", popUp);
 
 
-        const opeenr = getPopUpOpenerElement(popUp);
+        const opeenr = getPopUpOpenerElement(popUp, InitialTestInfo);
         body.insertAdjacentElement("beforeend", opeenr);
 
         console.log('%cname: v-01', 'background: black;border: 2px solid green;color: white;display: block;text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);text-align: center;font-weight: bold;padding : 10px;margin : 10px');
         console.log('name: v-01');
     }
 
-    waitForElem('abTestPilot', () => {
-        waitForElem('body', mainJs);
-    }, 1, true);
-
+    waitForElem('abTestPilotAllTest', (InitialTestInfo) => {
+        waitForElem('body', ([body]) => {
+            mainJs(body, InitialTestInfo);
+        });
+    }, 1, true, 10000, 100);
 })()
+
+
+
