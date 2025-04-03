@@ -45,7 +45,6 @@ export default async function browserScriptCreator(testInfo) {
         const abTestPilotMainInformation = ${SerializeString}
         window.abTestPilotVariaTionInfo = {};
         window.abTestPilot = {};
-        window.abTestPilotAllTest = [];
         function abTestPilotFilterTestsByHostname(testInfo) {
             return testInfo.filter(item => {
                 return item.hostnames.some(hostname => {
@@ -78,6 +77,39 @@ export default async function browserScriptCreator(testInfo) {
                 targetMetFiles.urlChecker(targetingFiles.urlChecker)
             ]);
             return results;
+        }
+
+        function transformTests(tests) {
+            return tests.reduce((acc, test) => {
+                // If the test has a parentTargetingId, handle grouping
+                if (test.parentTargetingId) {
+                    // Find or create the group for this parentTargetingId
+                    let group = acc.find(item => item.id === test.parentTargetingId);
+                    if (!group) {
+                        group = {
+                            id: test.parentTargetingId,
+                            testName: test.testName,
+                            variationName: test.variationName,
+                            testType: test.testType,
+                            touchPointInfo: [],
+                            websiteName: test.websiteName,
+                            status: test.status,
+                            parentTargetingId: ""
+                        };
+                        acc.push(group);
+                    }
+                    // Add the touch point information to the group
+                    group.touchPointInfo.push({
+                        name: test.touchPointName,
+                        id: test.id,
+                        status: test.status
+                    });
+                } else {
+                    // For tests without parentTargetingId, just push them as they are
+                    acc.push(test);
+                }
+                return acc;
+            }, []);
         }
 
         function abTestPilotApplyTestVariation(test) {
@@ -150,7 +182,7 @@ export default async function browserScriptCreator(testInfo) {
         }
 
         const abTestPilotApplicableTestsBasedOnTheWebsite = abTestPilotFilterTestsByHostname(abTestPilotMainInformation.testInfo);
-        abTestPilotAllTest =  abTestPilotApplicableTestsBasedOnTheWebsite.map(item => {
+        window.abTestPilotAllTest =  transformTests(abTestPilotApplicableTestsBasedOnTheWebsite.map(item => {
             return {
                 "id": item.id,
                 testName: item.testName,
@@ -159,8 +191,9 @@ export default async function browserScriptCreator(testInfo) {
                 touchPointName: item.touchPointName,
                 websiteName: item.websiteName,
                 status: "Waiting",
+                parentTargetingId: (abTestPilotMainInformation?.parentTargeting?.find(i => i.variationIdList.includes(item.id)))?.parentTargetingId,
             }
-        });
+        }));
         const { testsWithParentTargeting, testsWithoutParentTargeting } = abTestPilotFilterTestsByParentTargeting(abTestPilotApplicableTestsBasedOnTheWebsite, abTestPilotMainInformation.parentTargeting);
         const abTestPilotApplicableParentTargeting = abTestPilotGetApplicableParentTargeting(abTestPilotMainInformation.parentTargeting, testsWithParentTargeting);
 
