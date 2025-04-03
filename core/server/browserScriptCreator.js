@@ -45,6 +45,7 @@ export default async function browserScriptCreator(testInfo) {
         const abTestPilotMainInformation = ${SerializeString}
         window.abTestPilotVariaTionInfo = {};
         window.abTestPilot = {};
+        window.abTestPilotAllTest = [];
         function abTestPilotFilterTestsByHostname(testInfo) {
             return testInfo.filter(item => {
                 return item.hostnames.some(hostname => {
@@ -94,7 +95,8 @@ export default async function browserScriptCreator(testInfo) {
         }
 
         async function abTestPilotProcessTests(tests, targetMet, parentTargetingData) {
-            for (const test of tests) {
+            // for (const test of tests) {
+            tests.forEach(async (test, i) => {
                 const result = await abTestPilotTargetMet(targetMet, test.targetingFiles);
                 const isParentTargeting = parentTargetingData.isParentTargeting;               
 
@@ -144,10 +146,21 @@ export default async function browserScriptCreator(testInfo) {
                 if (abTestPilotVariaTionInfo[test.id].status === "Active") {
                     abTestPilotApplyTestVariation(test);
                 }
-            }
+            })
         }
 
         const abTestPilotApplicableTestsBasedOnTheWebsite = abTestPilotFilterTestsByHostname(abTestPilotMainInformation.testInfo);
+        abTestPilotAllTest =  abTestPilotApplicableTestsBasedOnTheWebsite.map(item => {
+            return {
+                "id": item.id,
+                testName: item.testName,
+                variationName: item.variationName,
+                testType: item.testType,
+                touchPointName: item.touchPointName,
+                websiteName: item.websiteName,
+                status: "Waiting",
+            }
+        });
         const { testsWithParentTargeting, testsWithoutParentTargeting } = abTestPilotFilterTestsByParentTargeting(abTestPilotApplicableTestsBasedOnTheWebsite, abTestPilotMainInformation.parentTargeting);
         const abTestPilotApplicableParentTargeting = abTestPilotGetApplicableParentTargeting(abTestPilotMainInformation.parentTargeting, testsWithParentTargeting);
 
