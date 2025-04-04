@@ -5,6 +5,9 @@
         (!isVariable && elements.length >= minElements) || (isVariable && typeof window[waitFor] !== "undefined") ? callback(elements) : setTimeout(() => waitForElem(waitFor, callback, minElements, isVariable, timer - frequency), frequency);
     }
 
+    const testsDetailsData = {}
+    window.testsDetailsData = testsDetailsData;
+
     const asset = {
         sortIcon: `
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -144,7 +147,6 @@
     }
 
     function getPopUpElement(initialTestInfo) {
-        console.log("initialTestInfo", initialTestInfo);
         if (document.querySelector("#ab--pilot-test-details-ui")) {
             document.querySelector("#ab--pilot-test-details-ui").remove();
         }
@@ -440,23 +442,54 @@
         return popUp;
     }
 
-    function mainJs(body, InitialTestInfo) {
-        if (InitialTestInfo.length === 0) return;
+    function updateTableUI(key, value) {
+        const row = document.querySelector(`[data-id="${key}"]`);
+        if (!row) return;
+        const statusHTML = row.querySelector(".ab--pilot-test-details-ui-main-body-table-row-status");
+        statusHTML.innerHTML = getBadgeHTML("boxy", value.status, value.status === "Active" ? "success" : "danger");
+        row.setAttribute("data-status", value.status);
+    }
 
-        const popUp = getPopUpElement(InitialTestInfo)
+    function mainJs(body, initialTestInfo) {
+        if (initialTestInfo.length === 0) return;
+
+        const popUp = getPopUpElement(initialTestInfo)
         body.insertAdjacentElement("beforeend", popUp);
 
 
-        const opeenr = getPopUpOpenerElement(popUp, InitialTestInfo);
+        const opeenr = getPopUpOpenerElement(popUp, initialTestInfo);
         body.insertAdjacentElement("beforeend", opeenr);
 
-        console.log('%cname: v-01', 'background: black;border: 2px solid green;color: white;display: block;text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);text-align: center;font-weight: bold;padding : 10px;margin : 10px');
-        console.log('name: v-01');
+        const observedTestsDetailsData = new Proxy(testsDetailsData, {
+            set(target, key, value) {
+                if (!target.hasOwnProperty(key)) {
+                    updateTableUI(key, value);
+                }
+                target[key] = value;
+                return true;
+            }
+        });
+
+        const timer = setInterval(() => {
+            waitForElem('abTestPilot', (abTestPilot) => {
+                Object.entries(initialTestInfo).forEach(([key, value]) => {
+                    if (abTestPilot[value.id]) {
+                        observedTestsDetailsData[value.id] = abTestPilot[value.id];
+                    }
+                })
+            }, 1, true, 60000, 100);
+            if (Object.keys(testsDetailsData).length === Object.keys(initialTestInfo).length) {
+                clearInterval(timer);
+            }
+        }, 1000);
+
+        console.log('%cAB Test Pilot UI: v-01', 'background: black;border: 2px solid green;color: white;display: block;text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);text-align: center;font-weight: bold;padding : 10px;margin : 10px');
+        console.log('AB Test Pilot UI: v-01');
     }
 
-    waitForElem('abTestPilotAllTest', (InitialTestInfo) => {
+    waitForElem('abTestPilotAllTest', (initialTestInfo) => {
         waitForElem('body', ([body]) => {
-            mainJs(body, InitialTestInfo);
+            mainJs(body, initialTestInfo);
         });
     }, 1, true, 10000, 100);
 })()
