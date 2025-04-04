@@ -164,11 +164,25 @@ export default async function browserScriptCreator(testInfo) {
                     if(value.parentTargetingTestInfo) {
                         if(!acc[value.parentTargetingTestInfo.parentTargetingId]) {
                             acc[value.parentTargetingTestInfo.parentTargetingId] = {
-                                parentTargetingInfo: value.parentTargetingTestInfo,
-                                tests: []
+                                // parentTargetingInfo: value.parentTargetingTestInfo,
+                                "id" : value.parentTargetingTestInfo.parentTargetingId,
+                                "targetingFiles" : value.parentTargetingTestInfo.targetingFiles,
+                                "parentTargetingDetails" : value.parentTargetingDetails,
+                                "status" : value.parentTargetingDetails.every(item => item.status === true) ? "Active" : "Inactive",
+                                message: value.parentTargetingDetails.every(item => item.status === true) ? "Parent targeting Met" : "Parent targeting does not Met",
+                                "variationIdList" : value.parentTargetingTestInfo.variationIdList,
+                                "tests": [],
+                                "touchPoints": [],
+                                "variationStatus": [],
+                                "testName" : value.testName,
+                                "variationName" : value.variationName,
+                                "testType" : value.testType,
+                                "websiteName" : value.websiteName,
                             }
                         }
                         acc[value.parentTargetingTestInfo.parentTargetingId].tests.push(value);
+                        acc[value.parentTargetingTestInfo.parentTargetingId].touchPoints.push(value.touchPointName);
+                        acc[value.parentTargetingTestInfo.parentTargetingId].variationStatus.push(value.targetingDetails.every(item => item.status === true) ? true : false);
                     }
                     else {
                         acc[key] = value;
