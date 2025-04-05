@@ -258,7 +258,8 @@
                     <button class="ab--pilot-test-details-ui-details-navigation-button ab--pilot-test-navigation-right">${asset.rightArrow}</button>
                 </div>
                 <h2 class="ab--pilot-test-details-ui-details-title">Targeting</h2>
-                <div class="ab--test-pilot-accordion">
+                <span class="ab--test-pilot-waiting-message ab--test-pilot-waiting-message-active">Tareting is being checked...</span>
+                <div class="ab--test-pilot-accordion ab--test-pilot-accordion-active">
                     <button class="ab--test-pilot-accordion-header">
                         <span>Custom Java Script Condition</span>
                         ${getBadgeHTML("minimal", "Success", "success")}
