@@ -259,14 +259,14 @@
                 </div>
                 <h2 class="ab--pilot-test-details-ui-details-title">Targeting</h2>
                 <span class="ab--test-pilot-waiting-message ab--test-pilot-waiting-message-active">Tareting is being checked...</span>
-                <div class="ab--test-pilot-accordion ab--test-pilot-accordion-active">
-                    <button class="ab--test-pilot-accordion-header">
+                <div class="ab--test-pilot-accordion">
+                    <button class="ab--test-pilot-accordion-header ab--test-pilot-custom-js">
                         <span>Custom Java Script Condition</span>
                         ${getBadgeHTML("minimal", "Waiting", "warning")}
                         ${asset.plusIcon}
                         ${asset.minusIcon}
                     </button>
-                    <div class="ab--test-pilot-contents-wrapper">
+                    <div class="ab--test-pilot-contents-wrapper ab--test-pilot-custom-js">
                         <div class="ab--test-pilot-contents-status">
                             <span>Status</span>
                             ${getBadgeHTML("plain", "Waiting", "warning")}
@@ -275,13 +275,13 @@
                             <li>Waiting For the Response</li>
                         </ul>
                     </div>                
-                    <button class="ab--test-pilot-accordion-header">
+                    <button class="ab--test-pilot-accordion-header ab--test-pilot-css-checker">
                         <span>CSS Checker</span>
                         ${getBadgeHTML("minimal", "Waiting", "warning")}
                         ${asset.plusIcon}
                         ${asset.minusIcon}
                     </button>
-                    <div class="ab--test-pilot-contents-wrapper">
+                    <div class="ab--test-pilot-contents-wrapper ab--test-pilot-css-checker">
                         <div class="ab--test-pilot-contents-status">
                             <span>Status</span>
                             ${getBadgeHTML("plain", "Waiting", "warning")}
@@ -290,13 +290,13 @@
                             <li>Waiting For the Response</li>
                         </ul>
                     </div>               
-                    <button class="ab--test-pilot-accordion-header">
+                    <button class="ab--test-pilot-accordion-header ab--test-pilot-url-checker">
                         <span>URL Checker</span>
                         ${getBadgeHTML("minimal", "Waiting", "warning")}
                         ${asset.plusIcon}
                         ${asset.minusIcon}
                     </button>
-                    <div class="ab--test-pilot-contents-wrapper">
+                    <div class="ab--test-pilot-contents-wrapper ab--test-pilot-url-checker">
                         <div class="ab--test-pilot-contents-status">
                             <span>Status</span>
                             ${getBadgeHTML("plain", "Waiting", "warning")}
@@ -433,11 +433,75 @@
 
         popUp.querySelectorAll(".ab--pilot-test-details-ui-main-body-table-row").forEach(function (row) {
             row.addEventListener("click", function () {
-                popUp.classList.add("ab--details-visible");
+                id = this.getAttribute("data-id");
+                updateTestDetailsData(testsDetailsData[id], popUp);
             });
         });
 
         return popUp;
+    }
+
+    function updateTestDetailsData(data, popUp) {
+        console.log("data", data);
+
+        const weatingMessage = popUp.querySelector(".ab--test-pilot-waiting-message");
+        const accordionWrapper = popUp.querySelector(".ab--test-pilot-accordion");
+        const navigation = popUp.querySelector(".ab--pilot-test-details-ui-details-navigation-wrapper");
+
+        const customJSConditionHeader = popUp.querySelector(".ab--test-pilot-accordion-header.ab--test-pilot-custom-js");
+        const customJSConditionContent = popUp.querySelector(".ab--test-pilot-contents-wrapper.ab--test-pilot-custom-js");
+
+        const cssCheckerHeader = popUp.querySelector(".ab--test-pilot-accordion-header.ab--test-pilot-css-checker");
+        const cssCheckerContent = popUp.querySelector(".ab--test-pilot-contents-wrapper.ab--test-pilot-css-checker");
+
+        const urlCheckerHeader = popUp.querySelector(".ab--test-pilot-accordion-header.ab--test-pilot-url-checker");
+        const urlCheckerContent = popUp.querySelector(".ab--test-pilot-contents-wrapper.ab--test-pilot-url-checker");
+
+        const message = popUp.querySelector(".ab--pilot-test-details-ui-details-message-content");
+        if (!data) {
+            weatingMessage.classList.add("ab--test-pilot-waiting-message-active");
+
+            accordionWrapper.classList.remove("ab--test-pilot-accordion-active");
+            navigation.classList.remove("ab--pilot-test-navigation-active");
+        } else {
+            const targetingDetails = data.targetingDetails || data.parentTargetingDetails;
+            const customJSCondition = targetingDetails.find((item) => item.type === "customJS");
+            const cssChecker = targetingDetails.find((item) => item.type === "elementChecker");
+            const urlChecker = targetingDetails.find((item) => item.type === "urlChecker");
+
+            customJSConditionContent.querySelector(".ab--test-pilot-contents-details").innerHTML = `
+            ${customJSCondition ? customJSCondition.messages.map((item) => `<li>${item}</li>`).join("") : "No Details"}`;
+
+            cssCheckerContent.querySelector(".ab--test-pilot-contents-details").innerHTML = `
+            ${cssChecker ? cssChecker.messages.map((item) => `<li>${item}</li>`).join("") : "No Details"}`;
+
+            urlCheckerContent.querySelector(".ab--test-pilot-contents-details").innerHTML = `
+            ${urlChecker ? urlChecker.messages.map((item) => `<li>${item}</li>`).join("") : "No Details"}`;
+
+            customJSConditionContent.querySelector(".ab--test-pilot-badge").outerHTML = customJSCondition.status === true ? getBadgeHTML("plain", "Active", "success") : getBadgeHTML("plain", "Inactive", "danger");
+
+            cssCheckerContent.querySelector(".ab--test-pilot-badge").outerHTML = cssChecker.status === true ? getBadgeHTML("plain", "Active", "success") : getBadgeHTML("plain", "Inactive", "danger");
+
+            urlCheckerContent.querySelector(".ab--test-pilot-badge").outerHTML = urlChecker.status === true ? getBadgeHTML("plain", "Active", "success") : getBadgeHTML("plain", "Inactive", "danger");
+
+            customJSConditionHeader.querySelector(".ab--test-pilot-badge").outerHTML = customJSCondition.status === true ? getBadgeHTML("minimal", "Active", "success") : getBadgeHTML("minimal", "Inactive", "danger");
+
+            cssCheckerHeader.querySelector(".ab--test-pilot-badge").outerHTML = cssChecker.status === true ? getBadgeHTML("minimal", "Active", "success") : getBadgeHTML("minimal", "Inactive", "danger");
+
+            urlCheckerHeader.querySelector(".ab--test-pilot-badge").outerHTML = urlChecker.status === true ? getBadgeHTML("minimal", "Active", "success") : getBadgeHTML("minimal", "Inactive", "danger");
+
+            message.innerHTML = data.message || "No Message from the server";
+
+            if (data.testType === "Multi-touch" && data.tests) {
+                navigation.classList.add("ab--pilot-test-navigation-active");
+            } else {
+                navigation.classList.remove("ab--pilot-test-navigation-active");
+            }
+
+            weatingMessage.classList.remove("ab--test-pilot-waiting-message-active");
+            accordionWrapper.classList.add("ab--test-pilot-accordion-active");
+        }
+        popUp.classList.add("ab--details-visible");
     }
 
     function updateTableUI(key, value) {
@@ -455,8 +519,8 @@
         body.insertAdjacentElement("beforeend", popUp);
 
 
-        const opeenr = getPopUpOpenerElement(popUp, initialTestInfo);
-        body.insertAdjacentElement("beforeend", opeenr);
+        const opener = getPopUpOpenerElement(popUp, initialTestInfo);
+        body.insertAdjacentElement("beforeend", opener);
 
         const observedTestsDetailsData = new Proxy(testsDetailsData, {
             set(target, key, value) {
