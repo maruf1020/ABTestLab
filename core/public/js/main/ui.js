@@ -262,50 +262,47 @@
                 <div class="ab--test-pilot-accordion ab--test-pilot-accordion-active">
                     <button class="ab--test-pilot-accordion-header">
                         <span>Custom Java Script Condition</span>
-                        ${getBadgeHTML("minimal", "Success", "success")}
+                        ${getBadgeHTML("minimal", "Waiting", "warning")}
                         ${asset.plusIcon}
                         ${asset.minusIcon}
                     </button>
                     <div class="ab--test-pilot-contents-wrapper">
                         <div class="ab--test-pilot-contents-status">
                             <span>Status</span>
-                            ${getBadgeHTML("plain", "Success", "success")}
+                            ${getBadgeHTML("plain", "Waiting", "warning")}
                         </div>
                         <ul class="ab--test-pilot-contents-details">
-                            <li>immediate activation from return value</li>
-                            <li>Call back function is geting true response</li>
+                            <li>Waiting For the Response</li>
                         </ul>
                     </div>                
                     <button class="ab--test-pilot-accordion-header">
                         <span>CSS Checker</span>
-                        ${getBadgeHTML("minimal", "Success", "success")}
+                        ${getBadgeHTML("minimal", "Waiting", "warning")}
                         ${asset.plusIcon}
                         ${asset.minusIcon}
                     </button>
                     <div class="ab--test-pilot-contents-wrapper">
                         <div class="ab--test-pilot-contents-status">
                             <span>Status</span>
-                            ${getBadgeHTML("plain", "Success", "success")}
+                            ${getBadgeHTML("plain", "Waiting", "warning")}
                         </div>
                         <ul class="ab--test-pilot-contents-details">
-                            <li>immediate activation from return value</li>
-                            <li>Call back function is geting true response</li>
+                            <li>Waiting For the Response</li>
                         </ul>
                     </div>               
                     <button class="ab--test-pilot-accordion-header">
                         <span>URL Checker</span>
-                        ${getBadgeHTML("minimal", "Faild", "danger")}
+                        ${getBadgeHTML("minimal", "Waiting", "warning")}
                         ${asset.plusIcon}
                         ${asset.minusIcon}
                     </button>
                     <div class="ab--test-pilot-contents-wrapper">
                         <div class="ab--test-pilot-contents-status">
                             <span>Status</span>
-                            ${getBadgeHTML("plain", "Faild", "danger")}
+                            ${getBadgeHTML("plain", "Waiting", "warning")}
                         </div>
                         <ul class="ab--test-pilot-contents-details">
-                            <li>immediate activation from return value</li>
-                            <li>Call back function is geting true response</li>
+                            <li>Waiting For the Response</li>
                         </ul>
                     </div> 
                 </div>   
