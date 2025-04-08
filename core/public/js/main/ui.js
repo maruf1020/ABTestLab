@@ -494,7 +494,30 @@
 
             if (data.testType === "Multi-touch" && data.tests) {
                 navigation.classList.add("ab--pilot-test-navigation-active");
+
+                navigation.querySelector(".ab--pilot-test-details-ui-details-navigation").innerHTML = `
+                <li class="ab--pilot-test-details-ui-details-navigation-item">
+                    <button class="ab--test-pilot-nav-button ab--test-pilot-nav-button-active" data-id="${data.id}" data-type="parent">Parent</button>
+                </li>
+                ${data.tests.map((item) => `
+                <li class="ab--pilot-test-details-ui-details-navigation-item">
+                    <button class="ab--test-pilot-nav-button" data-id="${item.id}" data-parent-id="${data.id}" data-type="touchPoint">${item.touchPointName}</button>
+                </li>`).join("")}`;
+
+                navigation.querySelectorAll(".ab--test-pilot-nav-button").forEach(function (button) {
+                    button.addEventListener("click", function () {
+                        popUp.querySelectorAll(".ab--test-pilot-nav-button").forEach(function (button) {
+                            button.classList.remove("ab--test-pilot-nav-button-active");
+                        });
+                        button.classList.add("ab--test-pilot-nav-button-active");
+                        const id = button.getAttribute("data-id");
+                        const parentId = button.getAttribute("data-parent-id");
+                        const touchPointData = testsDetailsData[id] ? testsDetailsData[id] : testsDetailsData[parentId].tests.find((item) => item.id === id);
+                        updateTestDetailsData(touchPointData, popUp);
+                    });
+                });
             } else {
+                if (data.testType === "Multi-touch") return;
                 navigation.classList.remove("ab--pilot-test-navigation-active");
             }
 
