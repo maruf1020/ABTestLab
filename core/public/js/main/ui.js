@@ -5,6 +5,9 @@
         (!isVariable && elements.length >= minElements) || (isVariable && typeof window[waitFor] !== "undefined") ? callback(elements) : setTimeout(() => waitForElem(waitFor, callback, minElements, isVariable, timer - frequency), frequency);
     }
 
+    const testsDetailsData = {}
+    window.testsDetailsData = testsDetailsData;
+
     const asset = {
         sortIcon: `
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -17,12 +20,12 @@
         </svg>
         `,
         minusIcon: `
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <svg class="ab--test-pilot-minus-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M6 13C5.71667 13 5.47917 12.9042 5.2875 12.7125C5.09583 12.5208 5 12.2833 5 12C5 11.7167 5.09583 11.4792 5.2875 11.2875C5.47917 11.0958 5.71667 11 6 11H18C18.2833 11 18.5208 11.0958 18.7125 11.2875C18.9042 11.4792 19 11.7167 19 12C19 12.2833 18.9042 12.5208 18.7125 12.7125C18.5208 12.9042 18.2833 13 18 13H6Z" fill="#121212"/>
         </svg> 
         `,
         plusIcon: `
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="21" viewBox="0 0 20 21" fill="none">
+        <svg class="ab--test-pilot-plus-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="21" viewBox="0 0 20 21" fill="none">
             <path d="M9.16667 11.3333H5.00001C4.76389 11.3333 4.56598 11.2535 4.40626 11.0937C4.24653 10.934 4.16667 10.7361 4.16667 10.5C4.16667 10.2639 4.24653 10.066 4.40626 9.90624C4.56598 9.74652 4.76389 9.66666 5.00001 9.66666H9.16667V5.49999C9.16667 5.26388 9.24653 5.06596 9.40626 4.90624C9.56598 4.74652 9.76389 4.66666 10 4.66666C10.2361 4.66666 10.434 4.74652 10.5938 4.90624C10.7535 5.06596 10.8333 5.26388 10.8333 5.49999V9.66666H15C15.2361 9.66666 15.434 9.74652 15.5938 9.90624C15.7535 10.066 15.8333 10.2639 15.8333 10.5C15.8333 10.7361 15.7535 10.934 15.5938 11.0937C15.434 11.2535 15.2361 11.3333 15 11.3333H10.8333V15.5C10.8333 15.7361 10.7535 15.934 10.5938 16.0937C10.434 16.2535 10.2361 16.3333 10 16.3333C9.76389 16.3333 9.56598 16.2535 9.40626 16.0937C9.24653 15.934 9.16667 15.7361 9.16667 15.5V11.3333Z" fill="#525252"/>
         </svg>`,
         minimiseIcon: `
@@ -53,6 +56,16 @@
                 </clipPath>
             </defs>
          </svg>
+        `,
+        leftArrow: `
+        <svg style="padding: 4px;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000" height="24px" width="24px" version="1.1" id="Layer_1" viewBox="0 0 330 330" xml:space="preserve">
+            <path id="XMLID_92_" d="M111.213,165.004L250.607,25.607c5.858-5.858,5.858-15.355,0-21.213c-5.858-5.858-15.355-5.858-21.213,0.001  l-150,150.004C76.58,157.211,75,161.026,75,165.004c0,3.979,1.581,7.794,4.394,10.607l150,149.996  C232.322,328.536,236.161,330,240,330s7.678-1.464,10.607-4.394c5.858-5.858,5.858-15.355,0-21.213L111.213,165.004z"/>
+        </svg>
+        `,
+        rightArrow: `
+        <svg style="padding: 4px;" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#000000" height="24px" width="24px" version="1.1" id="Layer_1" viewBox="0 0 330 330" xml:space="preserve">
+            <path id="XMLID_222_" d="M250.606,154.389l-150-149.996c-5.857-5.858-15.355-5.858-21.213,0.001  c-5.857,5.858-5.857,15.355,0.001,21.213l139.393,139.39L79.393,304.394c-5.857,5.858-5.857,15.355,0.001,21.213  C82.322,328.536,86.161,330,90,330s7.678-1.464,10.607-4.394l149.999-150.004c2.814-2.813,4.394-6.628,4.394-10.606  C255,161.018,253.42,157.202,250.606,154.389z"/>
+        </svg>
         `
     }
 
@@ -82,20 +95,23 @@
             plain: {
                 "class": "ab--test-pilot-badge-plain",
             },
+            minimal: {
+                "class": "ab--test-pilot-badge-minimal",
+            },
             default: {
-                "class": "ab--test-pilot-badge-plain",
+                "class": "ab--test-pilot-badge-default",
             }
         }
 
         return `
-        <div class="ab--test-pilot-badge ${types[type] ? types[type].class : types.default.class} ${variations[variation] ? variations[variation].class : variations.default.class}">${text}</div>
-            <div class="ab--test-pilot-badge-circle "></div>
-            <span class="ab--test-pilot-badge">${text}</span>
+        <div class="ab--test-pilot-badge ${types[type] ? types[type].class : types.default.class} ${variations[variation] ? variations[variation].class : variations.default.class}">
+            <div class="ab--test-pilot-badge-circle"></div>
+            <span class="ab--test-pilot-badge-text">${text}</span>
         </div>`
 
     }
 
-    function getPopUpOpenerElement(popUp) {
+    function getPopUpOpenerElement(popUp, InitialTestInfo) {
         if (document.querySelector("#ab--pilot-test-details-ui-opener")) {
             document.querySelector("#ab--pilot-test-details-ui-opener").remove();
         }
@@ -106,7 +122,7 @@
         opener.innerHTML = `
         <div class="ab--pilot-test-details-ui-opener-content">
             <span>AB test Pilot</span>
-            <span>5/7 test running</span>
+            <span>0/${InitialTestInfo.length} test running</span>
         </div>
         <div class="ab--pilot-test-details-ui-opener-icon">
             ${asset.tapIcon}
@@ -123,14 +139,14 @@
                 }, 300);
                 return;
             }
-            popUp.classList.toggle("ab--test-pilot-open");
-            console.log('clicked');
+            popUp.classList.add("ab--test-pilot-open");
+            opener.classList.add("ab--test-pilot-hide");
         }
 
         return opener;
     }
 
-    function getPopUpElement() {
+    function getPopUpElement(initialTestInfo) {
         if (document.querySelector("#ab--pilot-test-details-ui")) {
             document.querySelector("#ab--pilot-test-details-ui").remove();
         }
@@ -141,30 +157,30 @@
         popUp.innerHTML = `
             <div class="ab--pilot-test-details-ui-main">
                 <div class="ab--pilot-test-details-ui-main-header">
-                    <h2>AB test Pilot</h2>
+                    <h2>AB Test Pilot</h2>
                     <div class="ab--pilot-test-details-ui-main-header-search">
                         <button>
                             ${asset.searchIcon}
                         </button>
-                        <input type="text" placeholder="Search test by name or status">
+                        <input type="text" placeholder="Search by name or status">
                     </div>
                     <ul class="ab--pilot-test-details-ui-main-header-icons">
-                        <li>
+                        <li class="ab--pilot-test-details-ui-main-header-icon ab--pilot-test-details-ui-main-header-minimise">
                             <button>
                                 ${asset.minusIcon}
                             </button>
                         </li>
-                        <li>
+                        <li class="ab--pilot-test-details-ui-main-header-icon  ab--pilot-test-details-ui-main-header-short-screen">
                             <button>
                                 ${asset.minimiseIcon}
                             </button>
                         </li>
-                        <li>
+                        <li class="ab--pilot-test-details-ui-main-header-icon ab--pilot-test-details-ui-main-header-full-screen">
                             <button>
                                 ${asset.maximizeIcon}
                             </button>
                         </li>
-                        <li>
+                        <li class="ab--pilot-test-details-ui-main-header-icon ab--pilot-test-details-ui-main-header-close">
                             <button>
                                 ${asset.closeIcon}
                             </button>
@@ -197,139 +213,427 @@
                                 ${asset.sortIcon}
                             </button>
                         </div>
-                    </div>                    
-                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                            <span>BULGARI - Product recomendation you may also like PDP</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                            <span>AB</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                            <span>Active</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                            <span>Variation 02</span>
-                        </div>
-                    </button>                    
-                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                            <span>BVLGARI - Access to finder</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                            <span>Multi Touch</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                            <span>Active</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                            <span>Variation 02</span>
-                        </div>
-                    </button>                   
-                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                            <span>Recently viewed products in HP</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                            <span>Multi Touch</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                            <span>Active</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                            <span>Variation 02</span>
-                        </div>
-                    </button>                    
-                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                            <span>Gift Finder Valentines Day</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                            <span>Multi Touch</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                            <span>Active</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                            <span>Variation 02</span>
-                        </div>
-                    </button>
-                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                            <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                            <span>Multi Touch</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                            <span>Active</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                            <span>Variation 02</span>
-                        </div>
-                    </button>
-                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                            <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                            <span>Multi Touch</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                            <span>Active</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                            <span>Variation 02</span>
-                        </div>
-                    </button>
-                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                            <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                            <span>Multi Touch</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                            <span>Active</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                            <span>Variation 02</span>
-                        </div>
-                    </button>
-                    <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row">
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-title">
-                            <span> Bvlgari - NL subscription Panel Form Vs Exit intent Pop up</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-type">
-                            <span>Multi Touch</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-status">
-                            <span>Active</span>
-                        </div>
-                        <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
-                            <span>Variation 02</span>
-                        </div>
-                    </button>
+                    </div>    
+                    <div class="ab--pilot-test-details-ui-main-body-table-container">
+                        ${initialTestInfo.map((test) => `                   
+                        <button class="ab--pilot-test-details-ui-main-body-table-row" data-type="ab--grid-table-row" data-id="${test.id}">
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-title">
+                                <span>${test.testName}</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-type">
+                                <span>${test.testType}</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-status">
+                                <span>${getBadgeHTML("boxy", "Pending", "warning")}</span>
+                            </div>
+                            <div class="ab--pilot-test-details-ui-main-body-table-row-variation">
+                                <span>${test.variationName}</span>
+                            </div>
+                        </button>`).join("")}                
+                    </div>
                 </div>
             </div>
-            <div class="ab--pilot-test-details-ui-details"></div>
+            <div class="ab--pilot-test-details-ui-divider">
+                <button class="ab--pilot-test-details-ui-divider-close-button">
+                    ${asset.rightArrow}
+                </button>
+            </div>
+            <div class="ab--pilot-test-details-ui-details">
+                <div class="ab--pilot-test-details-ui-details-navigation-wrapper">
+                    <button class="ab--pilot-test-details-ui-details-navigation-button ab--pilot-test-navigation-left">${asset.leftArrow}</button>
+                    <ul class="ab--pilot-test-details-ui-details-navigation">
+                        <li class="ab--pilot-test-details-ui-details-navigation-item">
+                            <button class="ab--test-pilot-nav-button ab--test-pilot-nav-button-active">Parent</button>
+                        </li>
+                        <li class="ab--pilot-test-details-ui-details-navigation-item">
+                            <button class="ab--test-pilot-nav-button">Header</button>
+                        </li>
+                        <li class="ab--pilot-test-details-ui-details-navigation-item">
+                            <button class="ab--test-pilot-nav-button">Footer</button>
+                        </li>
+                        <li class="ab--pilot-test-details-ui-details-navigation-item">
+                            <button class="ab--test-pilot-nav-button">Extra Item</button>
+                        </li>
+                    </ul>
+                    <button class="ab--pilot-test-details-ui-details-navigation-button ab--pilot-test-navigation-right">${asset.rightArrow}</button>
+                </div>
+                <h2 class="ab--pilot-test-details-ui-details-title">Targeting</h2>
+                <span class="ab--test-pilot-waiting-message ab--test-pilot-waiting-message-active">Tareting is being checked...</span>
+                <div class="ab--test-pilot-accordion">
+                    <button class="ab--test-pilot-accordion-header ab--test-pilot-custom-js">
+                        <span>Custom Java Script Condition</span>
+                        ${getBadgeHTML("minimal", "Waiting", "warning")}
+                        ${asset.plusIcon}
+                        ${asset.minusIcon}
+                    </button>
+                    <div class="ab--test-pilot-contents-wrapper ab--test-pilot-custom-js">
+                        <div class="ab--test-pilot-contents-status">
+                            <span>Status</span>
+                            ${getBadgeHTML("plain", "Waiting", "warning")}
+                        </div>
+                        <ul class="ab--test-pilot-contents-details">
+                            <li>Waiting For the Response</li>
+                        </ul>
+                    </div>                
+                    <button class="ab--test-pilot-accordion-header ab--test-pilot-css-checker">
+                        <span>CSS Checker</span>
+                        ${getBadgeHTML("minimal", "Waiting", "warning")}
+                        ${asset.plusIcon}
+                        ${asset.minusIcon}
+                    </button>
+                    <div class="ab--test-pilot-contents-wrapper ab--test-pilot-css-checker">
+                        <div class="ab--test-pilot-contents-status">
+                            <span>Status</span>
+                            ${getBadgeHTML("plain", "Waiting", "warning")}
+                        </div>
+                        <ul class="ab--test-pilot-contents-details">
+                            <li>Waiting For the Response</li>
+                        </ul>
+                    </div>               
+                    <button class="ab--test-pilot-accordion-header ab--test-pilot-url-checker">
+                        <span>URL Checker</span>
+                        ${getBadgeHTML("minimal", "Waiting", "warning")}
+                        ${asset.plusIcon}
+                        ${asset.minusIcon}
+                    </button>
+                    <div class="ab--test-pilot-contents-wrapper ab--test-pilot-url-checker">
+                        <div class="ab--test-pilot-contents-status">
+                            <span>Status</span>
+                            ${getBadgeHTML("plain", "Waiting", "warning")}
+                        </div>
+                        <ul class="ab--test-pilot-contents-details">
+                            <li>Waiting For the Response</li>
+                        </ul>
+                    </div> 
+                </div>   
+                <h2 class="ab--pilot-test-details-ui-details-message">Message</h2>  
+                <span class="ab--pilot-test-details-ui-details-message-content">Targeting Met and Variation Applied</span>          
+            </div>
         `;
+
+        //Minimise Button listener
+        popUp.querySelector(".ab--pilot-test-details-ui-main-header-minimise").addEventListener("click", function () {
+            waitForElem(".ab--pilot-test-details-ui-opener", function ([opener]) {
+                popUp.classList.remove("ab--test-pilot-open");
+                opener.classList.remove("ab--test-pilot-hide");
+            });
+        });
+
+        //Full Screen Button listener
+        popUp.querySelector(".ab--pilot-test-details-ui-main-header-full-screen").addEventListener("click", function () {
+            popUp.classList.add("ab--test-pilot-full-screen");
+        });
+
+        //Short Screen Button listener
+        popUp.querySelector(".ab--pilot-test-details-ui-main-header-short-screen").addEventListener("click", function () {
+            popUp.classList.remove("ab--test-pilot-full-screen");
+        });
+
+        //Close Button listener
+        popUp.querySelector(".ab--pilot-test-details-ui-main-header-close").addEventListener("click", function () {
+            waitForElem(".ab--pilot-test-details-ui-opener", function ([opener]) {
+                popUp.classList.remove("ab--test-pilot-open");
+                setTimeout(() => {
+                    popUp.remove();
+                    opener.remove();
+                }, 300);
+            })
+        });
+
+        //Accordion Listener
+        popUp.querySelectorAll(".ab--test-pilot-accordion .ab--test-pilot-accordion-header").forEach(function (heading) {
+            heading.addEventListener("click", function () {
+                let content = this.nextElementSibling;
+                if (content) {
+                    if (content.style.display === "block") {
+                        content.style.display = "none";
+                        this.classList.remove("ab--test-pilot-accordion-active");
+                    } else {
+                        content.style.display = "block";
+                        this.classList.add("ab--test-pilot-accordion-active");
+                    }
+                }
+            });
+        });
+
+
+        const prevButton = popUp.querySelector(".ab--pilot-test-navigation-left");
+        const nextButton = popUp.querySelector(".ab--pilot-test-navigation-right");
+
+        function updateNavigationButtons() {
+            const MAX_DISPLAYED_ITEMS = 3;
+            const currentActive = popUp.querySelector(".ab--test-pilot-nav-button-active");
+            const buttons = Array.from(popUp.querySelectorAll(".ab--test-pilot-nav-button"));
+            const activeIndex = buttons.indexOf(currentActive);
+            const total = buttons.length;
+            const visibleItem = buttons.length < MAX_DISPLAYED_ITEMS ? buttons.length : MAX_DISPLAYED_ITEMS;
+            const isNextAvailable = activeIndex < total - 1;
+            const isPrevAvailable = activeIndex > 0;
+            const isNextHidden = total - activeIndex < visibleItem;
+            const isPrevHidden = activeIndex < visibleItem;
+
+            if (!isPrevAvailable) {
+                prevButton.classList.add("ab--test-pilot-navigation-hidden");
+            } else {
+                prevButton.classList.remove("ab--test-pilot-navigation-hidden");
+            }
+
+            if (!isNextAvailable) {
+                nextButton.classList.add("ab--test-pilot-navigation-hidden");
+            } else {
+                nextButton.classList.remove("ab--test-pilot-navigation-hidden");
+            }
+
+            if (isNextHidden) {
+                popUp.querySelector(".ab--pilot-test-details-ui-details-navigation").scrollLeft = popUp.querySelector(".ab--pilot-test-details-ui-details-navigation").scrollWidth;
+            }
+
+            if (isPrevHidden) {
+                popUp.querySelector(".ab--pilot-test-details-ui-details-navigation").scrollLeft = 0;
+            }
+        }
+
+        updateNavigationButtons();
+
+        popUp.querySelectorAll(".ab--pilot-test-details-ui-details-navigation-button").forEach(function (button) {
+            button.addEventListener("click", function () {
+                const currentActive = popUp.querySelector(".ab--test-pilot-nav-button-active");
+                const buttons = Array.from(popUp.querySelectorAll(".ab--test-pilot-nav-button"));
+                const activeIndex = buttons.indexOf(currentActive);
+
+                if (button.classList.contains("ab--pilot-test-navigation-left")) {
+                    if (activeIndex > 0) {
+                        currentActive.classList.remove("ab--test-pilot-nav-button-active");
+                        buttons[activeIndex - 1].classList.add("ab--test-pilot-nav-button-active");
+                    }
+                } else {
+                    if (activeIndex < buttons.length - 1) {
+                        currentActive.classList.remove("ab--test-pilot-nav-button-active");
+                        buttons[activeIndex + 1].classList.add("ab--test-pilot-nav-button-active");
+                    }
+                }
+
+                updateNavigationButtons();
+            });
+        });
+
+        popUp.querySelectorAll(".ab--test-pilot-nav-button").forEach(function (button) {
+            button.addEventListener("click", function () {
+                popUp.querySelectorAll(".ab--test-pilot-nav-button").forEach(function (button) {
+                    button.classList.remove("ab--test-pilot-nav-button-active");
+                });
+                button.classList.add("ab--test-pilot-nav-button-active");
+                updateNavigationButtons();
+            });
+        });
+
+        popUp.querySelector(".ab--pilot-test-details-ui-divider-close-button").addEventListener("click", function () {
+            popUp.classList.remove("ab--details-visible");
+        });
+
+        popUp.querySelectorAll(".ab--pilot-test-details-ui-main-body-table-row").forEach(function (row) {
+            row.addEventListener("click", function () {
+                id = this.getAttribute("data-id");
+                updateTestDetailsData(testsDetailsData[id], popUp);
+            });
+        });
+
+        //Handle search 
+        const searchInput = popUp.querySelector(".ab--pilot-test-details-ui-main-header-search input");
+        searchInput.addEventListener("input", function () {
+            const searchValue = this.value.toLowerCase();
+            popUp.querySelectorAll(".ab--pilot-test-details-ui-main-body-table-row").forEach(function (row) {
+                const title = row.querySelector(".ab--pilot-test-details-ui-main-body-table-row-title span").innerText.toLowerCase();
+                const status = row.querySelector(".ab--pilot-test-details-ui-main-body-table-row-status span").innerText.toLowerCase();
+
+                if (title.includes(searchValue) || status.includes(searchValue)) {
+                    row.style.display = "grid";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        })
+
+        //Handle sort
+        let lastClickedColumnIndex = null; // Track the last clicked column index
+
+        popUp.querySelectorAll(".ab--pilot-test-details-ui-main-body-table-head-title-button").forEach(function (button) {
+            let isAscending = true;
+
+            button.addEventListener("click", function () {
+                const header = this.closest(".ab--pilot-test-details-ui-main-body-table-head");
+                const rows = Array.from(popUp.querySelectorAll(".ab--pilot-test-details-ui-main-body-table-row"));
+                const index = Array.from(header.children).indexOf(this.closest("div"));
+
+                if (lastClickedColumnIndex !== index) {
+                    isAscending = true;
+                }
+
+                rows.sort((a, b) => {
+                    const aText = a.children[index].innerText.toLowerCase();
+                    const bText = b.children[index].innerText.toLowerCase();
+
+                    if (isAscending) {
+                        return aText.localeCompare(bText); // Ascending order
+                    } else {
+                        return bText.localeCompare(aText); // Descending order
+                    }
+                });
+
+                rows.forEach((row) => {
+                    popUp.querySelector(".ab--pilot-test-details-ui-main-body-table-container").appendChild(row);
+                });
+
+                isAscending = !isAscending;
+                lastClickedColumnIndex = index;
+            });
+        });
 
         return popUp;
     }
 
-    function mainJs([body]) {
-        const popUp = getPopUpElement()
+    function updateTestDetailsData(data, popUp) {
+        console.log("data", data);
+
+        const weatingMessage = popUp.querySelector(".ab--test-pilot-waiting-message");
+        const accordionWrapper = popUp.querySelector(".ab--test-pilot-accordion");
+        const navigation = popUp.querySelector(".ab--pilot-test-details-ui-details-navigation-wrapper");
+
+        const customJSConditionHeader = popUp.querySelector(".ab--test-pilot-accordion-header.ab--test-pilot-custom-js");
+        const customJSConditionContent = popUp.querySelector(".ab--test-pilot-contents-wrapper.ab--test-pilot-custom-js");
+
+        const cssCheckerHeader = popUp.querySelector(".ab--test-pilot-accordion-header.ab--test-pilot-css-checker");
+        const cssCheckerContent = popUp.querySelector(".ab--test-pilot-contents-wrapper.ab--test-pilot-css-checker");
+
+        const urlCheckerHeader = popUp.querySelector(".ab--test-pilot-accordion-header.ab--test-pilot-url-checker");
+        const urlCheckerContent = popUp.querySelector(".ab--test-pilot-contents-wrapper.ab--test-pilot-url-checker");
+
+        const message = popUp.querySelector(".ab--pilot-test-details-ui-details-message-content");
+        if (!data) {
+            weatingMessage.classList.add("ab--test-pilot-waiting-message-active");
+
+            accordionWrapper.classList.remove("ab--test-pilot-accordion-active");
+            navigation.classList.remove("ab--pilot-test-navigation-active");
+        } else {
+            const targetingDetails = data.targetingDetails || data.parentTargetingDetails;
+            const customJSCondition = targetingDetails.find((item) => item.type === "customJS");
+            const cssChecker = targetingDetails.find((item) => item.type === "elementChecker");
+            const urlChecker = targetingDetails.find((item) => item.type === "urlChecker");
+
+            customJSConditionContent.querySelector(".ab--test-pilot-contents-details").innerHTML = `
+            ${customJSCondition ? customJSCondition.messages.map((item) => `<li>${item}</li>`).join("") : "No Details"}`;
+
+            cssCheckerContent.querySelector(".ab--test-pilot-contents-details").innerHTML = `
+            ${cssChecker ? cssChecker.messages.map((item) => `<li>${item}</li>`).join("") : "No Details"}`;
+
+            urlCheckerContent.querySelector(".ab--test-pilot-contents-details").innerHTML = `
+            ${urlChecker ? urlChecker.messages.map((item) => `<li>${item}</li>`).join("") : "No Details"}`;
+
+            customJSConditionContent.querySelector(".ab--test-pilot-badge").outerHTML = customJSCondition.status === true ? getBadgeHTML("plain", "Active", "success") : getBadgeHTML("plain", "Inactive", "danger");
+
+            cssCheckerContent.querySelector(".ab--test-pilot-badge").outerHTML = cssChecker.status === true ? getBadgeHTML("plain", "Active", "success") : getBadgeHTML("plain", "Inactive", "danger");
+
+            urlCheckerContent.querySelector(".ab--test-pilot-badge").outerHTML = urlChecker.status === true ? getBadgeHTML("plain", "Active", "success") : getBadgeHTML("plain", "Inactive", "danger");
+
+            customJSConditionHeader.querySelector(".ab--test-pilot-badge").outerHTML = customJSCondition.status === true ? getBadgeHTML("minimal", "Active", "success") : getBadgeHTML("minimal", "Inactive", "danger");
+
+            cssCheckerHeader.querySelector(".ab--test-pilot-badge").outerHTML = cssChecker.status === true ? getBadgeHTML("minimal", "Active", "success") : getBadgeHTML("minimal", "Inactive", "danger");
+
+            urlCheckerHeader.querySelector(".ab--test-pilot-badge").outerHTML = urlChecker.status === true ? getBadgeHTML("minimal", "Active", "success") : getBadgeHTML("minimal", "Inactive", "danger");
+
+            message.innerHTML = data.message || "No Message from the server";
+
+            if (data.testType === "Multi-touch" && data.tests) {
+                navigation.classList.add("ab--pilot-test-navigation-active");
+
+                navigation.querySelector(".ab--pilot-test-details-ui-details-navigation").innerHTML = `
+                <li class="ab--pilot-test-details-ui-details-navigation-item">
+                    <button class="ab--test-pilot-nav-button ab--test-pilot-nav-button-active" data-id="${data.id}" data-type="parent">Parent</button>
+                </li>
+                ${data.tests.map((item) => `
+                <li class="ab--pilot-test-details-ui-details-navigation-item">
+                    <button class="ab--test-pilot-nav-button" data-id="${item.id}" data-parent-id="${data.id}" data-type="touchPoint">${item.touchPointName}</button>
+                </li>`).join("")}`;
+
+                navigation.querySelectorAll(".ab--test-pilot-nav-button").forEach(function (button) {
+                    button.addEventListener("click", function () {
+                        popUp.querySelectorAll(".ab--test-pilot-nav-button").forEach(function (button) {
+                            button.classList.remove("ab--test-pilot-nav-button-active");
+                        });
+                        button.classList.add("ab--test-pilot-nav-button-active");
+                        const id = button.getAttribute("data-id");
+                        const parentId = button.getAttribute("data-parent-id");
+                        const touchPointData = testsDetailsData[id] ? testsDetailsData[id] : testsDetailsData[parentId].tests.find((item) => item.id === id);
+                        updateTestDetailsData(touchPointData, popUp);
+                    });
+                });
+            } else {
+                if (data.testType === "Multi-touch") return;
+                navigation.classList.remove("ab--pilot-test-navigation-active");
+            }
+
+            weatingMessage.classList.remove("ab--test-pilot-waiting-message-active");
+            accordionWrapper.classList.add("ab--test-pilot-accordion-active");
+        }
+        popUp.classList.add("ab--details-visible");
+    }
+
+    function updateTableUI(key, value) {
+        const row = document.querySelector(`[data-id="${key}"]`);
+        if (!row) return;
+        const statusHTML = row.querySelector(".ab--pilot-test-details-ui-main-body-table-row-status");
+        statusHTML.innerHTML = getBadgeHTML("boxy", value.status, value.status === "Active" ? "success" : "danger");
+        row.setAttribute("data-status", value.status);
+    }
+
+    function mainJs(body, initialTestInfo) {
+        if (initialTestInfo.length === 0) return;
+
+        const popUp = getPopUpElement(initialTestInfo)
         body.insertAdjacentElement("beforeend", popUp);
 
 
-        const opeenr = getPopUpOpenerElement(popUp);
-        body.insertAdjacentElement("beforeend", opeenr);
+        const opener = getPopUpOpenerElement(popUp, initialTestInfo);
+        body.insertAdjacentElement("beforeend", opener);
 
-        console.log('%cname: v-01', 'background: black;border: 2px solid green;color: white;display: block;text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);text-align: center;font-weight: bold;padding : 10px;margin : 10px');
-        console.log('name: v-01');
+        const observedTestsDetailsData = new Proxy(testsDetailsData, {
+            set(target, key, value) {
+                if (!target.hasOwnProperty(key)) {
+                    updateTableUI(key, value);
+                    const opener = document.querySelector("#ab--pilot-test-details-ui-opener");
+                    const total = initialTestInfo.length;
+                    const current = Object.keys(observedTestsDetailsData).filter((item) => observedTestsDetailsData[item].status === "Active").length;
+                    console.log("total", total, "current", current);
+                    opener.querySelector("span:nth-child(2)").innerText = `${current}/${total} test running`;
+                }
+                target[key] = value;
+                return true;
+            }
+        });
+
+        const timer = setInterval(() => {
+            waitForElem('abTestPilot', (abTestPilot) => {
+                Object.entries(initialTestInfo).forEach(([key, value]) => {
+                    if (abTestPilot[value.id]) {
+                        observedTestsDetailsData[value.id] = abTestPilot[value.id];
+                    }
+                })
+            }, 1, true, 60000, 100);
+            if (Object.keys(testsDetailsData).length === Object.keys(initialTestInfo).length) {
+                clearInterval(timer);
+            }
+        }, 1000);
+
+        console.log('%cAB Test Pilot UI: v-01', 'background: black;border: 2px solid green;color: white;display: block;text-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);text-align: center;font-weight: bold;padding : 10px;margin : 10px');
+        console.log('AB Test Pilot UI: v-01');
     }
 
-    waitForElem('body', mainJs);
-
+    waitForElem('abTestPilotAllTest', (initialTestInfo) => {
+        waitForElem('body', ([body]) => {
+            mainJs(body, initialTestInfo);
+        });
+    }, 1, true, 10000, 100);
 })()
+
+
+

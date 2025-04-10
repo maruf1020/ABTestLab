@@ -79,6 +79,39 @@ export default async function browserScriptCreator(testInfo) {
             return results;
         }
 
+        function transformTests(tests) {
+            return tests.reduce((acc, test) => {
+                // If the test has a parentTargetingId, handle grouping
+                if (test.parentTargetingId) {
+                    // Find or create the group for this parentTargetingId
+                    let group = acc.find(item => item.id === test.parentTargetingId);
+                    if (!group) {
+                        group = {
+                            id: test.parentTargetingId,
+                            testName: test.testName,
+                            variationName: test.variationName,
+                            testType: test.testType,
+                            touchPointInfo: [],
+                            websiteName: test.websiteName,
+                            status: test.status,
+                            parentTargetingId: ""
+                        };
+                        acc.push(group);
+                    }
+                    // Add the touch point information to the group
+                    group.touchPointInfo.push({
+                        name: test.touchPointName,
+                        id: test.id,
+                        status: test.status
+                    });
+                } else {
+                    // For tests without parentTargetingId, just push them as they are
+                    acc.push(test);
+                }
+                return acc;
+            }, []);
+        }
+
         function abTestPilotApplyTestVariation(test) {
             const style = document.createElement("style");
             style.innerHTML = test.variationFiles.css;
@@ -94,7 +127,8 @@ export default async function browserScriptCreator(testInfo) {
         }
 
         async function abTestPilotProcessTests(tests, targetMet, parentTargetingData) {
-            for (const test of tests) {
+            // for (const test of tests) {
+            tests.forEach(async (test, i) => {
                 const result = await abTestPilotTargetMet(targetMet, test.targetingFiles);
                 const isParentTargeting = parentTargetingData.isParentTargeting;               
 
@@ -130,11 +164,25 @@ export default async function browserScriptCreator(testInfo) {
                     if(value.parentTargetingTestInfo) {
                         if(!acc[value.parentTargetingTestInfo.parentTargetingId]) {
                             acc[value.parentTargetingTestInfo.parentTargetingId] = {
-                                parentTargetingInfo: value.parentTargetingTestInfo,
-                                tests: []
+                                // parentTargetingInfo: value.parentTargetingTestInfo,
+                                "id" : value.parentTargetingTestInfo.parentTargetingId,
+                                "targetingFiles" : value.parentTargetingTestInfo.targetingFiles,
+                                "parentTargetingDetails" : value.parentTargetingDetails,
+                                "status" : value.parentTargetingDetails.every(item => item.status === true) ? "Active" : "Inactive",
+                                message: value.parentTargetingDetails.every(item => item.status === true) ? "Parent targeting Met" : "Parent targeting does not Met",
+                                "variationIdList" : value.parentTargetingTestInfo.variationIdList,
+                                "tests": [],
+                                "touchPoints": [],
+                                "variationStatus": [],
+                                "testName" : value.testName,
+                                "variationName" : value.variationName,
+                                "testType" : value.testType,
+                                "websiteName" : value.websiteName,
                             }
                         }
                         acc[value.parentTargetingTestInfo.parentTargetingId].tests.push(value);
+                        acc[value.parentTargetingTestInfo.parentTargetingId].touchPoints.push(value.touchPointName);
+                        acc[value.parentTargetingTestInfo.parentTargetingId].variationStatus.push(value.targetingDetails.every(item => item.status === true) ? true : false);
                     }
                     else {
                         acc[key] = value;
@@ -144,10 +192,22 @@ export default async function browserScriptCreator(testInfo) {
                 if (abTestPilotVariaTionInfo[test.id].status === "Active") {
                     abTestPilotApplyTestVariation(test);
                 }
-            }
+            })
         }
 
         const abTestPilotApplicableTestsBasedOnTheWebsite = abTestPilotFilterTestsByHostname(abTestPilotMainInformation.testInfo);
+        window.abTestPilotAllTest =  transformTests(abTestPilotApplicableTestsBasedOnTheWebsite.map(item => {
+            return {
+                "id": item.id,
+                testName: item.testName,
+                variationName: item.variationName,
+                testType: item.testType,
+                touchPointName: item.touchPointName,
+                websiteName: item.websiteName,
+                status: "Waiting",
+                parentTargetingId: (abTestPilotMainInformation?.parentTargeting?.find(i => i.variationIdList.includes(item.id)))?.parentTargetingId,
+            }
+        }));
         const { testsWithParentTargeting, testsWithoutParentTargeting } = abTestPilotFilterTestsByParentTargeting(abTestPilotApplicableTestsBasedOnTheWebsite, abTestPilotMainInformation.parentTargeting);
         const abTestPilotApplicableParentTargeting = abTestPilotGetApplicableParentTargeting(abTestPilotMainInformation.parentTargeting, testsWithParentTargeting);
 

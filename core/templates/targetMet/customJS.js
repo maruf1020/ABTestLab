@@ -1,5 +1,5 @@
 export default function checker(activator) {
-    const checkingTimeout = 3000;
+    const checkingTimeout = 3600000
     return new Promise((resolve) => {
         const startTime = Date.now();
         const result = {
