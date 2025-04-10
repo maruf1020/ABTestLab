@@ -153,7 +153,7 @@
 
         const popUp = document.createElement("div");
         popUp.id = "ab--pilot-test-details-ui";
-        popUp.classList.add("ab--pilot-test-details-ui", "ab--details-visible", "ab--test-pilot-open");
+        popUp.classList.add("ab--pilot-test-details-ui");
         popUp.innerHTML = `
             <div class="ab--pilot-test-details-ui-main">
                 <div class="ab--pilot-test-details-ui-main-header">
@@ -438,6 +438,57 @@
             });
         });
 
+        //Handle search 
+        const searchInput = popUp.querySelector(".ab--pilot-test-details-ui-main-header-search input");
+        searchInput.addEventListener("input", function () {
+            const searchValue = this.value.toLowerCase();
+            popUp.querySelectorAll(".ab--pilot-test-details-ui-main-body-table-row").forEach(function (row) {
+                const title = row.querySelector(".ab--pilot-test-details-ui-main-body-table-row-title span").innerText.toLowerCase();
+                const status = row.querySelector(".ab--pilot-test-details-ui-main-body-table-row-status span").innerText.toLowerCase();
+
+                if (title.includes(searchValue) || status.includes(searchValue)) {
+                    row.style.display = "grid";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        })
+
+        //Handle sort
+        let lastClickedColumnIndex = null; // Track the last clicked column index
+
+        popUp.querySelectorAll(".ab--pilot-test-details-ui-main-body-table-head-title-button").forEach(function (button) {
+            let isAscending = true;
+
+            button.addEventListener("click", function () {
+                const header = this.closest(".ab--pilot-test-details-ui-main-body-table-head");
+                const rows = Array.from(popUp.querySelectorAll(".ab--pilot-test-details-ui-main-body-table-row"));
+                const index = Array.from(header.children).indexOf(this.closest("div"));
+
+                if (lastClickedColumnIndex !== index) {
+                    isAscending = true;
+                }
+
+                rows.sort((a, b) => {
+                    const aText = a.children[index].innerText.toLowerCase();
+                    const bText = b.children[index].innerText.toLowerCase();
+
+                    if (isAscending) {
+                        return aText.localeCompare(bText); // Ascending order
+                    } else {
+                        return bText.localeCompare(aText); // Descending order
+                    }
+                });
+
+                rows.forEach((row) => {
+                    popUp.querySelector(".ab--pilot-test-details-ui-main-body-table-container").appendChild(row);
+                });
+
+                isAscending = !isAscending;
+                lastClickedColumnIndex = index;
+            });
+        });
+
         return popUp;
     }
 
@@ -549,6 +600,11 @@
             set(target, key, value) {
                 if (!target.hasOwnProperty(key)) {
                     updateTableUI(key, value);
+                    const opener = document.querySelector("#ab--pilot-test-details-ui-opener");
+                    const total = initialTestInfo.length;
+                    const current = Object.keys(observedTestsDetailsData).filter((item) => observedTestsDetailsData[item].status === "Active").length;
+                    console.log("total", total, "current", current);
+                    opener.querySelector("span:nth-child(2)").innerText = `${current}/${total} test running`;
                 }
                 target[key] = value;
                 return true;
