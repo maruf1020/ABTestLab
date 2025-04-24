@@ -8,79 +8,151 @@ export async function listWebsites() {
     if (!fs.existsSync(ROOT_DIR)) {
       return []
     }
-    const items = await fs.readdir(ROOT_DIR)
-    return items
-      .filter((item) => fs.statSync(path.join(ROOT_DIR, item)).isDirectory())
-      .filter((item) => fs.pathExists(path.join(ROOT_DIR, item, "info.json")))
+    const items = await fs.readdir(ROOT_DIR);
+    const result = await Promise.all(
+      items.map(async (item) => {
+        const itemPath = path.join(ROOT_DIR, item);
+        const isDirectory = await fs.stat(itemPath).then((stat) => stat.isDirectory());
+        const hasInfoJson = await fs.pathExists(path.join(itemPath, 'info.json'));
+
+        return isDirectory && hasInfoJson ? item : null;
+      })
+    );
+    return result.filter(Boolean);
   } catch (error) {
     throw new Error(`Failed to list websites: ${error.message}`)
   }
 }
 
 export async function listTests(website) {
-  const websiteDir = path.join(ROOT_DIR, website)
-  const tests = await fs.readdir(websiteDir)
-  return tests
-    .filter((test) => fs.lstatSync(path.join(websiteDir, test)).isDirectory())
-    .filter((test) => fs.pathExists(path.join(websiteDir, test, "info.json")))
+  try {
+    const websiteDir = path.join(ROOT_DIR, website);
+    const tests = await fs.readdir(websiteDir);
+
+    const result = await Promise.all(
+      tests.map(async (test) => {
+        const testPath = path.join(websiteDir, test);
+        const isDirectory = await fs.lstat(testPath).then((stat) => stat.isDirectory());
+        const hasInfoJson = await fs.pathExists(path.join(testPath, 'info.json'));
+
+        return isDirectory && hasInfoJson ? test : null;
+      })
+    );
+
+    return result.filter(Boolean);
+  } catch (error) {
+    throw new Error(`Failed to list tests: ${error.message}`);
+  }
 }
 
 export async function listOnlyMultiTouchTests(website) {
-  const websiteDir = path.join(ROOT_DIR, website)
-  const tests = await fs.readdir(websiteDir)
-  return tests
-    .filter((test) => fs.lstatSync(path.join(websiteDir, test)).isDirectory())
-    .filter((test) => fs.pathExists(path.join(websiteDir, test, "info.json")))
-    .filter((test) => getTestInfo(website, test).type === "Multi-touch")
+  try {
+    const websiteDir = path.join(ROOT_DIR, website);
+    const tests = await fs.readdir(websiteDir);
+
+    const result = await Promise.all(
+      tests.map(async (test) => {
+        const testPath = path.join(websiteDir, test);
+        const isDirectory = await fs.lstat(testPath).then((stat) => stat.isDirectory());
+        const hasInfoJson = await fs.pathExists(path.join(testPath, 'info.json'));
+
+        if (isDirectory && hasInfoJson) {
+          const testInfo = await getTestInfo(website, test);
+          if (testInfo.type === "Multi-touch") {
+            return test;
+          }
+        }
+        return null;
+      })
+    );
+
+    return result.filter(Boolean);
+  } catch (error) {
+    throw new Error(`Failed to list multi-touch tests: ${error.message}`);
+  }
 }
 
 export async function listAllTestExceptMultiTouch(website) {
-  const websiteDir = path.join(ROOT_DIR, website)
-  const tests = await fs.readdir(websiteDir)
-  return tests
-    .filter((test) => fs.lstatSync(path.join(websiteDir, test)).isDirectory())
-    .filter((test) => fs.pathExists(path.join(websiteDir, test, "info.json")))
-    .filter((test) => getTestInfo(website, test).type !== "Multi-touch")
+  try {
+    const websiteDir = path.join(ROOT_DIR, website);
+    const tests = await fs.readdir(websiteDir);
+
+    const result = await Promise.all(
+      tests.map(async (test) => {
+        const testPath = path.join(websiteDir, test);
+        const isDirectory = await fs.lstat(testPath).then((stat) => stat.isDirectory());
+        const hasInfoJson = await fs.pathExists(path.join(testPath, 'info.json'));
+
+        if (isDirectory && hasInfoJson) {
+          const testInfo = await getTestInfo(website, test);
+          if (testInfo.type !== "Multi-touch") {
+            return test;
+          }
+        }
+        return null;
+      })
+    );
+
+    return result.filter(Boolean);
+  } catch (error) {
+    throw new Error(`Failed to list tests except Multi-touch: ${error.message}`);
+  }
 }
 
 export async function listTouchPoints(website, test) {
   try {
-    const testInfo = await getTestInfo(website, test)
-    return testInfo.touchPoints
+    const testInfo = await getTestInfo(website, test);
+
+    if (!testInfo || !testInfo.touchPoints) {
+      throw new Error(`No touchPoints found for test ${test} in website ${website}`);
+    }
+
+    return testInfo.touchPoints;
   } catch (error) {
-    throw new Error(`Failed to list touchPoints for test ${test} in website ${website}: ${error.message}`)
+    throw new Error(`Failed to list touchPoints for test ${test} in website ${website}: ${error.message}`);
   }
 }
+
 
 export async function listVariations(website, test) {
   try {
-    const testInfo = await getTestInfo(website, test)
-    return testInfo.variations
+    const testInfo = await getTestInfo(website, test);
+
+    if (!testInfo || !testInfo.variations) {
+      throw new Error(`No variations found for test ${test} in website ${website}`);
+    }
+
+    return testInfo.variations;
   } catch (error) {
-    throw new Error(`Failed to list tests for test ${test} in website ${website}: ${error.message}`)
+    throw new Error(`Failed to list variations for test ${test} in website ${website}: ${error.message}`);
   }
 }
 
+
 export async function listTouchPointsAndVariations(website, test) {
   try {
-    const testInfo = await getTestInfo(website, test)
-    const touchPoints = testInfo.touchPoints.map(item => {
-      return {
-        name: item,
-        type: "touchPoint"
-      }
-    })
-    const variations = testInfo.variations.map(item => {
-      return {
-        name: item,
-        type: "variation"
-      }
-    })
-    return [...touchPoints, ...variations]
+    const testInfo = await getTestInfo(website, test);
+
+    if (!testInfo || !testInfo.touchPoints || !testInfo.variations) {
+      throw new Error(`TouchPoints or variations are missing for test ${test} in website ${website}`);
+    }
+
+    const touchPoints = testInfo.touchPoints.map(item => ({
+      name: item,
+      type: "touchPoint"
+    }));
+
+    const variations = testInfo.variations.map(item => ({
+      name: item,
+      type: "variation"
+    }));
+
+    return [...touchPoints, ...variations];
   } catch (error) {
-    throw new Error(`Failed to list touchPoints for test ${test} in website ${website}: ${error.message}`)
+    throw new Error(`Failed to list touchPoints and variations for test ${test} in website ${website}: ${error.message}`);
   }
 }
+
 
 export async function getWebsiteInfo(website) {
   try {

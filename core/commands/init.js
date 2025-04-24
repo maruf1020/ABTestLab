@@ -4,6 +4,7 @@ import { Command } from "commander"
 import { createSettingsFile } from "../scripts/createSettingsFile.js"
 import { createSkeleton } from "../scripts/createSkeleton.js"
 import { downloadSocketIO } from "../scripts/downloadSocketIO.js"
+import { structureOldProject } from "../scripts/structureOldProject.js"
 
 export const initCommand = new Command("init").description("Initialize template folders").action(init)
 export async function init() {
@@ -13,8 +14,9 @@ export async function init() {
         await downloadSocketIO();
         await createSettingsFile();
         await createSkeleton();
+        await structureOldProject();
 
     } catch (error) {
-        console.error(`Failed to initialize skeleton: ${error.message}`)
+        console.error(`Failed to initialize project: ${error.message}`)
     }
 }
