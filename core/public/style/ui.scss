@@ -1,34 +1,32 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
 
 // Variables
-$ab--test-pilot-primary-color: #0D9488;
+$ab--test-pilot-primary-color: #0d9488;
 $ab--test-pilot-hover-color: #609e99;
-$ab--test-pilot-status-success-dark: #28A745;
-$ab--test-pilot-status-success-default: #9BD5A8;
-$ab--test-pilot-status-success-light: #EAF7ED;
-$ab--test-pilot-status-warning-dark: #EAB000;
-$ab--test-pilot-status-warning-default: #FFD180;
-$ab--test-pilot-status-warning-light: #FFF4E5;
-$ab--test-pilot-status-danger-dark: #FF4545;
-$ab--test-pilot-status-danger-default: #FFA8A8;
-$ab--test-pilot-status-danger-light: #FFEDED;
-$ab--test-pilot-status-default-dark: #6C757D;
-$ab--test-pilot-status-default-default: #C4C4C4;
-$ab--test-pilot-status-default-light: #F2F2F2;
-$ab--test-pilot-status-default-devider : #12121226;
-$ab--test-pilot-white-color: #FFF;
-$ab--test-pilot-red-color: #E71111;
+$ab--test-pilot-status-success-dark: #28a745;
+$ab--test-pilot-status-success-default: #9bd5a8;
+$ab--test-pilot-status-success-light: #eaf7ed;
+$ab--test-pilot-status-warning-dark: #eab000;
+$ab--test-pilot-status-warning-default: #ffd180;
+$ab--test-pilot-status-warning-light: #fff4e5;
+$ab--test-pilot-status-danger-dark: #ff4545;
+$ab--test-pilot-status-danger-default: #ffa8a8;
+$ab--test-pilot-status-danger-light: #ffeded;
+$ab--test-pilot-status-default-dark: #6c757d;
+$ab--test-pilot-status-default-default: #c4c4c4;
+$ab--test-pilot-status-default-light: #f2f2f2;
+$ab--test-pilot-status-default-devider: #12121226;
+$ab--test-pilot-white-color: #fff;
+$ab--test-pilot-red-color: #e71111;
 
-$ab--test-pilot-box-shadow: 2px 4px 15px 0px #CFCFCF;
-$ab--test-pilot-font-family: 'Inter', sans-serif;
+$ab--test-pilot-box-shadow: 2px 4px 15px 0px #cfcfcf;
+$ab--test-pilot-font-family: "Inter", sans-serif;
 $ab--test-pilot-border-radius: 32px;
 $ab--test-pilot-transition: 0.3s ease;
 
 $ab--test-pilot-base-height: 530px;
 $ab--test-pilot-base-width: 1300px;
 $ab--test-pilot-table-top: 153px;
-
-
 
 // Mixins
 @mixin flex-center($gap: 0) {
@@ -42,6 +40,36 @@ $ab--test-pilot-table-top: 153px;
 }
 
 .ab--pilot-test-details-ui-opener {
+    * {
+        box-sizing: border-box;
+        margin: unset;
+        padding: unset;
+        border: unset;
+        border-radius: unset;
+        outline: unset;
+        text-decoration: unset;
+        font-family: unset;
+        font-size: unset;
+        font-weight: unset;
+        line-height: unset;
+        letter-spacing: unset;
+        color: unset;
+        background: unset;
+        text-align: unset;
+        text-transform: unset;
+        text-overflow: unset;
+        white-space: unset;
+        overflow: unset;
+        display: unset;
+        visibility: unset;
+        position: unset;
+        width: unset;
+        height: unset;
+        max-width: unset;
+        max-height: unset;
+        background-color: unset;
+    }
+
     position: fixed;
     bottom: 12px;
     right: 12px;
@@ -53,7 +81,9 @@ $ab--test-pilot-table-top: 153px;
     border-radius: $ab--test-pilot-border-radius;
     background: $ab--test-pilot-primary-color;
     box-shadow: $ab--test-pilot-box-shadow;
-    @include transition(box-shadow $ab--test-pilot-transition, opacity $ab--test-pilot-transition, transform $ab--test-pilot-transition);
+    @include transition(box-shadow $ab--test-pilot-transition,
+        opacity $ab--test-pilot-transition,
+        transform $ab--test-pilot-transition );
     font-family: $ab--test-pilot-font-family;
 
     &.ab--test-pilot-hide,
@@ -114,8 +144,13 @@ $ab--test-pilot-table-top: 153px;
         background: $ab--test-pilot-white-color;
         border-radius: 50%;
         transform: translateY(-40%);
-        @include transition(transform $ab--test-pilot-transition, background $ab--test-pilot-transition, fill $ab--test-pilot-transition);
+        @include transition(transform $ab--test-pilot-transition,
+            background $ab--test-pilot-transition,
+            fill $ab--test-pilot-transition );
         padding: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
         &:hover {
             transform: translateY(-40%) scale(1.1);
@@ -134,6 +169,36 @@ $ab--test-pilot-table-top: 153px;
 }
 
 .ab--pilot-test-details-ui {
+    * {
+        box-sizing: border-box;
+        margin: unset;
+        padding: unset;
+        border: unset;
+        border-radius: unset;
+        outline: unset;
+        text-decoration: unset;
+        font-family: unset;
+        font-size: unset;
+        font-weight: unset;
+        line-height: unset;
+        letter-spacing: unset;
+        color: unset;
+        background: unset;
+        text-align: unset;
+        text-transform: unset;
+        text-overflow: unset;
+        white-space: unset;
+        overflow: unset;
+        display: unset;
+        visibility: unset;
+        position: unset;
+        width: unset;
+        height: unset;
+        max-width: unset;
+        max-height: unset;
+        background-color: unset;
+    }
+
     position: fixed;
     bottom: 0;
     right: 50%;
@@ -149,10 +214,16 @@ $ab--test-pilot-table-top: 153px;
     gap: 30px;
     padding: 40px;
     border: unset;
-    background: #FFF;
-    box-shadow: 2px 4px 15px 0px #CFCFCF;
-    transition: box-shadow 0.3s ease, opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease, height 0.3s ease, width 0.3s ease;
-    font-family: "Inter", sans-serif;
+    background: #fff;
+    box-shadow: 2px 4px 15px 0px #cfcfcf;
+    transition: box-shadow 0.3s ease,
+    opacity 0.3s ease,
+    visibility 0.3s ease,
+    transform 0.3s ease,
+    height 0.3s ease,
+    width 0.3s ease;
+    font-family: "Inter",
+    sans-serif;
 
     &.ab--test-pilot-open {
         transform: translate(50%, 0);
@@ -236,7 +307,6 @@ $ab--test-pilot-table-top: 153px;
                 }
             }
         }
-
     }
 
     .ab--test-pilot-badge-plain {
@@ -252,7 +322,7 @@ $ab--test-pilot-table-top: 153px;
             width: 6px;
 
             &::after {
-                content: '';
+                content: "";
                 position: absolute;
                 top: 50%;
                 left: 50%;
@@ -282,7 +352,7 @@ $ab--test-pilot-table-top: 153px;
             width: 6px;
 
             &::after {
-                content: '';
+                content: "";
                 position: absolute;
                 top: 50%;
                 left: 50%;
@@ -300,7 +370,7 @@ $ab--test-pilot-table-top: 153px;
         display: flex;
         flex-direction: column;
         height: 100%;
-        transition: width .3s ease;
+        transition: width 0.3s ease;
 
         &-header-icons {
             display: flex;
@@ -332,24 +402,39 @@ $ab--test-pilot-table-top: 153px;
 
         &-search {
             border-radius: 5px;
-            border: 2px solid #DCDCDC;
-            background: #FFF;
+            border: 2px solid #dcdcdc;
+            background: #fff;
             display: flex;
             width: 276px;
             padding: 8px;
             justify-content: center;
             align-items: center;
             gap: 4px;
+            transition: border 0.2s ease;
+
+            &:focus-within {
+                border: 2px solid #121212;
+                /* Add the border on focus */
+            }
+
+            button {
+                display: flex;
+                align-items: center;
+            }
 
             input {
                 color: #555;
-                font-feature-settings: 'liga' off, 'clig' off;
+                font-feature-settings:
+                    "liga" off,
+                    "clig" off;
                 font-family: Inter;
                 font-size: 14px;
                 font-style: normal;
                 font-weight: 400;
                 line-height: 24px;
                 width: 100%;
+                border: none;
+                outline: none;
 
                 &::placeholder {
                     color: #555;
@@ -375,8 +460,8 @@ $ab--test-pilot-table-top: 153px;
         flex-direction: column;
 
         &>[data-type="ab--grid-table-row"]:not(:hover):nth-of-type(odd) {
-            background: #FCFCFC;
-            border-color: #FCFCFC;
+            background: #fcfcfc;
+            border-color: #fcfcfc;
         }
 
         &-table-container {
@@ -389,6 +474,8 @@ $ab--test-pilot-table-top: 153px;
             scrollbar-width: none;
             -ms-overflow-style: none;
             padding-bottom: 32px;
+            gap: 4px;
+            border: none;
 
             &::-webkit-scrollbar {
                 display: none;
@@ -402,6 +489,9 @@ $ab--test-pilot-table-top: 153px;
             justify-items: start;
             column-gap: 12px;
             padding: 20px 16px;
+            border-top: 1px solid #dcdcdc;
+            border-bottom: 1px solid #dcdcdc;
+            background-color: #12121201;
 
             &-title {
                 justify-self: baseline;
@@ -415,6 +505,7 @@ $ab--test-pilot-table-top: 153px;
             &-title-button {
                 display: flex;
                 gap: 8px;
+                border: none;
 
                 h3 {
                     color: #555;
@@ -437,10 +528,19 @@ $ab--test-pilot-table-top: 153px;
             min-height: 72px;
             align-items: center;
             border-radius: 5px;
-            border: 1px solid #FFF;
+            border: 1px solid #fff;
+            box-shadow: unset;
+
+            &:nth-child(odd) {
+                background-color: #fcfcfc;
+            }
+
+            &:focus {
+                box-shadow: unset !important;
+            }
 
             &:hover {
-                background: #DDF0EE;
+                background: #ddf0ee;
             }
 
             &-title {
@@ -496,6 +596,10 @@ $ab--test-pilot-table-top: 153px;
         background: $ab--test-pilot-status-default-devider;
         position: relative;
 
+        svg {
+            max-width: unset;
+        }
+
         &-close-button {
             position: absolute;
             top: 50%;
@@ -503,8 +607,11 @@ $ab--test-pilot-table-top: 153px;
             transform: translate(-50%, -50%);
             background: #fff;
             border-radius: 50%;
-            padding: 4px;
+            padding: 2px;
             border: 1px solid $ab--test-pilot-status-default-devider;
+            display: flex;
+            align-items: center;
+            justify-content: center;
 
             &:hover {
                 background: $ab--test-pilot-status-success-light;
@@ -515,7 +622,7 @@ $ab--test-pilot-table-top: 153px;
             }
 
             &>svg path {
-                fill: $ab--test-pilot-status-default-dark
+                fill: $ab--test-pilot-status-default-dark;
             }
         }
     }
@@ -531,16 +638,16 @@ $ab--test-pilot-table-top: 153px;
         scrollbar-width: none;
         -ms-overflow-style: none;
         position: relative;
-        transition: width .3s ease;
+        transition: width 0.3s ease;
 
         &::before {
-            content: '';
+            content: "";
             position: absolute;
             top: 0;
             left: -30px;
             height: 100%;
             width: 1px;
-            background: #E7E7E7;
+            background: #e7e7e7;
         }
 
         &::-webkit-scrollbar {
@@ -549,7 +656,7 @@ $ab--test-pilot-table-top: 153px;
 
         &-navigation-wrapper {
             display: none;
-            gap: 5px;
+            gap: 10px;
             align-items: center;
             width: 100%;
 
@@ -561,9 +668,14 @@ $ab--test-pilot-table-top: 153px;
         &-navigation-button {
             height: 24px;
             width: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            outline: none;
 
             &.ab--test-pilot-navigation-hidden {
-                opacity: .5;
+                opacity: 0.5;
                 pointer-events: none;
             }
         }
@@ -596,7 +708,7 @@ $ab--test-pilot-table-top: 153px;
                 gap: 8px;
                 align-self: stretch;
                 border-radius: 4px;
-                background: #F3FEFD;
+                background: #f6f6f6;
                 color: #555;
                 font-family: Inter;
                 font-size: 14px;
@@ -606,8 +718,9 @@ $ab--test-pilot-table-top: 153px;
 
                 &.ab--test-pilot-nav-button-active {
                     border-radius: 4px;
-                    background: #0D9488;
+                    background: #121212;
                     color: #fff;
+                    box-shadow: unset !important;
                 }
             }
         }
@@ -652,16 +765,22 @@ $ab--test-pilot-table-top: 153px;
                 display: block;
             }
 
-
             .ab--test-pilot-accordion-header {
                 border-bottom: 1px solid #e7e7e7;
                 width: 100%;
                 display: flex;
                 padding: 14px 0;
+                box-shadow: none !important;
+                border-bottom-color: #e7e7e7 !important;
+
+                // &:not(.ab--test-pilot-accordion-active) {
+                //   border-bottom: 1px solid #e7e7e7 !important;
+                // }
 
                 &.ab--test-pilot-accordion-active {
                     &+.ab--test-pilot-contents-wrapper {
                         display: block;
+                        border-bottom: 1px solid #e7e7e7;
                     }
                 }
 
@@ -750,7 +869,7 @@ $ab--test-pilot-table-top: 153px;
             font-weight: 500;
             line-height: 130%;
             padding: 8px 0;
-            margin-top: 16px;
+            margin: 16px 0 5px;
             word-wrap: normal;
 
             &-content {
@@ -760,16 +879,17 @@ $ab--test-pilot-table-top: 153px;
                 flex-direction: column;
                 align-items: flex-start;
                 align-self: stretch;
-                background: #F3FEFD;
+                background: #f3fefd;
                 color: #121212;
                 font-family: Inter;
                 font-size: 12px;
                 font-style: normal;
                 font-weight: 400;
                 line-height: 150%;
+                background-color: #f5f5f5;
+                border-radius: 12px;
             }
         }
-
     }
 }
 
@@ -793,7 +913,6 @@ $ab--test-pilot-table-top: 153px;
         display: flex;
     }
 }
-
 
 .ab--pilot-test-details-ui {
     &:not(.ab--details-visible) {
