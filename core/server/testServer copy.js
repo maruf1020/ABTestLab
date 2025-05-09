@@ -4,9 +4,9 @@ import http from "http"
 import debug from "debug"
 import kleur from "kleur"
 import chokidar from "chokidar"
+import { Server } from "socket.io"
 import { ROOT_DIR } from "../global/config.js"
 import { fileURLToPath } from "url"
-import WebSocket, { WebSocketServer } from "ws";
 
 import browserScriptCreator from "./browserScriptCreator.js"
 import { bundleVariation, bundleTargeting, getBundlerData } from "../utils/bundler.js"
@@ -15,9 +15,6 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const log = debug("ab-testing-cli:testServer")
-
-// Create a variable to store all connected WebSocket clients
-let wsClients = [];
 
 export async function startTestServer(selectedVariations) {
     const testInfo = await Promise.all(selectedVariations.map(async selectedVariation => {
@@ -56,76 +53,27 @@ export async function startTestServer(selectedVariations) {
         }
     });
 
-    // Create WebSocket server
-    const wss = new WebSocketServer({ server });
-
-    // Handle WebSocket connections
-    wss.on("connection", async (ws) => {
-        console.log("Browser connected");
-        wsClients.push(ws);
-
-        // Remove disconnected clients
-        ws.on("close", () => {
-            wsClients = wsClients.filter(client => client !== ws);
-        });
-
-        try {
-            const config = await fs.readJson(path.join(process.cwd(), "settings.json"));
-            ws.send(JSON.stringify({ type: "config", data: config }));
-
-            const uiJsFilePath = path.join(__dirname, "..", "public", "js", "main", "ui.js");
-            const uiCssFilePath = path.join(__dirname, "..", "public", "style", "ui.scss");
-            const uiJs = await getBundlerData(uiJsFilePath, uiCssFilePath, false);
-            ws.send(JSON.stringify({ type: "ui", data: uiJs }));
-
-        } catch (error) {
-            console.error(`Error reading config: ${error.message}`);
-            console.log(`Error reading config: ${error.message}`);
-            ws.send(JSON.stringify({ type: "config", data: {} }));
-        }
-
-        ws.on("message", async (message) => {
-            const { type, data } = JSON.parse(message.toString());
-
-            if (type === "checkWebsite") {
-                console.log(kleur.cyan(`Checking website: ${data.url}`));
-                const { url } = data;
-                const origin = new URL(url.toString()).origin;
-                const IsMatched = transformedTestInfo.testInfo.some(test =>
-                    test.hostnames.some(hostname =>
-                        origin.replace(/\/$/, "").endsWith(hostname.replace(/\/$/, "")) ||
-                        url.replace(/\/$/, "").endsWith(hostname.replace(/\/$/, ""))
-                    )
-                );
-                if (IsMatched) {
-                    console.log(kleur.magenta(`connected with the url: ${url}`));
-                    ws.send(JSON.stringify({ type: "checkWebsiteResponse", data: "Successfully connected with the server" }));
-                }
-            }
-        });
+    const io = new Server(server, {
+        cors: {
+            origin: "*",
+            methods: ["GET", "POST"],
+        },
     });
 
     const watchPaths = transformedTestInfo.testInfo.map(test => [test.variationDir, test.targetingDir, test.parentTargetingDir]
     ).flat().filter(Boolean);
+
+
 
     const watcher = chokidar.watch(watchPaths, {
         ignored: /(^|[/\\])\../,
         persistent: true,
     });
 
-    // Helper function to broadcast to all connected clients
-    function broadcastToClients(data) {
-        const message = JSON.stringify(data);
-        wsClients.forEach(client => {
-            if (client.readyState === WebSocket.OPEN) {
-                client.send(message);
-            }
-        });
-    }
-
     watcher
         .on("change", async (filePath) => {
             log(`File ${filePath} has been changed`)
+            // console.log(kleur.yellow(`File has been changed: ${filePath}`))
 
             if (!filePath.includes("compiled") && !filePath.includes("targeting")) {
                 if (filePath.includes("style.scss")) {
@@ -152,8 +100,7 @@ export async function startTestServer(selectedVariations) {
                     }
                 }))
                 if (infoList.length > 0 || infoListParent.length > 0) {
-                    // Replace io.emit with WebSocket broadcast
-                    broadcastToClients({ type: "reload_page", hostnames: initialInfo.hostnames });
+                    io.emit("reload_page", initialInfo.hostnames);
                     console.log(kleur.gray(`🎯 Targeting files have been updated`))
                 }
             } else if (filePath.includes("compiled") && !filePath.includes("targeting")) {
@@ -162,15 +109,13 @@ export async function startTestServer(selectedVariations) {
                     if (path.extname(filePath) === ".css") {
                         const cssFile = path.join(path.dirname(filePath), "style.css")
                         const css = await fs.readFile(cssFile, "utf-8")
-                        // Replace io.emit with WebSocket broadcast
-                        broadcastToClients({ type: "update", content: css, id: info.id, type: "css" });
+                        io.emit("update", { type: "css", content: css, id: info.id })
                         transformedTestInfo.testInfo.find(test => test.id === info.id).variationFiles.css = css
                         await browserScriptCreator(transformedTestInfo);
                     } else if (path.extname(filePath) === ".js") {
                         const jsFile = path.join(path.dirname(filePath), "index.js")
                         const js = await fs.readFile(jsFile, "utf-8")
-                        // Replace io.emit with WebSocket broadcast
-                        broadcastToClients({ type: "update", content: js, id: info.id, type: "js" });
+                        io.emit("update", { type: "js", content: js, id: info.id })
                         transformedTestInfo.testInfo.find(test => test.id === info.id).variationFiles.js = js
                         await browserScriptCreator(transformedTestInfo);
                     }
@@ -179,9 +124,42 @@ export async function startTestServer(selectedVariations) {
         })
         .on("error", (error) => log(`Watcher error: ${error}`))
 
+
+    io.on("connection", async (socket) => {
+        log("Browser connected");
+
+        try {
+            const config = await fs.readJson(path.join(process.cwd(), "settings.json"));
+            log("Config sent to client:", config);
+            socket.emit("config", config);
+
+            //send UI code to client
+            const uiJsFilePath = path.join(__dirname, "..", "public", "js", "main", "ui.js");
+            const uiCssFilePath = path.join(__dirname, "..", "public", "style", "ui.scss");
+            const uiJs = await getBundlerData(uiJsFilePath, uiCssFilePath, false);
+            socket.emit("ui", uiJs);
+
+        } catch (error) {
+            console.error(`Error reading config: ${error.message}`);
+            log(`Error reading config: ${error.message}`);
+            socket.emit("config", {});
+        }
+
+        socket.on("checkWebsite", async (data, callback) => {
+            const { url } = data;
+            const origin = new URL(url.toString()).origin;
+            const IsMatched = transformedTestInfo.testInfo.some(test => test.hostnames.some(hostname => origin.replace(/\/$/, "").endsWith(hostname.replace(/\/$/, "")) || url.replace(/\/$/, "").endsWith(hostname.replace(/\/$/, ""))));
+            if (IsMatched) {
+                console.log(kleur.magenta(`connected with the url: ${url}`));
+                callback("Successfully connected with the server");
+            }
+        });
+    });
+
+    // const port = process.env.PORT || 3000;
     const port = 3000;
     server.listen(port, () => {
-        console.log(`Test server running on http://localhost:${port}`);
+        log(`Test server running on http://localhost:${port}`);
     });
 }
 
