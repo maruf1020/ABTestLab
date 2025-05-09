@@ -14,7 +14,7 @@ export async function init() {
         await downloadSocketIO();
         await createSettingsFile();
         await createSkeleton();
-        await structureOldProject();
+        // await structureOldProject();
 
     } catch (error) {
         console.error(`Failed to initialize project: ${error.message}`)

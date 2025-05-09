@@ -86,6 +86,36 @@ $ab--test-pilot-table-top: 153px;
         transform $ab--test-pilot-transition );
     font-family: $ab--test-pilot-font-family;
 
+    * {
+        box-sizing: border-box;
+        margin: unset;
+        padding: unset;
+        border: unset;
+        border-radius: unset;
+        outline: unset;
+        text-decoration: unset;
+        font-family: unset;
+        font-size: unset;
+        font-weight: unset;
+        line-height: unset;
+        letter-spacing: unset;
+        color: unset;
+        background: unset;
+        text-align: unset;
+        text-transform: unset;
+        text-overflow: unset;
+        white-space: unset;
+        overflow: unset;
+        display: unset;
+        visibility: unset;
+        position: unset;
+        width: unset;
+        height: unset;
+        max-width: unset;
+        max-height: unset;
+        background-color: unset;
+    }
+
     &.ab--test-pilot-hide,
     & .ab--test-pilot-hide {
         opacity: 0;
@@ -217,6 +247,7 @@ $ab--test-pilot-table-top: 153px;
     background: #fff;
     box-shadow: 2px 4px 15px 0px #cfcfcf;
     transition: box-shadow 0.3s ease,
+<<<<<<< Updated upstream
     opacity 0.3s ease,
     visibility 0.3s ease,
     transform 0.3s ease,
@@ -224,6 +255,45 @@ $ab--test-pilot-table-top: 153px;
     width 0.3s ease;
     font-family: "Inter",
     sans-serif;
+=======
+        opacity 0.3s ease,
+        visibility 0.3s ease,
+        transform 0.3s ease,
+        height 0.3s ease,
+        width 0.3s ease;
+    font-family: "Inter",
+        sans-serif;
+
+    * {
+        box-sizing: border-box;
+        margin: unset;
+        padding: unset;
+        border: unset;
+        border-radius: unset;
+        outline: unset;
+        text-decoration: unset;
+        font-family: unset;
+        font-size: unset;
+        font-weight: unset;
+        line-height: unset;
+        letter-spacing: unset;
+        color: unset;
+        background: unset;
+        text-align: unset;
+        text-transform: unset;
+        text-overflow: unset;
+        white-space: unset;
+        overflow: unset;
+        display: unset;
+        visibility: unset;
+        position: unset;
+        width: unset;
+        height: unset;
+        max-width: unset;
+        max-height: unset;
+        background-color: unset;
+    }
+>>>>>>> Stashed changes
 
     &.ab--test-pilot-open {
         transform: translate(50%, 0);

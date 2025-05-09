@@ -57,7 +57,7 @@ export async function structureOldProject() {
             const { name, lastUpdated } = data;
 
             const date = new Date(lastUpdated);
-            const id = `${lastUpdated}_${Math.floor(1000 + Math.random() * 9000)}_${name}`;
+            const id = `${lastUpdated}_${Math.floor(1000 + Math.random() * 9000)}_${name.replace(/[^a-zA-Z0-9]/g, "_")}`;
             const isoDate = date.toISOString();
             const readableDate = date.toLocaleString("en-GB", {
                 timeZone: "Asia/Dhaka",
@@ -121,7 +121,7 @@ export async function structureOldProject() {
                 const { name, lastUpdated } = data;
 
                 const date = new Date(lastUpdated);
-                const id = `${lastUpdated}_${Math.floor(1000 + Math.random() * 9000)}_${name}`;
+                const id = `${lastUpdated}_${Math.floor(1000 + Math.random() * 9000)}_${name.replace(/[^a-zA-Z0-9]/g, "_")}`;
                 const isoDate = date.toISOString();
                 const readableDate = date.toLocaleString("en-GB", {
                     timeZone: "Asia/Dhaka",
@@ -175,6 +175,7 @@ export async function structureOldProject() {
                 const variationInfoPath = path.join(variationPath, "info.json");
                 const isVariationDir = (await fs.stat(variationPath)).isDirectory();
                 const stylesPath = path.join(variationPath, "styles");
+                const buildPath = path.join(variationPath, "build");
                 const compiledPath = path.join(variationPath, "compiled");
 
                 // Check if it's a valid variation folder
@@ -211,6 +212,12 @@ export async function structureOldProject() {
                         console.log(chalk.green(`✅ Deleted styles folder for ${variation}`));
                     }
 
+                    // Delete the "build" folder inside the variation folder
+                    if (await fs.pathExists(buildPath)) {
+                        await fs.remove(buildPath);
+                        console.log(chalk.green(`✅ Deleted build folder for ${variation}`));
+                    }
+
                     // Update the "index.js" to remove the import statement
                     const indexJsContent = await fs.readFile(indexJsPath, "utf-8");
                     const updatedIndexJsContent = indexJsContent.replace(
@@ -235,7 +242,7 @@ export async function structureOldProject() {
                         });
 
                         const updatedData = {
-                            id: `${lastUpdated}_${Math.floor(1000 + Math.random() * 9000)}_${name}`,
+                            id: `${lastUpdated}_${Math.floor(1000 + Math.random() * 9000)}_${name.replace(/[^a-zA-Z0-9]/g, "_")}`,
                             name,
                             isVariation: true,
                             isTouchPointVariation: false,
