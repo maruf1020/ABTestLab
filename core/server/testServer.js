@@ -47,15 +47,6 @@ export async function startTestServer(selectedVariations) {
             const content = await fs.readFile(scriptPath, "utf-8")
             res.writeHead(200, { "Content-Type": "application/javascript" })
             res.end(content)
-        } else if (req.url === "/websocket-client.js") {
-            // Serve a simple WebSocket client instead of socket.io
-            const content = `
-                window.createWebSocket = function() {
-                    return new WebSocket('ws://' + window.location.hostname + ':3000');
-                };
-            `
-            res.writeHead(200, { "Content-Type": "application/javascript" })
-            res.end(content)
         } else {
             res.writeHead(404)
             res.end("Not Found")
@@ -88,9 +79,9 @@ export async function startTestServer(selectedVariations) {
                     console.log(kleur.gray(`📦 JS File has been updated`))
                 }
             } else if (!filePath.includes("compiled") && filePath.includes("targeting")) {
-                const initialInfo =
-                    transformedTestInfo.testInfo.find((test) => test.targetingDir === path.dirname(filePath)) ||
-                    transformedTestInfo.parentTargeting.find((test) => test.parentTargetingDir === path.dirname(filePath))
+                // const initialInfo =
+                //     transformedTestInfo.testInfo.find((test) => test.targetingDir === path.dirname(filePath)) ||
+                //     transformedTestInfo.parentTargeting.find((test) => test.parentTargetingDir === path.dirname(filePath))
                 const infoList = transformedTestInfo.testInfo.filter((test) => test.targetingDir === path.dirname(filePath))
                 await Promise.all(
                     infoList.map(async (info) => {
@@ -115,43 +106,65 @@ export async function startTestServer(selectedVariations) {
                         }
                     }),
                 )
-                if (infoList.length > 0 || infoListParent.length > 0) {
-                    // Broadcast to all clients
-                    broadcastToClients(
-                        JSON.stringify({
-                            type: "reload_page",
-                            data: initialInfo.hostnames,
-                        }),
-                    )
-                    console.log(kleur.gray(`🎯 Targeting files have been updated`))
-                }
+                // if (infoList.length > 0 || infoListParent.length > 0) {
+                //     // Broadcast to all clients
+                //     broadcastToClients(
+                //         JSON.stringify({
+                //             type: "reload_page",
+                //             data: initialInfo.hostnames,
+                //         }),
+                //     )
+                //     console.log(kleur.gray(`🎯 Targeting files have been updated`))
+                // }
             } else if (filePath.includes("compiled") && !filePath.includes("targeting")) {
                 const info = transformedTestInfo.testInfo.find((test) => test.compiledDir === path.dirname(filePath))
                 if (info) {
-                    if (path.extname(filePath) === ".css") {
-                        const cssFile = path.join(path.dirname(filePath), "style.css")
-                        const css = await fs.readFile(cssFile, "utf-8")
-                        // Broadcast update to all clients
-                        broadcastToClients(
-                            JSON.stringify({
-                                type: "update",
-                                data: { type: "css", content: css, id: info.id },
-                            }),
-                        )
-                        transformedTestInfo.testInfo.find((test) => test.id === info.id).variationFiles.css = css
-                        await browserScriptCreator(transformedTestInfo)
-                    } else if (path.extname(filePath) === ".js") {
-                        const jsFile = path.join(path.dirname(filePath), "index.js")
-                        const js = await fs.readFile(jsFile, "utf-8")
-                        // Broadcast update to all clients
-                        broadcastToClients(
-                            JSON.stringify({
-                                type: "update",
-                                data: { type: "js", content: js, id: info.id },
-                            }),
-                        )
-                        transformedTestInfo.testInfo.find((test) => test.id === info.id).variationFiles.js = js
-                        await browserScriptCreator(transformedTestInfo)
+                    try {
+                        const config = await fs.readJson(path.join(process.cwd(), "settings.json"))
+                        if (path.extname(filePath) === ".css") {
+                            const cssFile = path.join(path.dirname(filePath), "style.css")
+                            const css = await fs.readFile(cssFile, "utf-8")
+                            if (config.cssReload == true) {
+                                broadcastToClients(
+                                    JSON.stringify({
+                                        type: "reload_page",
+                                        data: info.hostnames,
+                                    }),
+                                )
+                            } else {
+                                broadcastToClients(
+                                    JSON.stringify({
+                                        type: "update",
+                                        data: { type: "css", content: css, id: info.id },
+                                    }),
+                                )
+                            }
+                            transformedTestInfo.testInfo.find((test) => test.id === info.id).variationFiles.css = css
+                            await browserScriptCreator(transformedTestInfo)
+                        } else if (path.extname(filePath) === ".js") {
+                            const jsFile = path.join(path.dirname(filePath), "index.js")
+                            const js = await fs.readFile(jsFile, "utf-8")
+                            if (config.jsReload == true) {
+                                broadcastToClients(
+                                    JSON.stringify({
+                                        type: "reload_page",
+                                        data: info.hostnames,
+                                    }),
+                                )
+                            } else {
+                                broadcastToClients(
+                                    JSON.stringify({
+                                        type: "update",
+                                        data: { type: "js", content: js, id: info.id },
+                                    }),
+                                )
+                            }
+                            transformedTestInfo.testInfo.find((test) => test.id === info.id).variationFiles.js = js
+                            await browserScriptCreator(transformedTestInfo)
+                        }
+                    } catch (error) {
+                        console.error(`Error reading config: ${error.message}`)
+                        log(`Error reading config: ${error.message}`)
                     }
                 }
             }
@@ -182,16 +195,18 @@ export async function startTestServer(selectedVariations) {
                 }),
             )
 
-            //send UI code to client
-            const uiJsFilePath = path.join(__dirname, "..", "public", "js", "main", "ui.js")
-            const uiCssFilePath = path.join(__dirname, "..", "public", "style", "ui.scss")
-            const uiJs = await getBundlerData(uiJsFilePath, uiCssFilePath, false)
-            ws.send(
-                JSON.stringify({
-                    type: "ui",
-                    data: uiJs,
-                }),
-            )
+            if (config.displayUI == true) {
+                //send UI code to client
+                const uiJsFilePath = path.join(__dirname, "..", "public", "js", "main", "ui.js")
+                const uiCssFilePath = path.join(__dirname, "..", "public", "style", "ui.scss")
+                const uiJs = await getBundlerData(uiJsFilePath, uiCssFilePath, false)
+                ws.send(
+                    JSON.stringify({
+                        type: "ui",
+                        data: uiJs,
+                    }),
+                )
+            }
         } catch (error) {
             console.error(`Error reading config: ${error.message}`)
             log(`Error reading config: ${error.message}`)

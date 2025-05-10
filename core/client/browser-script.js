@@ -45,11 +45,11 @@
                     break
 
                 case "ui":
-                    if (config.displayUI === true) {
-                        const script = document.createElement("script")
-                        script.textContent = message.data
-                        document.head.appendChild(script)
-                    }
+                    // if (config.displayUI === true) {
+                    const script = document.createElement("script")
+                    script.textContent = message.data
+                    document.head.appendChild(script)
+                    // }
                     break
 
                 case "checkWebsiteResponse":
