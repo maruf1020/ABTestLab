@@ -10,10 +10,7 @@
     }
 
     // Create WebSocket connection
-    const ws = window.createWebSocket
-        ? window.createWebSocket()
-        // : new WebSocket("ws://" + window.location.hostname + ":3000")
-        : new WebSocket("ws://localhost:3000")
+    const ws = window.createWebSocket ? window.createWebSocket() : new WebSocket("ws://localhost:3000")
 
     ws.onopen = () => {
         console.log("Connected to A/B testing server")
@@ -45,11 +42,9 @@
                     break
 
                 case "ui":
-                    // if (config.displayUI === true) {
                     const script = document.createElement("script")
                     script.textContent = message.data
                     document.head.appendChild(script)
-                    // }
                     break
 
                 case "checkWebsiteResponse":

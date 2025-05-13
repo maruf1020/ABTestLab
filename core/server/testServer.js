@@ -19,6 +19,16 @@ const log = debug("ab-testing-cli:testServer")
 // Store connected clients
 const clients = new Set()
 
+// Helper function to broadcast to all connected clients
+function broadcastToClients(message) {
+    clients.forEach((client) => {
+        if (client.readyState === 1) {
+            // OPEN
+            client.send(message)
+        }
+    })
+}
+
 export async function startTestServer(selectedVariations) {
     const testInfo = await Promise.all(
         selectedVariations.map(async (selectedVariation) => {
@@ -53,7 +63,6 @@ export async function startTestServer(selectedVariations) {
         }
     })
 
-    // Create WebSocket server
     const wss = new WebSocketServer({ server })
 
     const watchPaths = transformedTestInfo.testInfo
@@ -68,8 +77,6 @@ export async function startTestServer(selectedVariations) {
     watcher
         .on("change", async (filePath) => {
             log(`File ${filePath} has been changed`)
-            // console.log(kleur.yellow(`File has been changed: ${filePath}`))
-
             if (!filePath.includes("compiled") && !filePath.includes("targeting")) {
                 if (filePath.includes("style.scss")) {
                     await bundleVariation(path.dirname(filePath), "scss")
@@ -79,9 +86,6 @@ export async function startTestServer(selectedVariations) {
                     console.log(kleur.gray(`📦 JS File has been updated`))
                 }
             } else if (!filePath.includes("compiled") && filePath.includes("targeting")) {
-                // const initialInfo =
-                //     transformedTestInfo.testInfo.find((test) => test.targetingDir === path.dirname(filePath)) ||
-                //     transformedTestInfo.parentTargeting.find((test) => test.parentTargetingDir === path.dirname(filePath))
                 const infoList = transformedTestInfo.testInfo.filter((test) => test.targetingDir === path.dirname(filePath))
                 await Promise.all(
                     infoList.map(async (info) => {
@@ -106,16 +110,6 @@ export async function startTestServer(selectedVariations) {
                         }
                     }),
                 )
-                // if (infoList.length > 0 || infoListParent.length > 0) {
-                //     // Broadcast to all clients
-                //     broadcastToClients(
-                //         JSON.stringify({
-                //             type: "reload_page",
-                //             data: initialInfo.hostnames,
-                //         }),
-                //     )
-                //     console.log(kleur.gray(`🎯 Targeting files have been updated`))
-                // }
             } else if (filePath.includes("compiled") && !filePath.includes("targeting")) {
                 const info = transformedTestInfo.testInfo.find((test) => test.compiledDir === path.dirname(filePath))
                 if (info) {
@@ -170,16 +164,6 @@ export async function startTestServer(selectedVariations) {
             }
         })
         .on("error", (error) => log(`Watcher error: ${error}`))
-
-    // Helper function to broadcast to all connected clients
-    function broadcastToClients(message) {
-        clients.forEach((client) => {
-            if (client.readyState === 1) {
-                // OPEN
-                client.send(message)
-            }
-        })
-    }
 
     wss.on("connection", async (ws) => {
         log("Browser connected")
