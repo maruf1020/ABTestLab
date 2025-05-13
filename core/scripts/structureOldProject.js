@@ -264,6 +264,3 @@ export async function structureOldProject() {
 
     console.log(chalk.cyan("🎉 All info.json files successfully updated!"));
 }
-
-
-

@@ -493,8 +493,6 @@
     }
 
     function updateTestDetailsData(data, popUp) {
-        console.log("data", data);
-
         const weatingMessage = popUp.querySelector(".ab--test-pilot-waiting-message");
         const accordionWrapper = popUp.querySelector(".ab--test-pilot-accordion");
         const navigation = popUp.querySelector(".ab--pilot-test-details-ui-details-navigation-wrapper");
@@ -633,6 +631,3 @@
         });
     }, 1, true, 10000, 100);
 })()
-
-
-
