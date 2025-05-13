@@ -268,21 +268,30 @@ async function transformTestInfo(testInfo) {
 
     // Process all testInfo items
     const finalTestInfo = await Promise.all(
-        testInfo.map(async (item) => ({
-            variationDir: item.variationDir,
-            compiledDir: path.join(item.variationDir, "compiled"),
-            targetingDir: item.targetingDir,
-            parentTargetingDir: item.parentTargetingDir,
-            id: item.id,
-            testType: item.testType,
-            hostnames: item.hostnames,
-            variationFiles: await getVariationFiles(item.variationDir),
-            targetingFiles: await getTargetingFiles(item.targetingDir),
-            websiteName: item.websiteName,
-            testName: item.testName,
-            touchPointName: item.touchPointName,
-            variationName: item.variationName,
-        })),
+        testInfo.map(async (item) => {
+            // check if compiled dir exists or not
+            const compiledDir = path.join(item.variationDir, "compiled")
+            if (!fs.existsSync(compiledDir)) {
+                //compile the variation js and css
+                await bundleVariation(item.variationDir, "js")
+                await bundleVariation(item.variationDir, "scss")
+            }
+            return {
+                variationDir: item.variationDir,
+                compiledDir: path.join(item.variationDir, "compiled"),
+                targetingDir: item.targetingDir,
+                parentTargetingDir: item.parentTargetingDir,
+                id: item.id,
+                testType: item.testType,
+                hostnames: item.hostnames,
+                variationFiles: await getVariationFiles(item.variationDir),
+                targetingFiles: await getTargetingFiles(item.targetingDir),
+                websiteName: item.websiteName,
+                testName: item.testName,
+                touchPointName: item.touchPointName,
+                variationName: item.variationName,
+            }
+        }),
     )
 
     return {
