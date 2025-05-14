@@ -13,8 +13,11 @@ Make sure you have [Node.js](https://nodejs.org/) installed.
 
 ```bash
     # I am developing this application on node version 22.8.0 and npm version 10.8.3
+    #for installation you need this two command 
     npm i #initialize node package
-    npm run cli init #initialize application
+    npm run cli init #initialize application (only once after project setup)
+
+    #then you can create  test and run it
     npm run cli create #create anything
     npm run cli start #start test
     npm run cli settings for #setting
