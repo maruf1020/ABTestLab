@@ -1,86 +1,128 @@
-# TestLab
+# 🧪 ABTestLab
 
-A powerful CLI-based tool for local development of A/B tests with live browser previews. It supports writing code in your preferred editor, instantly seeing changes via a browser extension snippet, and managing tests compatible with popular platforms like **AB Tasty**, **Dynamic Yield**, **VWO**, **Kameleoon**, **VWO**, and more.
+A powerful CLI-based tool for local development of A/B tests with **live browser previews**. Write test code in your preferred editor, preview changes instantly via a browser extension, and manage tests compatible with platforms like **AB Tasty**, **Dynamic Yield**, **VWO**, **Kameleoon**, **Optimizely**, **Convert**, and more with a beautiful UI which will indicate the test status.
 
 
-## To run the test 
 
----
+**UI Image**
+![UI Image](core/public/images/ui.png)
+
+**Terminal Image**
+![Terminal Image](core/public/images/terminal.png)
+
+
 
 ## 📦 Installation
 
-Make sure you have [Node.js](https://nodejs.org/) installed.
+Make sure you have [Node.js](https://nodejs.org/) installed:
+
+> **Recommended Versions:**
+>
+> * Node.js: **v18 - v22** (minimum: v14)
+> * npm: **v9 - v10** (minimum: v6)
+
+### Install & Initialize:
 
 ```bash
-    # "node_version": "minimum Node version should be 14 but 18 - 22 is recommended",
-    # "npm_version": "minimum npm version should be 6 but 9 - 10 is recommended"
+# Install dependencies
+npm i
 
-    #For installation here are the two commands:
-    npm i #initialize node package
-    npm run cli init #initialize application (only once after project setup) or use `npm run cli` and select `  Initialize project (use once on project setup)` for initialize the project.
+# Initialize project (run once after setting up the repo)
+npm run cli init
 
-    #After installation, here are the commands to use it:
-    npm run cli # is the parent menu where all the feature is visible. But it also contain direct shortcut for each command:
-    npm run cli create #create anything
-    npm run cli start #start test
-    npm run cli settings #setting
+# OR run CLI and select "Initialize project"
+npm run cli
 ```
 
-### inject this to any of the browser extension which allow to inject script to the website.
-This one is [an example extension for chrome browser](https://chromewebstore.google.com/detail/user-javascript-and-css/nbhcbdghjpllgmfilhnhkllmkecfmpld?hl=en) 
+### Common CLI Commands:
 
-On the extension:
-Click: 
-- Click on the New rule
-- Add a rule name (ex: CLI snippet)
-- on URL pattern use this: 
-```
-*://*/*
-```
-- then on the js section paste this snippet:
-   
-```
-    (function () {
-        'use strict';
-        function observeElement(selector, callback, { minElements = 1, isVariable = false, timeout = 10000, interval = 5 } = {}, start = performance.now()) { (function check() { const elements = isVariable ? window[selector] : document.querySelectorAll(selector); if ((isVariable && elements !== undefined) || (!isVariable && elements.length >= minElements)) return callback(elements); if (performance.now() - start < timeout) setTimeout(check, interval); })(); }
-
-        const MAIN_URL = 'http://localhost:3000/ab-pilot-script.js';
-        const mainScript = document.createElement('script');
-        mainScript.setAttribute('src', MAIN_URL);
-        observeElement('html', ([html]) => {
-            html.appendChild(mainScript)
-            const LIVE_UPDATE_URL = 'http://localhost:3000/ab-test-script.js';
-            const updateScript = document.createElement('script');
-            updateScript.setAttribute('src', LIVE_UPDATE_URL);
-            observeElement('html', ([html]) => html.appendChild(updateScript));
-            
-        });
-    })();
+```bash
+npm run cli          # Main CLI interface with all features but you can choose shortcut in below:
+npm run cli create   # Create website, test, or variation
+npm run cli start    # Start a test
+npm run cli settings # Configure settings
 ```
 
+---
+
+## 🧩 Browser Integration (For connecting to the browser)
+
+Inject the preview snippet into your browser using a browser extension that supports custom java script.
+
+> 🔗 **Recommended Chrome Extension**:
+> [User JavaScript and CSS](https://chromewebstore.google.com/detail/user-javascript-and-css/nbhcbdghjpllgmfilhnhkllmkecfmpld?hl=en)
+
+### Extension setup:
+
+1. Open the extension and create a **New Rule**.
+
+2. Set a rule name (set any name. e.g., `CLI snippet`).
+
+3. Use this URL pattern:
+
+   ```
+   *://*/*
+   ```
+
+4. Paste the following code into the **JS section**:
+
+```js
+(function () {
+    'use strict';
+    function observeElement(selector, callback, {
+        minElements = 1,
+        isVariable = false,
+        timeout = 10000,
+        interval = 5
+    } = {}, start = performance.now()) {
+        (function check() {
+            const elements = isVariable ? window[selector] : document.querySelectorAll(selector);
+            if ((isVariable && elements !== undefined) || (!isVariable && elements.length >= minElements))
+                return callback(elements);
+            if (performance.now() - start < timeout)
+                setTimeout(check, interval);
+        })();
+    }
+
+    const MAIN_URL = 'http://localhost:3000/ab-pilot-script.js';
+    const mainScript = document.createElement('script');
+    mainScript.setAttribute('src', MAIN_URL);
+
+    observeElement('html', ([html]) => {
+        html.appendChild(mainScript);
+        const LIVE_UPDATE_URL = 'http://localhost:3000/ab-test-script.js';
+        const updateScript = document.createElement('script');
+        updateScript.setAttribute('src', LIVE_UPDATE_URL);
+        observeElement('html', ([html]) => html.appendChild(updateScript));
+    });
+})();
+```
+
+5. In the bottom right corner of the JS editor section, enable **Run at the start** to inject the code faster. This ensures the script loads immediately before the page finishes loading, similar to how professional tools behave.
+---
 
 ## 🚀 Features
 
-- ✍️ **Edit & Test Locally** – Write test code and see changes immediately in the browser.
-- 🧪 **Supports Multiple Test Types** – A/B, AA, Multi-touch, Patch, and more.
-- 🧲 **Platform Compatible** – AB Tasty, Dynamic Yield, VWO, Chameleon, VLo, etc.
-- 🌐 **Create & Manage Websites, Tests, and Variations** easily.
-- 🧠 **Beautiful Terminal UI** – Clean, interactive interface with emoji indicators.
-- 📦 **Build Tests Anytime** – Locally prepare test files to upload to testing tools.
-- 🎯 **Single & Group Test Execution** – Run tests individually or in batch.
-- 🔄 **Variation Swapping** – Easily switch between different variations and test setups.
+* ✍️ **Edit & Test Locally** – Write A/B test code and instantly preview results.
+* 🧪 **Multiple Test Types** – A/B, AA, Multi-touch, Patch, and more.
+* 🧲 **Cross-Platform Compatible** – Works with AB Tasty, VWO, Dynamic Yield, Chameleon, VLo, etc.
+* 🌐 **Full Project Management** – Manage websites, tests, and variations from CLI.
+* 🧠 **Beautiful Terminal UI** – Interactive and emoji-enhanced.
+* 📦 **Build Tests Locally** – Prepare files before uploading to testing tools.
+* 🎯 **Flexible Execution** – Run single or multiple tests simultaneously.
+* 🔄 **Variation Swapping** – Switch between variations effortlessly.
 
 ---
 
 ## 🧠 Workflow Overview
 
-1. **Initialize Project** – One-time setup using the CLI.
-2. **Create Websites, Tests & Variations**.
-3. **Write code** in your editor for tests and variations.
-4. **Preview tests** in your browser via extension snippet.
-5. **Build tests** locally and optionally upload to any platform.
+1. **Initialize the Project** (One-time).
+2. **Create Websites, Tests & Variations** via the CLI.
+3. **Write Code** in your code editor (HTML/CSS/JS).
+4. **Inject Snippet** in your browser using an extension.
+5. **Preview Tests** live with instant updates.
+6. **Build Locally** before uploading to a testing platform.
 
----
 
 ## 🛠️ CLI Commands
 
@@ -188,7 +230,7 @@ npm run cli
 
 ---
 
-## 📂 Project Structure (Suggested)
+## 📂 Full Project folder and file Structure
 
 ```
 project structure : 
@@ -281,7 +323,7 @@ Initialize your project (only once or after `npm install`):
 
 ---
 
-## 📤 Build & Deploy
+## 📤 Build for tool (if needed)
 
 Build your test locally:
 
@@ -293,17 +335,16 @@ You can then upload your built files to your desired A/B testing platform.
 
 ---
 
-## 🔒 Permissions & Requirements
+## 🔒 Requirements
 
 - Node.js v14+
-- CLI access
 - Browser extension installed for snippet injection
 
 ---
 
 ## 🙌 Contributing
 
-Coming soon...
+**marufbillah03033@gmail.com**
 
 ---
 
