@@ -256,8 +256,7 @@ ABTestLab
 │   │   ├── js/                        # JavaScript assets
 │   │   │   ├── main/
 │   │   │   │   └── index.js
-│   │   │   ├── vendor/                 # Third-party scripts
-│   │   │   └── socket-io-client.js
+│   │   │   └── vendor/                 # Third-party scripts
 │   ├── scripts/                        # Utility scripts
 │   │   ├── createSettingFile.js
 │   │   ├── createSkeleton.js
