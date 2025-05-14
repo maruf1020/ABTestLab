@@ -43,29 +43,24 @@ npm run cli start    # Start a test
 npm run cli settings # Configure settings
 ```
 
----
+### Browser Integration (For connecting to the browser)
 
-## 🧩 Browser Integration (For connecting to the browser)
+```bash
+# Inject the preview snippet into your browser using a browser extension that supports custom java script.
+```
+> 🔗 **Recommended Chrome Extension**: [User JavaScript and CSS](https://chromewebstore.google.com/detail/user-javascript-and-css/nbhcbdghjpllgmfilhnhkllmkecfmpld?hl=en)
 
-Inject the preview snippet into your browser using a browser extension that supports custom java script.
-
-> 🔗 **Recommended Chrome Extension**:
-> [User JavaScript and CSS](https://chromewebstore.google.com/detail/user-javascript-and-css/nbhcbdghjpllgmfilhnhkllmkecfmpld?hl=en)
 
 ### Extension setup:
+```bash
+# 1. Open the extension and create a **New Rule**.
 
-1. Open the extension and create a **New Rule**.
+# 2. Set a rule name (set any name. e.g., `CLI snippet`).
 
-2. Set a rule name (set any name. e.g., `CLI snippet`).
+*://*/*  #3. Use this on the URL pattern
 
-3. Use this URL pattern:
-
-   ```
-   *://*/*
-   ```
-
-4. Paste the following code into the **JS section**:
-
+# 4. Paste the following code (iin the bottom) into the `JS section`:
+```
 ```js
 (function () {
     'use strict';
@@ -97,9 +92,10 @@ Inject the preview snippet into your browser using a browser extension that supp
     });
 })();
 ```
+```bash
+# 5. In the bottom right corner of the JS editor section, enable **Run at the start** to inject the code faster. This ensures the script loads immediately before the page finishes loading, similar to how professional tools behave.
+```
 
-5. In the bottom right corner of the JS editor section, enable **Run at the start** to inject the code faster. This ensures the script loads immediately before the page finishes loading, similar to how professional tools behave.
----
 
 ## 🚀 Features
 
