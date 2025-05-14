@@ -12,19 +12,32 @@ A powerful CLI-based tool for local development of A/B tests with live browser p
 Make sure you have [Node.js](https://nodejs.org/) installed.
 
 ```bash
-    # I am developing this application on node version 22.8.0 and npm version 10.8.3
-    #for installation you need this two command 
-    npm i #initialize node package
-    npm run cli init #initialize application (only once after project setup)
+    # "node_version": "minimum Node version should be 14 but 18 - 22 is recommended",
+    # "npm_version": "minimum npm version should be 6 but 9 - 10 is recommended"
 
-    #then you can create  test and run it
+    #For installation here are the two commands:
+    npm i #initialize node package
+    npm run cli init #initialize application (only once after project setup) or use `npm run cli` and select `  Initialize project (use once on project setup)` for initialize the project.
+
+    #After installation, here are the commands to use it:
+    npm run cli # is the parent menu where all the feature is visible. But it also contain direct shortcut for each command:
     npm run cli create #create anything
     npm run cli start #start test
-    npm run cli settings for #setting
+    npm run cli settings #setting
 ```
 
 ### inject this to any of the browser extension which allow to inject script to the website.
-This one is [an example](https://chromewebstore.google.com/detail/user-javascript-and-css/nbhcbdghjpllgmfilhnhkllmkecfmpld?hl=en) 
+This one is [an example extension for chrome browser](https://chromewebstore.google.com/detail/user-javascript-and-css/nbhcbdghjpllgmfilhnhkllmkecfmpld?hl=en) 
+
+On the extension:
+Click: 
+- Click on the New rule
+- Add a rule name (ex: CLI snippet)
+- on URL pattern use this: 
+```
+*://*/*
+```
+- then on the js section paste this snippet:
    
 ```
     (function () {
@@ -44,7 +57,6 @@ This one is [an example](https://chromewebstore.google.com/detail/user-javascrip
         });
     })();
 ```
-<!-- *://*/*     <- use it for targeting all the pages on user js> -->
 
 
 ## 🚀 Features
