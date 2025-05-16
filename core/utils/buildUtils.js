@@ -90,26 +90,26 @@ export async function viewTestHistory(history, viewType, goBack) {
     }
 
     tableHeaders.push(
-        kleur.green("Test type"),
-        kleur.green("Website Name"),
-        kleur.green("Test Name")
+        kleur.green("Type"),
+        kleur.green("Website"),
+        kleur.green("Test")
     );
-    columnWidths.push(14, 14, 14);
+    // columnWidths.push(14, 14, 14);
 
     if (hasMultiTouchTest) {
-        tableHeaders.push(kleur.green("Touch-point Name"));
-        columnWidths.push(18);
+        tableHeaders.push(kleur.green("Touch-point"));
+        // columnWidths.push(18);
     }
 
     tableHeaders.push(
-        kleur.green("Variation Name"),
+        kleur.green("Variation"),
         kleur.green("Last Run")
     );
-    columnWidths.push(16, 24);
+    // columnWidths.push(16, 24);
 
     const table = new Table({
         head: tableHeaders,
-        colWidths: columnWidths,
+        // colWidths: columnWidths,
     });
 
     for (const entry of filteredHistory) {
@@ -278,21 +278,21 @@ export async function buildTest(website, test, variation, testType) {
     const testInfo = await fs.readJson(path.join(testDir, "info.json"))
 
     const tableHeaders = [
-        kleur.green("Test type"),
-        kleur.green("Website Name"),
-        kleur.green("Test Name"),
-        kleur.green("Variation Name"),
+        kleur.green("Type"),
+        kleur.green("Website"),
+        kleur.green("Test"),
+        kleur.green("Variation"),
     ]
-    const columnWidths = [14, 14, 14, 16]
+    // const columnWidths = [14, 14, 14, 16]
 
     if (testType === "Multi-touch") {
-        tableHeaders.splice(3, 0, kleur.green("Touch-point Name"))
-        columnWidths.splice(3, 0, 18)
+        tableHeaders.splice(3, 0, kleur.green("Touch-point"))
+        // columnWidths.splice(3, 0, 18)
     }
 
     const table = new Table({
         head: tableHeaders,
-        colWidths: columnWidths,
+        // colWidths: columnWidths,
     })
 
     if (testType === "Multi-touch") {
@@ -310,7 +310,8 @@ export async function buildTest(website, test, variation, testType) {
 
     console.log(table.toString())
 
-    console.log(kleur.green(`Building test "${test}" for website "${website}" with variation "${variation}"...`))
+    // console.log(kleur.green(`Building test "${test}" for website "${website}" with variation "${variation}"...`))
+    console.log(kleur.green(`📦 "${test}" Test build Successfully!`))
     log(`Test directory: ${testDir}`)
     log(`Active variation: ${variation}`)
 
@@ -329,21 +330,21 @@ export async function buildMultipleTest(selectedVariations) {
     const testInfoList = await Promise.all(testDirList.map((testDir) => fs.readJson(path.join(testDir, "info.json"))))
 
     const tableHeaders = [
-        kleur.green("Test type"),
-        kleur.green("Website Name"),
-        kleur.green("Test Name"),
-        kleur.green("Variation Name"),
+        kleur.green("Type"),
+        kleur.green("Website"),
+        kleur.green("Test"),
+        kleur.green("Variation"),
     ]
-    const columnWidths = [14, 14, 14, 16]
+    // const columnWidths = [14, 14, 14, 16]
 
     if (selectedVariations.some((v) => v.testType === "Multi-touch")) {
-        tableHeaders.splice(3, 0, kleur.green("Touch-point Name"))
-        columnWidths.splice(3, 0, 18)
+        tableHeaders.splice(3, 0, kleur.green("Touch-point"))
+        // columnWidths.splice(3, 0, 18)
     }
 
     const table = new Table({
         head: tableHeaders,
-        colWidths: columnWidths,
+        // colWidths: columnWidths,
     })
 
     selectedVariations.forEach((v) => {
@@ -363,7 +364,8 @@ export async function buildMultipleTest(selectedVariations) {
 
     console.log(table.toString())
 
-    console.log(kleur.green(`Building test "${selectedVariations.map((v) => "website: " + v.website + " - test: " + v.test + " - variation: " + v.variation).join(", ")}" ...`))
+    // console.log(kleur.green(`Building test "${selectedVariations.map((v) => "website: " + v.website + " - test: " + v.test + " - variation: " + v.variation).join(", ")}" ...`))
+    console.log(kleur.green(`📦 All the test build Successfully!`))
 
 
     log(`Test directories: ${testDirList}`)

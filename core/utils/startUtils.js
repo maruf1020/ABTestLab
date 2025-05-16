@@ -92,7 +92,7 @@ export async function viewTestHistory(history, viewType, goBack) {
     }
 
     tableHeaders.push(
-        kleur.green("Test"),
+        kleur.green("Type"),
         kleur.green("Website"),
         kleur.green("Test")
     );
@@ -503,7 +503,7 @@ export async function startTest(website, test, variation, testType) {
     const testInfo = await fs.readJson(path.join(testDir, "info.json"))
 
     const tableHeaders = [
-        kleur.green("Test"),
+        kleur.green("Type"),
         kleur.green("Website"),
         kleur.green("Test"),
         kleur.green("Variation"),
@@ -549,7 +549,7 @@ export async function startMultipleTest(selectedVariations) {
     const testInfoList = await Promise.all(testDirList.map((testDir) => fs.readJson(path.join(testDir, "info.json"))))
 
     const tableHeaders = [
-        kleur.green("Test"),
+        kleur.green("Type"),
         kleur.green("Website"),
         kleur.green("Test"),
         kleur.green("Variation"),
