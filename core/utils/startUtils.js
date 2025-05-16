@@ -508,25 +508,25 @@ export async function startTest(website, test, variation, testType) {
         kleur.green("Test Name"),
         kleur.green("Variation Name"),
     ]
-    const columnWidths = [14, 14, 14, 16]
+    // const columnWidths = [14, 14, 14, 16]
 
     if (testType === "Multi-touch") {
         tableHeaders.splice(3, 0, kleur.green("Touch-point Name"))
-        columnWidths.splice(3, 0, 18)
+        // columnWidths.splice(3, 0, 18)
     }
 
     const table = new Table({
         head: tableHeaders,
-        colWidths: columnWidths,
+        // colWidths: columnWidths,
     })
 
     if (testType === "Multi-touch") {
         const touchPoints = testInfo.touchPoints || []
         touchPoints.forEach((touchPoint, index) => {
             if (index === 0) {
-                table.push([testType, website, test, touchPoint, variation])
+                table.push([kleur.green(testType), kleur.green(website), kleur.green(test), kleur.green(touchPoint), kleur.green(variation)])
             } else {
-                table.push(["", "", "", touchPoint, variation])
+                table.push(["", "", "", kleur.green(touchPoint), kleur.green(variation)])
             }
         })
     } else {
@@ -535,7 +535,8 @@ export async function startTest(website, test, variation, testType) {
 
     console.log(table.toString())
 
-    console.log(kleur.green(`Starting test "${test}" for website "${website}" with variation "${variation}"...`))
+    // console.log(kleur.green(`Starting test "${test}" for website "${website}" with variation "${variation}"...`))
+    console.log(kleur.green(`📡 Test Started on the port 3000`))
     log(`Test directory: ${testDir}`)
     log(`Active variation: ${variation}`)
 
@@ -553,16 +554,33 @@ export async function startMultipleTest(selectedVariations) {
         kleur.green("Test Name"),
         kleur.green("Variation Name"),
     ]
-    const columnWidths = [14, 14, 14, 16]
+    // const columnWidths = [16, 16, 32, 16]
 
     if (selectedVariations.some((v) => v.testType === "Multi-touch")) {
-        tableHeaders.splice(3, 0, kleur.green("Touch-point Name"))
-        columnWidths.splice(3, 0, 18)
+        tableHeaders.splice(3, 0, kleur.green("Touch-point"))
+        // columnWidths.splice(3, 0, 16)
     }
 
     const table = new Table({
         head: tableHeaders,
-        colWidths: columnWidths,
+        // colWidths: columnWidths,
+        // chars: {
+        //     top: kleur.green("─"),
+        //     "top-mid": kleur.green("┬"),
+        //     "top-left": kleur.green("┌"),
+        //     "top-right": kleur.green("┐"),
+        //     bottom: kleur.green("─"),
+        //     "bottom-mid": kleur.green("┴"),
+        //     "bottom-left": kleur.green("└"),
+        //     "bottom-right": kleur.green("┘"),
+        //     left: kleur.green("│"),
+        //     "left-mid": kleur.green("├"),
+        //     mid: kleur.green("─"),
+        //     "mid-mid": kleur.green("┼"),
+        //     right: kleur.green("│"),
+        //     "right-mid": kleur.green("┤"),
+        //     middle: kleur.green("│"),
+        // },
     })
 
     selectedVariations.forEach((v) => {
@@ -570,19 +588,20 @@ export async function startMultipleTest(selectedVariations) {
             const touchPoints = testInfoList.find((t) => t.name === v.test).touchPoints || []
             touchPoints.forEach((touchPoint, index) => {
                 if (index === 0) {
-                    table.push([v.testType, v.website, v.test, touchPoint, v.variation])
+                    table.push([kleur.green(v.testType), kleur.green(v.website), kleur.green(v.test), kleur.green(touchPoint), kleur.green(v.variation)])
                 } else {
-                    table.push(["", "", "", touchPoint, v.variation])
+                    table.push(["", "", "", kleur.green(touchPoint), kleur.green(v.variation)])
                 }
             })
         } else {
-            table.push([v.testType, v.website, v.test, "-", v.variation])
+            table.push([kleur.green(v.testType), kleur.green(v.website), kleur.green(v.test), kleur.green("-"), kleur.green(v.variation)])
         }
     })
 
     console.log(table.toString())
 
-    console.log(kleur.green(`Starting test "${selectedVariations.map((v) => "website: " + v.website + " - test: " + v.test + " - variation: " + v.variation).join(", ")}" ...`))
+    // console.log(kleur.green(`Starting test "${selectedVariations.map((v) => "website: " + v.website + " - test: " + v.test + " - variation: " + v.variation).join(", ")}" ...`))
+    console.log(kleur.green(`📡 Multiple Tests Started on the Port 3000`))
 
 
     log(`Test directories: ${testDirList}`)

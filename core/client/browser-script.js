@@ -60,7 +60,7 @@
                                 window.location.hostname.replace(/\/$/, "") == hostname.replace(/\/$/, ""),
                         )
                     ) {
-                        window.location.reload()
+                        window.location.reload(true);
                     }
                     break
 

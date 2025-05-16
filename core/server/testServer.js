@@ -86,6 +86,7 @@ export async function startTestServer(selectedVariations) {
                     console.log(kleur.gray(`📦 JS File has been updated`))
                 }
             } else if (!filePath.includes("compiled") && filePath.includes("targeting")) {
+                const initialInfo = transformedTestInfo.testInfo.find(test => test.targetingDir === path.dirname(filePath)) || transformedTestInfo.parentTargeting.find(test => test.parentTargetingDir === path.dirname(filePath))
                 const infoList = transformedTestInfo.testInfo.filter((test) => test.targetingDir === path.dirname(filePath))
                 await Promise.all(
                     infoList.map(async (info) => {
@@ -110,6 +111,15 @@ export async function startTestServer(selectedVariations) {
                         }
                     }),
                 )
+                if (infoList.length > 0 || infoListParent.length > 0) {
+                    broadcastToClients(
+                        JSON.stringify({
+                            type: "reload_page",
+                            data: initialInfo.hostnames
+                        }),
+                    )
+                    console.log(kleur.gray(`🎯 Targeting files have been updated`))
+                }
             } else if (filePath.includes("compiled") && !filePath.includes("targeting")) {
                 const info = transformedTestInfo.testInfo.find((test) => test.compiledDir === path.dirname(filePath))
                 if (info) {
