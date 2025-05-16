@@ -36,7 +36,7 @@ async function mainMenu(options) {
         const { action } = await prompts({
             type: "autocomplete",
             name: "action",
-            message: kleur.magenta("What would you like to do?"),
+            message: "What would you like to do?",
             choices: [
                 { title: chalk.green('🕒 Latest Test'), value: "latest" },
                 { title: chalk.green('📚 View Test History'), value: "history" },

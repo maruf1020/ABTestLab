@@ -44,7 +44,7 @@ async function mainMenu(options) {
         const { action } = await prompts({
             type: "autocomplete",
             name: "action",
-            message: kleur.magenta("What would you like to do?"),
+            message: "What would you like to do?",
             choices: initialChoices,
             suggest: (input, choices) =>
                 Promise.resolve(

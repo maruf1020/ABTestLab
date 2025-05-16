@@ -84,34 +84,34 @@ export async function viewTestHistory(history, viewType, goBack) {
     const hasGroupTest = filteredHistory.some((entry) => entry.tests.length > 1);
 
     const tableHeaders = [];
-    const columnWidths = [];
+    // const columnWidths = [];
 
     if (hasGroupTest) {
         tableHeaders.push(kleur.green("Group Test"));
-        columnWidths.push(14);
+        // columnWidths.push(14);
     }
 
     tableHeaders.push(
-        kleur.green("Test type"),
-        kleur.green("Website Name"),
-        kleur.green("Test Name")
+        kleur.green("Test"),
+        kleur.green("Website"),
+        kleur.green("Test")
     );
-    columnWidths.push(14, 14, 14);
+    // columnWidths.push(14, 14, 14);
 
     if (hasMultiTouchTest) {
-        tableHeaders.push(kleur.green("Touch-point Name"));
-        columnWidths.push(18);
+        tableHeaders.push(kleur.green("Touch-point"));
+        // columnWidths.push(18);
     }
 
     tableHeaders.push(
-        kleur.green("Variation Name"),
+        kleur.green("Variation"),
         kleur.green("Last Run")
     );
-    columnWidths.push(16, 24);
+    // columnWidths.push(16, 24);
 
     const table = new Table({
         head: tableHeaders,
-        colWidths: columnWidths,
+        // colWidths: columnWidths,
     });
 
     for (const entry of filteredHistory) {
@@ -503,15 +503,15 @@ export async function startTest(website, test, variation, testType) {
     const testInfo = await fs.readJson(path.join(testDir, "info.json"))
 
     const tableHeaders = [
-        kleur.green("Test type"),
-        kleur.green("Website Name"),
-        kleur.green("Test Name"),
-        kleur.green("Variation Name"),
+        kleur.green("Test"),
+        kleur.green("Website"),
+        kleur.green("Test"),
+        kleur.green("Variation"),
     ]
     // const columnWidths = [14, 14, 14, 16]
 
     if (testType === "Multi-touch") {
-        tableHeaders.splice(3, 0, kleur.green("Touch-point Name"))
+        tableHeaders.splice(3, 0, kleur.green("Touch-point"))
         // columnWidths.splice(3, 0, 18)
     }
 
@@ -549,10 +549,10 @@ export async function startMultipleTest(selectedVariations) {
     const testInfoList = await Promise.all(testDirList.map((testDir) => fs.readJson(path.join(testDir, "info.json"))))
 
     const tableHeaders = [
-        kleur.green("Test type"),
-        kleur.green("Website Name"),
-        kleur.green("Test Name"),
-        kleur.green("Variation Name"),
+        kleur.green("Test"),
+        kleur.green("Website"),
+        kleur.green("Test"),
+        kleur.green("Variation"),
     ]
     // const columnWidths = [16, 16, 32, 16]
 

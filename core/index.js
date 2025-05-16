@@ -50,7 +50,10 @@ async function promptUser() {
         type: 'autocomplete',
         name: 'command',
         message: 'Select a command to run',
-        choices: Object.keys(availableCommands).map(command => ({ title: userFriendlyNames[command], value: command })),
+        choices: Object.keys(availableCommands)
+            .map(command => ({ title: userFriendlyNames[command], value: command }))
+            //exclude the init command from the list
+            .filter(command => command.value !== 'init'),
         suggest: (input, choices) =>
             Promise.resolve(
                 choices.filter(choice =>
