@@ -5,6 +5,7 @@ import chalk from "chalk";
 export async function createSettingsFile() {
     const settingsPath = path.join(process.cwd(), "settings.json")
     const defaultSettings = {
+        portNumber: 3007,
         cssReload: false,
         jsReload: true,
         displayUI: true,
@@ -18,6 +19,7 @@ export async function createSettingsFile() {
             generateMinifiedJSWithCSS: true
         },
         _comments: {
+            portNumber: "The port number to run the server on. Default is 3007.",
             cssReload:
                 "If true, the page will reload when CSS changes are detected. If false, CSS changes will be applied without reloading.",
             jsReload:

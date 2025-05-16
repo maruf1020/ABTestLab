@@ -14,6 +14,7 @@ export const settingsCommand = new Command('settings')
     .action(async () => {
         let exit = false;
         let settings;
+        let newValue;
 
         try {
             const exists = await fs.pathExists(settingsPath);
@@ -30,10 +31,11 @@ export const settingsCommand = new Command('settings')
                     name: 'setting',
                     message: 'Select setting to modify or choose an option:',
                     choices: [
-                        { title: chalk.cyan('📚 History records count: ') + `${chalk.blue(settings.maxHistoryRecords)}`, value: 'maxHistoryRecords' },
-                        { title: chalk.cyan('🎨 CSS Reload: ') + `${settings.cssReload ? chalk.green('Yes') : chalk.red('No')}`, value: 'cssReload' },
-                        { title: chalk.cyan('🖼️  Display UI: ') + `${settings.displayUI ? chalk.green('Yes') : chalk.red('No')}`, value: 'displayUI' },
-                        { title: chalk.cyan('📜 JS Reload: ') + `${settings.jsReload ? chalk.green('Yes') : chalk.red('No')}`, value: 'jsReload' },
+                        { title: chalk.cyan('📚 Server Port: ') + `${chalk.blue(settings.portNumber)}`, value: 'portNumber' },
+                        { title: chalk.cyan('📜 Reload the webpage when the JavaScript file will be saved: ') + `${settings.jsReload ? chalk.green('Yes') : chalk.red('No')}`, value: 'jsReload' },
+                        { title: chalk.cyan('🎨 Reload the webpage when the SCSS file will be saved: ') + `${settings.cssReload ? chalk.green('Yes') : chalk.red('No')}`, value: 'cssReload' },
+                        { title: chalk.cyan('🖼️  Show the user interface on the targeted webpage: ') + `${settings.displayUI ? chalk.green('Yes') : chalk.red('No')}`, value: 'displayUI' },
+                        { title: chalk.cyan('📚 Total number of stored history records: ') + `${chalk.blue(settings.maxHistoryRecords)}`, value: 'maxHistoryRecords' },
                         { title: chalk.cyan('📦 Bundler Settings'), value: 'bundlerSettings' },
                         { title: chalk.magenta('🔙 Back'), value: 'back' },
                         { title: chalk.green('💾 Save and Exit'), value: 'saveExit' },
@@ -44,22 +46,33 @@ export const settingsCommand = new Command('settings')
                 if (response.setting === 'exit') {
                     exit = true;
                     process.exit(0);
-                }
-
-                if (response.setting === 'saveExit') {
+                } else if (response.setting === 'saveExit') {
                     await fs.writeJson(settingsPath, settings, { spaces: 4 });
 
                     console.log(kleur.green('Settings saved successfully!'));
                     exit = true;
                     process.exit(0);
-                }
-
-                if (response.setting === 'back') {
+                } else if (response.setting === 'back') {
                     runCLI();
                     return null;
-                }
+                } else if (response.setting === 'portNumber') {
+                    const portResponse = await prompts({
+                        type: 'number',
+                        name: 'portNumber',
+                        message: 'Enter a new port number (1 - 65535): Hint : (Most common ports are between 3000 and 9000)',
+                        min: 1,
+                        max: 65535,
+                        initial: settings.portNumber,
+                        validate: value => (value >= 1 && value <= 65535 ? true : 'Please choose a number between 1 and 65535')
+                    });
 
-                if (response.setting === 'bundlerSettings') {
+                    if (portResponse.portNumber === undefined) {
+                        continue;
+                    }
+
+                    newValue = portResponse.portNumber;
+                    settings.portNumber = newValue;
+                } else if (response.setting === 'bundlerSettings') {
                     let bundlerExit = false;
                     while (!bundlerExit) {
                         const bundlerOptions = [
@@ -119,11 +132,7 @@ export const settingsCommand = new Command('settings')
 
                         settings.bundler[settingKey] = toggleResponse.newValue;
                     }
-                }
-
-                let newValue;
-
-                if (response.setting === 'maxHistoryRecords') {
+                } else if (response.setting === 'maxHistoryRecords') {
                     const historyResponse = await prompts({
                         type: 'number',
                         name: 'maxHistoryRecords',
