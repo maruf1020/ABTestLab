@@ -59,7 +59,7 @@ export const settingsCommand = new Command('settings')
                     const portResponse = await prompts({
                         type: 'number',
                         name: 'portNumber',
-                        message: 'Enter a new port number (1 - 65535): Hint : (Most common ports are between 3000 and 9000)',
+                        message: `${chalk.yellow("Hint : (Most available ports are between 3000 and 9000")} \n${chalk.red('⚠️  Do not forget to change the port in your browser snippet!')} \n Enter a new port number (1 - 65535): \n`,
                         min: 1,
                         max: 65535,
                         initial: settings.portNumber,
