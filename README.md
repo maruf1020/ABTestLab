@@ -27,14 +27,11 @@ Make sure you have [Node.js](https://nodejs.org/) installed:
 # Install dependencies
 npm i
 
-# Initialize project (run once after setting up the repo)
+# Initialize project 
 npm run cli init
-
-# OR run CLI and select "Initialize project"
-npm run cli
 ```
 
-### Common CLI Commands:
+### CLI Commands:
 
 ```bash
 npm run cli          # Main CLI interface with all features but you can choose shortcut in below:
@@ -63,33 +60,21 @@ npm run cli settings # Configure settings
 ```
 ```js
 (function () {
-    'use strict';
-    function observeElement(selector, callback, {
-        minElements = 1,
-        isVariable = false,
-        timeout = 10000,
-        interval = 5
-    } = {}, start = performance.now()) {
-        (function check() {
-            const elements = isVariable ? window[selector] : document.querySelectorAll(selector);
-            if ((isVariable && elements !== undefined) || (!isVariable && elements.length >= minElements))
-                return callback(elements);
-            if (performance.now() - start < timeout)
-                setTimeout(check, interval);
-        })();
-    }
+	'use strict';
+	const portNumber = 3007;
+	function observeElement(selector, callback, { minElements = 1, isVariable = false, timeout = 10000, interval = 5 } = {}, start = performance.now()) { (function check() { const elements = isVariable ? window[selector] : document.querySelectorAll(selector); if ((isVariable && elements !== undefined) || (!isVariable && elements.length >= minElements)) return callback(elements); if (performance.now() - start < timeout) setTimeout(check, interval); })(); }
 
-    const MAIN_URL = 'http://localhost:3000/ab-pilot-script.js';
-    const mainScript = document.createElement('script');
-    mainScript.setAttribute('src', MAIN_URL);
-
-    observeElement('html', ([html]) => {
-        html.appendChild(mainScript);
-        const LIVE_UPDATE_URL = 'http://localhost:3000/ab-test-script.js';
-        const updateScript = document.createElement('script');
-        updateScript.setAttribute('src', LIVE_UPDATE_URL);
-        observeElement('html', ([html]) => html.appendChild(updateScript));
-    });
+	const MAIN_URL = `http://localhost:${portNumber}/ab-pilot-script.js`;
+	const mainScript = document.createElement('script');
+	mainScript.setAttribute('src', MAIN_URL);
+	observeElement('html', ([html]) => {
+		html.appendChild(mainScript)
+		const LIVE_UPDATE_URL = `http://localhost:${portNumber}/ab-test-script.js`;
+		const updateScript = document.createElement('script');
+		updateScript.setAttribute('src', LIVE_UPDATE_URL);
+		observeElement('html', ([html]) => html.appendChild(updateScript));
+		
+	});
 })();
 ```
 ```bash
@@ -135,7 +120,6 @@ npm run cli
 > 🚀 Start the Server
   📦 Build Test
   ➕ Create a New Item
-  🛠️ Initialize Project
   ⚙️ Update Settings
   ❌ Exit
 ```
