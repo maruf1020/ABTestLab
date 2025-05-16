@@ -247,8 +247,10 @@ export async function startTestServer(selectedVariations) {
         })
     })
 
-    // const port = process.env.PORT || 3000;
-    const port = 3000
+    //get port number from settings.json
+    const settingsPath = path.join(process.cwd(), "settings.json")
+    const settings = await fs.readJson(settingsPath)
+    const port = settings.portNumber || process.env.PORT || 3000
     server.listen(port, () => {
         log(`Test server running on http://localhost:${port}`)
     })

@@ -535,8 +535,12 @@ export async function startTest(website, test, variation, testType) {
 
     console.log(table.toString())
 
+    const settingsPath = path.join(process.cwd(), "settings.json")
+    const settings = await fs.readJson(settingsPath)
+    const port = settings.portNumber || process.env.PORT || 3000
+
     // console.log(kleur.green(`Starting test "${test}" for website "${website}" with variation "${variation}"...`))
-    console.log(kleur.green(`📡 Test Started on the port 3000`))
+    console.log(kleur.green(`📡 Test Started on the port ${port}`))
     log(`Test directory: ${testDir}`)
     log(`Active variation: ${variation}`)
 
@@ -601,7 +605,11 @@ export async function startMultipleTest(selectedVariations) {
     console.log(table.toString())
 
     // console.log(kleur.green(`Starting test "${selectedVariations.map((v) => "website: " + v.website + " - test: " + v.test + " - variation: " + v.variation).join(", ")}" ...`))
-    console.log(kleur.green(`📡 Multiple Tests Started on the Port 3000`))
+    const settingsPath = path.join(process.cwd(), "settings.json")
+    const settings = await fs.readJson(settingsPath)
+    const port = settings.portNumber || process.env.PORT || 3000
+
+    console.log(kleur.green(`📡 Multiple Tests Started on the Port ${port}`))
 
 
     log(`Test directories: ${testDirList}`)

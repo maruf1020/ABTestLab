@@ -1,16 +1,16 @@
 ; (() => {
     let config = {}
 
-    // Declare abTestPilotVariaTionInfo if it's not already declared
     window.abTestPilotVariaTionInfo = window.abTestPilotVariaTionInfo || {}
+    window.abTestPilotPortNumber = window.abTestPilotPortNumber || {}
 
-    if (!window.abTestPilotVariaTionInfo) {
+    if (Object.keys(window.abTestPilotVariaTionInfo).length < 1 || !window.abTestPilotPortNumber) {
         console.log("Either browser script injection is not properly working or no Test is available for this website")
         return
     }
 
     // Create WebSocket connection
-    const ws = window.createWebSocket ? window.createWebSocket() : new WebSocket("ws://localhost:3000")
+    const ws = window.createWebSocket ? window.createWebSocket() : new WebSocket(`ws://localhost:${window.abTestPilotPortNumber}`)
 
     ws.onopen = () => {
         console.log("Connected to A/B testing server")

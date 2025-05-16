@@ -38,12 +38,17 @@ export default async function browserScriptCreator(testInfo) {
         }
     }
 
+    const settingsPath = path.join(process.cwd(), "settings.json")
+    const settings = await fs.readJson(settingsPath)
+    const port = settings.portNumber || process.env.PORT || 3000
+
     const browserRunnerPath = path.join(coreDir, "client", "browser-runner.js");
     // const jsonString = JSON.stringify(browserData, null, 2); // Pretty print with 2 spaces
     const SerializeString = serialize(browserData, { space: 2 }); // Pretty print with 2 spaces
     await fs.writeFileSync(browserRunnerPath, `(()=>{
         const abTestPilotMainInformation = ${SerializeString}
         window.abTestPilotVariaTionInfo = {};
+        window.abTestPilotPortNumber = ${port};
         window.abTestPilot = {};
         function abTestPilotFilterTestsByHostname(testInfo) {
             return testInfo.filter(item => {
