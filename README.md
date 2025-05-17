@@ -4,10 +4,10 @@ A powerful CLI-based tool for local development of A/B tests with **live browser
 
 
 
-**UI Image**
+**UI**
 ![UI Image](core/public/images/ui.png)
 
-**Terminal Image**
+**Terminal**
 ![Terminal Image](core/public/images/terminal.png)
 
 

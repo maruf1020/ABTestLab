@@ -55,6 +55,7 @@ $ab--test-pilot-table-top: 153px;
         opacity $ab--test-pilot-transition,
         transform $ab--test-pilot-transition );
     font-family: $ab--test-pilot-font-family;
+    cursor: pointer;
 
     * {
         box-sizing: border-box;
@@ -130,8 +131,14 @@ $ab--test-pilot-table-top: 153px;
         width: 24px;
 
         &>svg {
-            height: 100%;
-            width: 100%;
+            height: 24px;
+            width: 24px;
+
+            rect {
+                height: 24px;
+                width: 24px;
+
+            }
         }
     }
 
