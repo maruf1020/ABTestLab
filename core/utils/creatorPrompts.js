@@ -31,7 +31,7 @@ export async function createNewWebsiteWithPrompt() {
         {
             type: "text",
             name: "hostnames",
-            message: "Enter the website host(s) or URL(s) (separate multiple with commas):",
+            message: "Enter the website host(s) or URL(s) (separate multiple with commas e.g. example.com, www.example.com, blog.example.com):",
             validate: (input) => {
                 const trimmedInput = input.trim();
                 if (trimmedInput === '') {

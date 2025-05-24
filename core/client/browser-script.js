@@ -57,7 +57,9 @@
                         hostnames.some(
                             (hostname) =>
                                 window.location.hostname.replace(/\/$/, "").includes(hostname.replace(/\/$/, "")) ||
-                                window.location.hostname.replace(/\/$/, "") == hostname.replace(/\/$/, ""),
+                                window.location.hostname.replace(/\/$/, "") == hostname.replace(/\/$/, "") ||
+                                window.location.origin.replace(/\/$/, "").includes(hostname.replace(/\/$/, "")) ||
+                                window.location.origin.replace(/\/$/, "") == hostname.replace(/\/$/, ""),
                         )
                     ) {
                         window.location.reload(true);
