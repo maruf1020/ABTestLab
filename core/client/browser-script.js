@@ -2,10 +2,10 @@
   let config = {};
 
   window.abTestPilotVariaTionInfo = window.abTestPilotVariaTionInfo || {};
-  window.abTestPilotPortNumber = window.abTestPilotPortNumber || {};
+  window.abTestPilotPortNumber = window.abTestPilotPortNumber || 3007;
 
   if (
-    Object.keys(window.abTestPilotVariaTionInfo).length < 1 ||
+    Object.keys(window.abTestPilotVariaTionInfo).length < 0 ||
     !window.abTestPilotPortNumber
   ) {
     console.log(
@@ -20,7 +20,10 @@
     : new WebSocket(`ws://localhost:${window.abTestPilotPortNumber}`);
 
   ws.onopen = () => {
-    console.log("Connected to A/B testing server");
+    console.log(
+      "%cConnected to A/B testing server",
+      "color:green; font-size:13px; margin:2px 0"
+    );
 
     // Check website after connection is established
     ws.send(
@@ -32,7 +35,10 @@
   };
 
   ws.onclose = () => {
-    console.log("Disconnected from A/B testing server");
+    console.log(
+      "%cDisconnected from A/B testing server",
+      "color:red; font-size:13px; margin:3px 0"
+    );
   };
 
   ws.onerror = (error) => {

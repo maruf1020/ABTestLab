@@ -1,19 +1,19 @@
-import fs from "fs-extra";
-import path from "path";
-import http from "http";
-import debug from "debug";
-import kleur from "kleur";
 import chokidar from "chokidar";
+import debug from "debug";
+import fs from "fs-extra";
+import http from "http";
+import kleur from "kleur";
+import path from "path";
+import { fileURLToPath } from "url";
 import { WebSocketServer } from "ws";
 import { ROOT_DIR } from "../global/config.js";
-import { fileURLToPath } from "url";
 
-import browserScriptCreator from "./browserScriptCreator.js";
 import {
-  bundleVariation,
   bundleTargeting,
+  bundleVariation,
   getBundlerData,
 } from "../utils/bundler.js";
+import browserScriptCreator from "./browserScriptCreator.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -221,6 +221,41 @@ export async function startTestServer(selectedVariations) {
     log("Browser connected");
     clients.add(ws);
 
+    ws.on("message", async (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+
+        if (data.type === "checkWebsite") {
+          const { url } = data.data;
+          const origin = new URL(url.toString()).origin;
+          const IsMatched = transformedTestInfo.testInfo.some((test) =>
+            test.hostnames.some((hostname) => {
+              // console.log(origin, origin.replace(/\/$/, ''), url, url.replace(/\/$/, ''), hostname, hostname.replace(/\/$/, ''), origin.replace(/\/$/, '').includes(hostname.replace(/\/$/, '')), url.replace(/\/$/, '').includes(hostname.replace(/\/$/, '')));
+
+              return (
+                origin
+                  .replace(/\/$/, "")
+                  .includes(hostname.replace(/\/$/, "")) ||
+                url.replace(/\/$/, "").includes(hostname.replace(/\/$/, ""))
+              );
+            })
+          );
+
+          if (IsMatched) {
+            console.log(kleur.magenta(`connected with the url: ${url}`));
+            ws.send(
+              JSON.stringify({
+                type: "checkWebsiteResponse",
+                data: "Successfully connected with the server",
+              })
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Error processing message:", error);
+      }
+    });
+
     try {
       const config = await fs.readJson(
         path.join(process.cwd(), "settings.json")
@@ -269,37 +304,6 @@ export async function startTestServer(selectedVariations) {
       );
     }
 
-    ws.on("message", async (message) => {
-      try {
-        const data = JSON.parse(message.toString());
-
-        if (data.type === "checkWebsite") {
-          const { url } = data.data;
-          const origin = new URL(url.toString()).origin;
-          const IsMatched = transformedTestInfo.testInfo.some((test) =>
-            test.hostnames.some(
-              (hostname) =>
-                origin
-                  .replace(/\/$/, "")
-                  .endsWith(hostname.replace(/\/$/, "")) ||
-                url.replace(/\/$/, "").endsWith(hostname.replace(/\/$/, ""))
-            )
-          );
-          if (IsMatched) {
-            console.log(kleur.magenta(`connected with the url: ${url}`));
-            ws.send(
-              JSON.stringify({
-                type: "checkWebsiteResponse",
-                data: "Successfully connected with the server",
-              })
-            );
-          }
-        }
-      } catch (error) {
-        console.error("Error processing message:", error);
-      }
-    });
-
     ws.on("close", () => {
       clients.delete(ws);
       log("Browser disconnected");
@@ -309,7 +313,7 @@ export async function startTestServer(selectedVariations) {
   //get port number from settings.json
   const settingsPath = path.join(process.cwd(), "settings.json");
   const settings = await fs.readJson(settingsPath);
-  const port = settings.portNumber || process.env.PORT || 3000;
+  const port = settings.portNumber || process.env.PORT || 3007;
   server.listen(port, () => {
     log(`Test server running on http://localhost:${port}`);
   });

@@ -40,7 +40,7 @@ export default async function browserScriptCreator(testInfo) {
 
   const settingsPath = path.join(process.cwd(), "settings.json");
   const settings = await fs.readJson(settingsPath);
-  const port = settings.portNumber || process.env.PORT || 3000;
+  const port = settings.portNumber;
 
   const browserRunnerPath = path.join(coreDir, "client", "browser-runner.js");
   // const jsonString = JSON.stringify(browserData, null, 2); // Pretty print with 2 spaces
@@ -48,9 +48,9 @@ export default async function browserScriptCreator(testInfo) {
   await fs.writeFileSync(
     browserRunnerPath,
     `(()=>{
+        window.abTestPilotPortNumber = ${port};
         const abTestPilotMainInformation = ${SerializeString}
         window.abTestPilotVariaTionInfo = {};
-        window.abTestPilotPortNumber = ${port};
         window.abTestPilot = {};
         function abTestPilotFilterTestsByHostname(testInfo) {
             return testInfo.filter(item => {

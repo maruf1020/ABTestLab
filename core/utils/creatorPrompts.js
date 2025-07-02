@@ -1,16 +1,16 @@
 import prompts from "prompts";
 
 import {
-  createWebsite,
   createTest,
   createTouchPoint,
   createVariation,
+  createWebsite,
 } from "./creators.js";
 import {
-  listWebsites,
+  getTestInfo,
   listTests,
   listTouchPoints,
-  getTestInfo,
+  listWebsites,
 } from "./fileUtils.js";
 
 import chalk from "chalk";
@@ -44,7 +44,7 @@ export async function createNewWebsiteWithPrompt() {
       type: "text",
       name: "hostnames",
       message:
-        "Enter the website host(s) or URL(s) (separate multiple with commas e.g. example.com, www.example.com, blog.example.com):",
+        "Enter the website host(s) or URL(s) (separate multiple with commas and don't forget to remove trailing slash (/) e.g. example.com, www.example.com, blog.example.com, https://www.example.com):",
       validate: (input) => {
         const trimmedInput = input.trim();
         if (trimmedInput === "") {
