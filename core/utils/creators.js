@@ -1,107 +1,143 @@
-import fs from "fs-extra"
-import path from "path"
-import kleur from "kleur"
-import prompts from "prompts"
+import fs from "fs-extra";
+import path from "path";
+import kleur from "kleur";
+import prompts from "prompts";
 
-import { init } from "../commands/init.js"
-import { getTestInfo } from "./fileUtils.js"
-import { ROOT_DIR, SKELETON_DIR } from "../global/config.js"
-import { changeVariationsNameOnHistory } from "./historyUtils.js"
-import { bundleVariation, bundleTargeting } from "./bundler.js"
+import { init } from "../commands/init.js";
+import { getTestInfo } from "./fileUtils.js";
+import { ROOT_DIR, SKELETON_DIR } from "../global/config.js";
+import { changeVariationsNameOnHistory } from "./historyUtils.js";
+import { bundleVariation, bundleTargeting } from "./bundler.js";
 
 function generateId(name) {
-  const timestamp = Date.now()
-  const randomNum = Math.floor(Math.random() * 10000)
-  const sanitizedName = name.replace(/[^a-zA-Z0-9]/g, "_")
-  return `${timestamp}_${randomNum}_${sanitizedName}`
+  const timestamp = Date.now();
+  const randomNum = Math.floor(Math.random() * 10000);
+  const sanitizedName = name.replace(/[^a-zA-Z0-9]/g, "_");
+  return `${timestamp}_${randomNum}_${sanitizedName}`;
 }
 
 async function ensureSkeletonExist() {
-  const skeletonExist = await fs.pathExists(SKELETON_DIR)
+  const skeletonExist = await fs.pathExists(SKELETON_DIR);
   if (!skeletonExist) {
     const response = await prompts({
       type: "confirm",
       name: "initializeSkeleton",
       message: "Skeleton are missing. Do you want to initialize them now?",
       initial: true,
-    })
+    });
     if (response.initializeSkeleton) {
-      await init()
+      await init();
     } else {
-      throw new Error('Skeleton are required. Please run "npm run cli init" to create skeleton.')
+      throw new Error(
+        'Skeleton are required. Please run "npm run cli init" to create skeleton.'
+      );
     }
   }
 }
 
 async function validateSkeleton() {
-  const targetingTemplateExists = await fs.pathExists(path.join(SKELETON_DIR, "targeting"))
-  const variationTemplateExists = await fs.pathExists(path.join(SKELETON_DIR, "variation", "default"))
+  const targetingTemplateExists = await fs.pathExists(
+    path.join(SKELETON_DIR, "targeting")
+  );
+  const variationTemplateExists = await fs.pathExists(
+    path.join(SKELETON_DIR, "variation", "default")
+  );
 
   if (!targetingTemplateExists || !variationTemplateExists) {
-    throw new Error('Required skeleton are missing. Please run "npm run cli init" to create skeleton.')
+    throw new Error(
+      'Required skeleton are missing. Please run "npm run cli init" to create skeleton.'
+    );
   } else {
     return true;
   }
 }
 
 async function copyTargetingFolder(destination) {
-  const targetingTemplateDir = path.join(SKELETON_DIR, "targeting")
-  await fs.copy(targetingTemplateDir, path.join(destination, "targeting"))
-  const targetingDir = path.join(destination, "targeting")
-  await bundleTargeting(targetingDir)
+  const targetingTemplateDir = path.join(SKELETON_DIR, "targeting");
+  await fs.copy(targetingTemplateDir, path.join(destination, "targeting"));
+  const targetingDir = path.join(destination, "targeting");
+  await bundleTargeting(targetingDir);
 
-  console.log(kleur.green(`Targeting folder created successfully for test "${destination}".`))
+  console.log(
+    kleur.green(
+      `Targeting folder created successfully for test "${destination}".`
+    )
+  );
 }
 
 async function copyVariationFolder(variationTemplateDir, newVariationDataList) {
-  return await Promise.all(newVariationDataList.map(async (newVariationData) => {
-    try {
-      const { pathDir, isTouchPointVariation, newVariationName, testDir, testInfo, touchPointDir, touchPointInfo, websiteName, testName } = newVariationData;
-      const destination = path.join(pathDir, newVariationName);
-      await fs.copy(variationTemplateDir, destination);
+  return await Promise.all(
+    newVariationDataList.map(async (newVariationData) => {
+      try {
+        const {
+          pathDir,
+          isTouchPointVariation,
+          newVariationName,
+          testDir,
+          testInfo,
+          touchPointDir,
+          touchPointInfo,
+          websiteName,
+          testName,
+        } = newVariationData;
+        const destination = path.join(pathDir, newVariationName);
+        await fs.copy(variationTemplateDir, destination);
 
-      const info = {
-        id: generateId(newVariationName),
-        name: newVariationName,
-        isVariation: true,
-        isTouchPointVariation,
-        createdAt: new Date().toISOString(),
-        createdAtReadable: new Date().toLocaleString(),
-        lastUpdated: new Date().toISOString()
-      };
+        const info = {
+          id: generateId(newVariationName),
+          name: newVariationName,
+          isVariation: true,
+          isTouchPointVariation,
+          createdAt: new Date().toISOString(),
+          createdAtReadable: new Date().toLocaleString(),
+          lastUpdated: new Date().toISOString(),
+        };
 
-      await fs.writeJson(path.join(destination, "info.json"), info, { spaces: 2 });
+        await fs.writeJson(path.join(destination, "info.json"), info, {
+          spaces: 2,
+        });
 
-      if (!testInfo.variations.includes(newVariationName)) {
-        testInfo.variations.push(newVariationName)
-      }
-      testInfo.lastUpdated = new Date().toISOString();
-      await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 });
-
-      if (isTouchPointVariation) {
-        if (!touchPointInfo.variations.includes(newVariationName)) {
-          touchPointInfo.variations.push(newVariationName);
+        if (!testInfo.variations.includes(newVariationName)) {
+          testInfo.variations.push(newVariationName);
         }
-        touchPointInfo.lastUpdated = new Date().toISOString();
-        await fs.writeJson(path.join(touchPointDir, "info.json"), touchPointInfo, { spaces: 2 });
+        testInfo.lastUpdated = new Date().toISOString();
+        await fs.writeJson(path.join(testDir, "info.json"), testInfo, {
+          spaces: 2,
+        });
+
+        if (isTouchPointVariation) {
+          if (!touchPointInfo.variations.includes(newVariationName)) {
+            touchPointInfo.variations.push(newVariationName);
+          }
+          touchPointInfo.lastUpdated = new Date().toISOString();
+          await fs.writeJson(
+            path.join(touchPointDir, "info.json"),
+            touchPointInfo,
+            { spaces: 2 }
+          );
+        }
+
+        await bundleVariation(destination);
+
+        console.log(
+          kleur.green(
+            `Variation "${newVariationName}" created successfully for test "${testName}" in website "${websiteName}".`
+          )
+        );
+
+        return info;
+      } catch (error) {
+        console.error(kleur.red(`Error copying variation: ${error.message}`));
+        throw error;
       }
-
-      await bundleVariation(destination);
-
-      console.log(kleur.green(`Variation "${newVariationName}" created successfully for test "${testName}" in website "${websiteName}".`));
-
-      return info;
-    } catch (error) {
-      console.error(kleur.red(`Error copying variation: ${error.message}`));
-      throw error;
-    }
-  }));
+    })
+  );
 }
 
 export async function createWebsite(websiteName, hostnameList) {
-  const websiteDir = path.join(ROOT_DIR, websiteName)
+  const websiteDir = path.join(ROOT_DIR, websiteName);
   try {
-    await fs.ensureDir(websiteDir)
+    await fs.ensureDir(websiteDir);
 
     const websiteInfo = {
       id: generateId(websiteName),
@@ -110,28 +146,40 @@ export async function createWebsite(websiteName, hostnameList) {
       createdAt: new Date().toISOString(),
       createdAtReadable: new Date().toLocaleString(),
       lastUpdated: new Date().toISOString(),
-    }
+    };
 
-    await fs.writeJson(path.join(websiteDir, "info.json"), websiteInfo, { spaces: 2 })
+    await fs.writeJson(path.join(websiteDir, "info.json"), websiteInfo, {
+      spaces: 2,
+    });
 
-    console.log(kleur.green(`Website "${websiteName}" created successfully with hostname(s): ${hostnameList.join(", ")}`))
+    console.log(
+      kleur.green(
+        `Website "${websiteName}" created successfully with hostname(s): ${hostnameList.join(", ")}`
+      )
+    );
 
     return websiteInfo;
   } catch (error) {
-    console.error(kleur.red(`Failed to create website: ${error.message}`))
-    throw error
+    console.error(kleur.red(`Failed to create website: ${error.message}`));
+    throw error;
   }
 }
 
-export async function createTest(website, testName, testType, touchPointName, variationName) {
+export async function createTest(
+  website,
+  testName,
+  testType,
+  touchPointName,
+  variationName
+) {
   try {
-    await validateSkeleton()
-    await ensureSkeletonExist()
+    await validateSkeleton();
+    await ensureSkeletonExist();
 
-    const testDir = path.join(ROOT_DIR, website, testName)
-    await fs.ensureDir(testDir)
+    const testDir = path.join(ROOT_DIR, website, testName);
+    await fs.ensureDir(testDir);
 
-    await copyTargetingFolder(testDir)
+    await copyTargetingFolder(testDir);
 
     const testInfo = {
       id: generateId(testName),
@@ -142,47 +190,61 @@ export async function createTest(website, testName, testType, touchPointName, va
       createdAt: new Date().toISOString(),
       createdAtReadable: new Date().toLocaleString(),
       lastUpdated: new Date().toISOString(),
-    }
+    };
 
     if (testType === "Multi-touch") {
-      testInfo.touchPoints = []
+      testInfo.touchPoints = [];
     }
 
-    await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 })
+    await fs.writeJson(path.join(testDir, "info.json"), testInfo, {
+      spaces: 2,
+    });
 
     switch (testType) {
       case "A/B":
-        await createVariation(website, testName, "control")
-        await createVariation(website, testName, variationName)
-        break
+        await createVariation(website, testName, "control");
+        await createVariation(website, testName, variationName);
+        break;
       case "AA":
-        await createVariation(website, testName, variationName)
-        break
+        await createVariation(website, testName, variationName);
+        break;
       case "Multi-touch":
-        await createTouchPoint(website, testName, touchPointName)
-        await createVariation(website, testName, variationName)
-        await createVariation(website, testName, "control")
-        break
+        await createTouchPoint(website, testName, touchPointName);
+        await createVariation(website, testName, variationName);
+        await createVariation(website, testName, "control");
+        break;
       case "Patch":
-        await createVariation(website, testName, variationName)
-        break
+        await createVariation(website, testName, variationName);
+        break;
     }
 
-    console.log(kleur.green(`Test "${testName}" created successfully for website "${website}".`))
+    console.log(
+      kleur.green(
+        `Test "${testName}" created successfully for website "${website}".`
+      )
+    );
 
     return testInfo;
-
   } catch (error) {
-    console.error(kleur.red(`Failed to create test: ${error.message}`))
-    throw error
+    console.error(kleur.red(`Failed to create test: ${error.message}`));
+    throw error;
   }
 }
 
-export async function createVariation(website, test, newVariationName, touchPointName = null) {
+export async function createVariation(
+  website,
+  test,
+  newVariationName,
+  touchPointName = null
+) {
   try {
     let newVariationDataList;
 
-    const variationTemplateDir = path.join(SKELETON_DIR, "variation", "default");
+    const variationTemplateDir = path.join(
+      SKELETON_DIR,
+      "variation",
+      "default"
+    );
     const testDir = path.join(ROOT_DIR, website, test);
     await fs.ensureDir(testDir);
     const testInfo = await fs.readJson(path.join(testDir, "info.json"));
@@ -191,25 +253,31 @@ export async function createVariation(website, test, newVariationName, touchPoin
       if (touchPointName) {
         const touchPointDir = path.join(testDir, touchPointName);
         await fs.ensureDir(touchPointDir);
-        const touchPointInfo = await fs.readJson(path.join(touchPointDir, "info.json"));
+        const touchPointInfo = await fs.readJson(
+          path.join(touchPointDir, "info.json")
+        );
 
-        newVariationDataList = [{
-          pathDir: touchPointDir,
-          isTouchPointVariation: true,
-          newVariationName,
-          testDir,
-          testInfo,
-          touchPointDir,
-          touchPointInfo,
-          websiteName: website,
-          testName: test
-        }];
+        newVariationDataList = [
+          {
+            pathDir: touchPointDir,
+            isTouchPointVariation: true,
+            newVariationName,
+            testDir,
+            testInfo,
+            touchPointDir,
+            touchPointInfo,
+            websiteName: website,
+            testName: test,
+          },
+        ];
       } else {
         newVariationDataList = await Promise.all(
           testInfo.touchPoints.map(async (touchPoint) => {
             const touchPointDir = path.join(testDir, touchPoint);
             await fs.ensureDir(touchPointDir);
-            const touchPointInfo = await fs.readJson(path.join(touchPointDir, "info.json"));
+            const touchPointInfo = await fs.readJson(
+              path.join(touchPointDir, "info.json")
+            );
 
             return {
               pathDir: touchPointDir,
@@ -220,26 +288,30 @@ export async function createVariation(website, test, newVariationName, touchPoin
               touchPointDir,
               touchPointInfo,
               websiteName: website,
-              testName: test
+              testName: test,
             };
           })
         );
       }
     } else {
-      newVariationDataList = [{
-        pathDir: testDir,
-        isTouchPointVariation: false,
-        newVariationName,
-        testDir,
-        testInfo,
-        touchPointDir: null,
-        touchPointInfo: null,
-        websiteName: website,
-        testName: test
-      }];
+      newVariationDataList = [
+        {
+          pathDir: testDir,
+          isTouchPointVariation: false,
+          newVariationName,
+          testDir,
+          testInfo,
+          touchPointDir: null,
+          touchPointInfo: null,
+          websiteName: website,
+          testName: test,
+        },
+      ];
     }
-    return await copyVariationFolder(variationTemplateDir, newVariationDataList);
-
+    return await copyVariationFolder(
+      variationTemplateDir,
+      newVariationDataList
+    );
   } catch (error) {
     console.error(kleur.red(`Failed to create variation: ${error.message}`));
     throw error;
@@ -248,17 +320,17 @@ export async function createVariation(website, test, newVariationName, touchPoin
 
 export async function createTouchPoint(website, test, touchPointName) {
   try {
-    const testDir = path.join(ROOT_DIR, website, test)
-    const testInfo = await fs.readJson(path.join(testDir, "info.json"))
-    await fs.ensureDir(testDir)
-    const testInfoDir = path.join(testDir, "info.json")
-    await fs.ensureFile(testInfoDir)
+    const testDir = path.join(ROOT_DIR, website, test);
+    const testInfo = await fs.readJson(path.join(testDir, "info.json"));
+    await fs.ensureDir(testDir);
+    const testInfoDir = path.join(testDir, "info.json");
+    await fs.ensureFile(testInfoDir);
 
-    const touchPointDir = path.join(testDir, touchPointName)
-    await fs.ensureDir(touchPointDir)
-    await copyTargetingFolder(touchPointDir)
+    const touchPointDir = path.join(testDir, touchPointName);
+    await fs.ensureDir(touchPointDir);
+    await copyTargetingFolder(touchPointDir);
 
-    const touchPointInfoDir = path.join(touchPointDir, "info.json")
+    const touchPointInfoDir = path.join(touchPointDir, "info.json");
 
     const touchPointInfo = {
       id: generateId(touchPointName),
@@ -268,25 +340,33 @@ export async function createTouchPoint(website, test, touchPointName) {
       createdAt: new Date().toISOString(),
       createdAtReadable: new Date().toLocaleString(),
       lastUpdated: new Date().toISOString(),
-    }
+    };
 
-    await fs.writeJson(touchPointInfoDir, touchPointInfo, { spaces: 2 })
-    await fs.ensureFile(touchPointInfoDir)
+    await fs.writeJson(touchPointInfoDir, touchPointInfo, { spaces: 2 });
+    await fs.ensureFile(touchPointInfoDir);
 
-    testInfo.touchPoints.push(touchPointName)
-    await fs.writeJson(testInfoDir, testInfo, { spaces: 2 })
-    await fs.ensureFile(testInfoDir)
+    testInfo.touchPoints.push(touchPointName);
+    await fs.writeJson(testInfoDir, testInfo, { spaces: 2 });
+    await fs.ensureFile(testInfoDir);
 
     const availableVariations = testInfo.variations;
-    await Promise.all(availableVariations.map(async (variationName) => await createVariation(website, test, variationName, touchPointName)));
+    await Promise.all(
+      availableVariations.map(
+        async (variationName) =>
+          await createVariation(website, test, variationName, touchPointName)
+      )
+    );
 
-
-    console.log(kleur.green(`TouchPoint "${touchPointName}" created successfully for test "${test}" in website "${website}".`))
+    console.log(
+      kleur.green(
+        `TouchPoint "${touchPointName}" created successfully for test "${test}" in website "${website}".`
+      )
+    );
 
     return touchPointInfo;
   } catch (error) {
-    console.error(kleur.red(`Failed to create touchPoint: ${error.message}`))
-    throw error
+    console.error(kleur.red(`Failed to create touchPoint: ${error.message}`));
+    throw error;
   }
 }
 
@@ -296,24 +376,38 @@ export async function renameVariation(website, test, variation, newName) {
     const testDir = path.join(ROOT_DIR, website, test);
     const testInfo = await fs.readJson(path.join(testDir, "info.json"));
 
-    testInfo.variations = testInfo.variations.map((v) => (v === variation ? newName : v));
+    testInfo.variations = testInfo.variations.map((v) =>
+      v === variation ? newName : v
+    );
     testInfo.lastUpdated = new Date().toISOString();
-    await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 });
+    await fs.writeJson(path.join(testDir, "info.json"), testInfo, {
+      spaces: 2,
+    });
 
     if (testInfo.type === "Multi-touch") {
       const touchPoints = testInfo.touchPoints;
       if (touchPoints.length >= 1) {
-        await Promise.all(touchPoints.map(async (touchPoint) => {
-          const VariationDir = path.join(testDir, touchPoint, variation);
-          if (await fs.pathExists(VariationDir)) {
-            await updateName(VariationDir, newName);
-          }
-          const touchPointDir = path.join(testDir, touchPoint);
-          const touchPointInfo = await fs.readJson(path.join(touchPointDir, "info.json"));
-          touchPointInfo.variations = touchPointInfo.variations.map((v) => (v === variation ? newName : v));
-          touchPointInfo.lastUpdated = new Date().toISOString();
-          await fs.writeJson(path.join(touchPointDir, "info.json"), touchPointInfo, { spaces: 2 });
-        }));
+        await Promise.all(
+          touchPoints.map(async (touchPoint) => {
+            const VariationDir = path.join(testDir, touchPoint, variation);
+            if (await fs.pathExists(VariationDir)) {
+              await updateName(VariationDir, newName);
+            }
+            const touchPointDir = path.join(testDir, touchPoint);
+            const touchPointInfo = await fs.readJson(
+              path.join(touchPointDir, "info.json")
+            );
+            touchPointInfo.variations = touchPointInfo.variations.map((v) =>
+              v === variation ? newName : v
+            );
+            touchPointInfo.lastUpdated = new Date().toISOString();
+            await fs.writeJson(
+              path.join(touchPointDir, "info.json"),
+              touchPointInfo,
+              { spaces: 2 }
+            );
+          })
+        );
       }
     } else {
       const variationDir = path.join(testDir, variation);
@@ -321,17 +415,31 @@ export async function renameVariation(website, test, variation, newName) {
     }
 
     async function updateName(variationDir, newName) {
-      const variationInfo = await fs.readJson(path.join(variationDir, "info.json"));
+      const variationInfo = await fs.readJson(
+        path.join(variationDir, "info.json")
+      );
       variationInfo.name = newName;
       variationInfo.lastUpdated = new Date().toISOString();
       info.push(variationInfo);
-      await fs.writeJson(path.join(variationDir, "info.json"), variationInfo, { spaces: 2 });
-      await fs.rename(variationDir, path.join(path.dirname(variationDir), newName));
+      await fs.writeJson(path.join(variationDir, "info.json"), variationInfo, {
+        spaces: 2,
+      });
+      await fs.rename(
+        variationDir,
+        path.join(path.dirname(variationDir), newName)
+      );
     }
 
-    await changeVariationsNameOnHistory({ website, test, variation, testType: testInfo.type }, newName);
+    await changeVariationsNameOnHistory(
+      { website, test, variation, testType: testInfo.type },
+      newName
+    );
 
-    console.log(kleur.green(`Variation "${variation}" renamed to "${newName}" successfully for test "${test}" in website "${website}".`));
+    console.log(
+      kleur.green(
+        `Variation "${variation}" renamed to "${newName}" successfully for test "${test}" in website "${website}".`
+      )
+    );
 
     return info;
   } catch (error) {
@@ -345,18 +453,33 @@ export async function renameTouchPoint(website, test, touchPoint, newName) {
     const testDir = path.join(ROOT_DIR, website, test);
     const testInfo = await fs.readJson(path.join(testDir, "info.json"));
 
-    testInfo.touchPoints = testInfo.touchPoints.map((tp) => (tp === touchPoint ? newName : tp));
+    testInfo.touchPoints = testInfo.touchPoints.map((tp) =>
+      tp === touchPoint ? newName : tp
+    );
     testInfo.lastUpdated = new Date().toISOString();
-    await fs.writeJson(path.join(testDir, "info.json"), testInfo, { spaces: 2 });
+    await fs.writeJson(path.join(testDir, "info.json"), testInfo, {
+      spaces: 2,
+    });
 
     const touchPointDir = path.join(testDir, touchPoint);
-    const touchPointInfo = await fs.readJson(path.join(touchPointDir, "info.json"));
+    const touchPointInfo = await fs.readJson(
+      path.join(touchPointDir, "info.json")
+    );
     touchPointInfo.name = newName;
     touchPointInfo.lastUpdated = new Date().toISOString();
-    await fs.writeJson(path.join(touchPointDir, "info.json"), touchPointInfo, { spaces: 2 });
-    await fs.rename(touchPointDir, path.join(path.dirname(touchPointDir), newName));
+    await fs.writeJson(path.join(touchPointDir, "info.json"), touchPointInfo, {
+      spaces: 2,
+    });
+    await fs.rename(
+      touchPointDir,
+      path.join(path.dirname(touchPointDir), newName)
+    );
 
-    console.log(kleur.green(`TouchPoint "${touchPoint}" renamed to "${newName}" successfully for test "${test}" in website "${website}".`));
+    console.log(
+      kleur.green(
+        `TouchPoint "${touchPoint}" renamed to "${newName}" successfully for test "${test}" in website "${website}".`
+      )
+    );
 
     return touchPointInfo;
   } catch (error) {
@@ -366,47 +489,69 @@ export async function renameTouchPoint(website, test, touchPoint, newName) {
 }
 
 export async function removeVariation(website, test, variation) {
-  const testInfo = await getTestInfo(website, test)
+  const testInfo = await getTestInfo(website, test);
   if (testInfo.variations.length === 2) {
-    throw new Error('Cannot remove the only variation')
+    throw new Error("Cannot remove the only variation");
   }
 
-  const variationDir = path.join(ROOT_DIR, website, test, variation)
-  await fs.remove(variationDir)
+  const variationDir = path.join(ROOT_DIR, website, test, variation);
+  await fs.remove(variationDir);
 
-  testInfo.variations = testInfo.variations.filter(v => v !== variation)
-  testInfo.lastUpdated = new Date().toISOString()
-  await fs.writeJson(path.join(ROOT_DIR, website, test, 'info.json'), testInfo, { spaces: 2 })
+  testInfo.variations = testInfo.variations.filter((v) => v !== variation);
+  testInfo.lastUpdated = new Date().toISOString();
+  await fs.writeJson(
+    path.join(ROOT_DIR, website, test, "info.json"),
+    testInfo,
+    { spaces: 2 }
+  );
 
-  if (testInfo.type === 'Multi-touch') {
-    const touchPoints = testInfo.touchPoints
-    await Promise.all(touchPoints.map(async tp => {
-      const tpInfo = await fs.readJson(path.join(ROOT_DIR, website, test, tp, 'info.json'))
-      tpInfo.variations = tpInfo.variations.filter(v => v !== variation)
-      tpInfo.lastUpdated = new Date().toISOString()
-      await fs.writeJson(path.join(ROOT_DIR, website, test, tp, 'info.json'), tpInfo, { spaces: 2 })
-      const tpVariationDir = path.join(ROOT_DIR, website, test, tp, variation)
-      if (await fs.pathExists(tpVariationDir)) {
-        await fs.remove(tpVariationDir)
-      }
-    }))
+  if (testInfo.type === "Multi-touch") {
+    const touchPoints = testInfo.touchPoints;
+    await Promise.all(
+      touchPoints.map(async (tp) => {
+        const tpInfo = await fs.readJson(
+          path.join(ROOT_DIR, website, test, tp, "info.json")
+        );
+        tpInfo.variations = tpInfo.variations.filter((v) => v !== variation);
+        tpInfo.lastUpdated = new Date().toISOString();
+        await fs.writeJson(
+          path.join(ROOT_DIR, website, test, tp, "info.json"),
+          tpInfo,
+          { spaces: 2 }
+        );
+        const tpVariationDir = path.join(
+          ROOT_DIR,
+          website,
+          test,
+          tp,
+          variation
+        );
+        if (await fs.pathExists(tpVariationDir)) {
+          await fs.remove(tpVariationDir);
+        }
+      })
+    );
   }
 
-  return await getTestInfo(website, test)
+  return await getTestInfo(website, test);
 }
 
 export async function removeTouchPoint(website, test, touchPoint) {
-  const testInfo = await getTestInfo(website, test)
+  const testInfo = await getTestInfo(website, test);
   if (testInfo.touchPoints.length === 2) {
-    throw new Error('Cannot remove the only touchPoint')
+    throw new Error("Cannot remove the only touchPoint");
   }
 
-  const touchPointDir = path.join(ROOT_DIR, website, test, touchPoint)
-  await fs.remove(touchPointDir)
+  const touchPointDir = path.join(ROOT_DIR, website, test, touchPoint);
+  await fs.remove(touchPointDir);
 
-  testInfo.touchPoints = testInfo.touchPoints.filter(tp => tp !== touchPoint)
-  testInfo.lastUpdated = new Date().toISOString()
-  await fs.writeJson(path.join(ROOT_DIR, website, test, 'info.json'), testInfo, { spaces: 2 })
+  testInfo.touchPoints = testInfo.touchPoints.filter((tp) => tp !== touchPoint);
+  testInfo.lastUpdated = new Date().toISOString();
+  await fs.writeJson(
+    path.join(ROOT_DIR, website, test, "info.json"),
+    testInfo,
+    { spaces: 2 }
+  );
 
-  return await getTestInfo(website, test)
+  return await getTestInfo(website, test);
 }
