@@ -65,15 +65,16 @@ npm run cli settings # Configure settings
 	function observeElement(selector, callback, { minElements = 1, isVariable = false, timeout = 10000, interval = 5 } = {}, start = performance.now()) { (function check() { const elements = isVariable ? window[selector] : document.querySelectorAll(selector); if ((isVariable && elements !== undefined) || (!isVariable && elements.length >= minElements)) return callback(elements); if (performance.now() - start < timeout) setTimeout(check, interval); })(); }
 
 	const MAIN_URL = `http://localhost:${portNumber}/ab-pilot-script.js`;
-	const mainScript = document.createElement('script');
-	mainScript.setAttribute('src', MAIN_URL);
 	observeElement('html', ([html]) => {
-		html.appendChild(mainScript)
-		const LIVE_UPDATE_URL = `http://localhost:${portNumber}/ab-test-script.js`;
-		const updateScript = document.createElement('script');
-		updateScript.setAttribute('src', LIVE_UPDATE_URL);
-		observeElement('html', ([html]) => html.appendChild(updateScript));
-		
+		const mainScript = document.createElement('script');
+		mainScript.setAttribute('src', MAIN_URL);
+		html.appendChild(mainScript);
+		setTimeout(()=>{
+			const LIVE_UPDATE_URL = `http://localhost:${portNumber}/ab-test-script.js`;
+			const updateScript = document.createElement('script');
+			updateScript.setAttribute('src', LIVE_UPDATE_URL);
+			observeElement('html', ([html]) => html.appendChild(updateScript));
+		}, 500);
 	});
 })();
 ```
