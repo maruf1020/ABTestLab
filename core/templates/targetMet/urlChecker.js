@@ -110,7 +110,6 @@ export default function checker(rulesConfig) {
   });
 }
 
-
 // // Detailed Output Structure:
 // {
 //   status: boolean,       // Final result
@@ -127,7 +126,6 @@ export default function checker(rulesConfig) {
 //     }]
 //   }
 // }
-
 
 // // Example Output:
 // {

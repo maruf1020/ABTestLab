@@ -1,47 +1,54 @@
-import fs from "fs-extra"
-import path from "path"
-import serialize from 'serialize-javascript';
-import { fileURLToPath } from "url"
+import fs from "fs-extra";
+import path from "path";
+import serialize from "serialize-javascript";
+import { fileURLToPath } from "url";
 
 export default async function browserScriptCreator(testInfo) {
-    const __filename = fileURLToPath(import.meta.url)
-    const __dirname = path.dirname(__filename)
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
 
-    const coreDir = path.join(__dirname, "..");
+  const coreDir = path.join(__dirname, "..");
 
-    const browserData = {
-        parentTargeting: testInfo.parentTargeting.map(item => {
-            return {
-                "parentTargetingId": item.parentTargetingId,
-                "targetingFiles": item.targetingFiles,
-                "variationIdList": item.variationIdList,
-            }
-        }),
-        testInfo: testInfo.testInfo.map(item => {
-            return {
-                "hostnames": item.hostnames,
-                "id": item.id,
-                "targetingFiles": item.targetingFiles,
-                "testType": item.testType,
-                "variationFiles": item.variationFiles,
-                "websiteName": item.websiteName,
-                "testName": item.testName,
-                "touchPointName": item.touchPointName,
-                "variationName": item.variationName,
-                "testType": item.testType
-            }
-        }),
-        targetMet: {
-            customJS: testInfo.targetMet.customJS,
-            elementChecker: testInfo.targetMet.elementChecker,
-            urlChecker: testInfo.targetMet.urlChecker
-        }
-    }
+  const browserData = {
+    parentTargeting: testInfo.parentTargeting.map((item) => {
+      return {
+        parentTargetingId: item.parentTargetingId,
+        targetingFiles: item.targetingFiles,
+        variationIdList: item.variationIdList,
+      };
+    }),
+    testInfo: testInfo.testInfo.map((item) => {
+      return {
+        hostnames: item.hostnames,
+        id: item.id,
+        targetingFiles: item.targetingFiles,
+        testType: item.testType,
+        variationFiles: item.variationFiles,
+        websiteName: item.websiteName,
+        testName: item.testName,
+        touchPointName: item.touchPointName,
+        variationName: item.variationName,
+        testType: item.testType,
+      };
+    }),
+    targetMet: {
+      customJS: testInfo.targetMet.customJS,
+      elementChecker: testInfo.targetMet.elementChecker,
+      urlChecker: testInfo.targetMet.urlChecker,
+    },
+  };
 
-    const browserRunnerPath = path.join(coreDir, "client", "browser-runner.js");
-    // const jsonString = JSON.stringify(browserData, null, 2); // Pretty print with 2 spaces
-    const SerializeString = serialize(browserData, { space: 2 }); // Pretty print with 2 spaces
-    await fs.writeFileSync(browserRunnerPath, `(()=>{
+  const settingsPath = path.join(process.cwd(), "settings.json");
+  const settings = await fs.readJson(settingsPath);
+  const port = settings.portNumber;
+
+  const browserRunnerPath = path.join(coreDir, "client", "browser-runner.js");
+  // const jsonString = JSON.stringify(browserData, null, 2); // Pretty print with 2 spaces
+  const SerializeString = serialize(browserData, { space: 2 }); // Pretty print with 2 spaces
+  await fs.writeFileSync(
+    browserRunnerPath,
+    `(()=>{
+        window.abTestPilotPortNumber = ${port};
         const abTestPilotMainInformation = ${SerializeString}
         window.abTestPilotVariaTionInfo = {};
         window.abTestPilot = {};
@@ -220,5 +227,6 @@ export default async function browserScriptCreator(testInfo) {
 
         abTestPilotProcessTests(testsWithoutParentTargeting, abTestPilotMainInformation.targetMet, {isParentTargeting: false});    
 
-    })()`);
+    })()`
+  );
 }

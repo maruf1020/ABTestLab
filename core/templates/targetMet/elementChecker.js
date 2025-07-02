@@ -2,22 +2,22 @@ export default function checker(rulesConfig) {
   return new Promise((resolve) => {
     const startTime = Date.now();
     const result = {
-      type: 'elementChecker',
+      type: "elementChecker",
       status: true,
       messages: [],
-      summary: '',
+      summary: "",
       time: 0,
       details: {
-        conditionType: rulesConfig.multiple_rules_check_by_condition || 'OR',
+        conditionType: rulesConfig.multiple_rules_check_by_condition || "OR",
         rulesEvaluated: [],
         totalTime: 0,
-        totalChecks: 0
-      }
+        totalChecks: 0,
+      },
     };
 
     if (!rulesConfig.rules || rulesConfig.rules.length === 0) {
-      result.messages.push('No rules defined - running test on all pages');
-      result.summary = 'No rules defined. Test will run on all pages.';
+      result.messages.push("No rules defined - running test on all pages");
+      result.summary = "No rules defined. Test will run on all pages.";
       result.time = Date.now() - startTime;
       resolve(result);
       return;
@@ -38,13 +38,14 @@ export default function checker(rulesConfig) {
           const countMatches = elementCount === rule.total_element_count;
 
           let pass = false;
-          let message = '';
+          let message = "";
 
           if (rule.is_matched) {
             if (countMatches && !finalCheck) {
               // Immediate success for positive match
               pass = true;
-              message = `Element found immediately: ${rule.selector} ` +
+              message =
+                `Element found immediately: ${rule.selector} ` +
                 `(Expected ${rule.total_element_count}, Found ${elementCount})`;
               clearTimeout(timeoutId);
               clearInterval(intervalId);
@@ -53,15 +54,16 @@ export default function checker(rulesConfig) {
               pass = countMatches;
               message = pass
                 ? `Element found after full wait: ${rule.selector} ` +
-                `(Expected ${rule.total_element_count}, Found ${elementCount})`
+                  `(Expected ${rule.total_element_count}, Found ${elementCount})`
                 : `Element not found after ${rule.waiting_time}ms: ${rule.selector} ` +
-                `(Expected ${rule.total_element_count}, Found ${elementCount})`;
+                  `(Expected ${rule.total_element_count}, Found ${elementCount})`;
             }
           } else {
             if (countMatches && !finalCheck) {
               // Immediate failure for negative match
               pass = false;
-              message = `Unwanted element found immediately: ${rule.selector} ` +
+              message =
+                `Unwanted element found immediately: ${rule.selector} ` +
                 `(Found ${elementCount} when expecting none)`;
               clearTimeout(timeoutId);
               clearInterval(intervalId);
@@ -71,7 +73,7 @@ export default function checker(rulesConfig) {
               message = pass
                 ? `No unwanted elements after ${rule.waiting_time}ms: ${rule.selector}`
                 : `Unwanted elements persisted: ${rule.selector} ` +
-                `(Found ${elementCount} when expecting none)`;
+                  `(Found ${elementCount} when expecting none)`;
             }
           }
 
@@ -82,7 +84,7 @@ export default function checker(rulesConfig) {
               time: Date.now() - ruleStartTime,
               checksPerformed,
               finalElementCount: elementCount,
-              message
+              message,
             });
             finalCheckDone = true;
           }
@@ -103,20 +105,24 @@ export default function checker(rulesConfig) {
     });
 
     Promise.allSettled(ruleChecks).then((results) => {
-      const resolvedRules = results.map(r => r.value);
+      const resolvedRules = results.map((r) => r.value);
 
       result.details.rulesEvaluated = resolvedRules;
       result.details.totalTime = Date.now() - startTime;
-      result.details.totalChecks = resolvedRules.reduce((sum, rule) => sum + rule.checksPerformed, 0);
+      result.details.totalChecks = resolvedRules.reduce(
+        (sum, rule) => sum + rule.checksPerformed,
+        0
+      );
 
-      resolvedRules.forEach(rule => {
+      resolvedRules.forEach((rule) => {
         result.messages.push(rule.message);
       });
 
-      const passStatuses = resolvedRules.map(r => r.pass);
-      result.status = result.details.conditionType === "AND"
-        ? passStatuses.every(Boolean)
-        : passStatuses.some(Boolean);
+      const passStatuses = resolvedRules.map((r) => r.pass);
+      result.status =
+        result.details.conditionType === "AND"
+          ? passStatuses.every(Boolean)
+          : passStatuses.some(Boolean);
 
       const passedCount = passStatuses.filter(Boolean).length;
       result.summary = result.status
@@ -128,7 +134,6 @@ export default function checker(rulesConfig) {
     });
   });
 }
-
 
 // // Detailed Output Structure:
 // {
@@ -147,7 +152,7 @@ export default function checker(rulesConfig) {
 //         is_matched: boolean,
 //         waiting_time: number,
 //         total_element_count: number,
-        
+
 //         // Result details
 //         pass: boolean,
 //         message: string,
