@@ -229,13 +229,13 @@ export async function buildVariation(variationDir) {
                 (function() {
                     var interval = setInterval(function() {
                         if (document.head) { // Check if <head> exists
-                            clearInterval(interval); // Stop checking once found
-
-                            setTimeout(function() { // Wait 5 seconds before injecting
-                                var style = document.createElement("style");
-                                style.innerHTML = \`${css.replace(/`/g, "\\`")}\`;
-                                document.head.appendChild(style);
-                            }, 5000); // Inject after 5 seconds
+                            clearInterval(interval); // Stop checking once found                            
+                            var style = document.createElement("style");
+                            style.innerHTML = \`${css.replace(/`/g, "\\`")}\`;
+                            document.head.appendChild(style);
+                            setTimeout(() => {
+                              clearInterval(interval); // Clear the interval after 5 seconds
+                            }, 5000);                     
                         }
                     }, 100); // Check every 100ms for <head>
                 })();
