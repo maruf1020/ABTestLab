@@ -16,13 +16,17 @@ export async function structureOldProject() {
   const newExists = await fs.pathExists(newPath);
 
   if (!oldExists) {
-    console.log(chalk.red(`❌ Source folder does not exist: ${oldPath}`));
+    console.log(
+      chalk.red(`❌ Source folder does not exist: ${oldPath}`) +
+      " " +
+      chalk.green("Or already structured?"),
+    );
     return;
   }
 
   if (newExists) {
     console.log(
-      chalk.yellow(`⚠️ Destination folder already exists: ${newPath}`)
+      chalk.yellow(`⚠️ Destination folder already exists: ${newPath}`),
     );
     return;
   }
@@ -39,7 +43,7 @@ export async function structureOldProject() {
 
   // UPDATE ALL WEBSITE FOLDERS "info.json" FILES
   console.log(
-    chalk.cyan("🔄 Updating info.json files in all website folders...")
+    chalk.cyan("🔄 Updating info.json files in all website folders..."),
   );
 
   const subfolders = await fs.readdir(newPath);
@@ -59,7 +63,9 @@ export async function structureOldProject() {
       const { name, lastUpdated } = data;
 
       const date = new Date(lastUpdated);
-      const id = `${lastUpdated}_${Math.floor(1000 + Math.random() * 9000)}_${name.replace(/[^a-zA-Z0-9]/g, "_")}`;
+      const id = `${lastUpdated}_${Math.floor(
+        1000 + Math.random() * 9000,
+      )}_${name.replace(/[^a-zA-Z0-9]/g, "_")}`;
       const isoDate = date.toISOString();
       const readableDate = date.toLocaleString("en-GB", {
         timeZone: "Asia/Dhaka",
@@ -121,7 +127,9 @@ export async function structureOldProject() {
         const { name, lastUpdated } = data;
 
         const date = new Date(lastUpdated);
-        const id = `${lastUpdated}_${Math.floor(1000 + Math.random() * 9000)}_${name.replace(/[^a-zA-Z0-9]/g, "_")}`;
+        const id = `${lastUpdated}_${Math.floor(
+          1000 + Math.random() * 9000,
+        )}_${name.replace(/[^a-zA-Z0-9]/g, "_")}`;
         const isoDate = date.toISOString();
         const readableDate = date.toLocaleString("en-GB", {
           timeZone: "Asia/Dhaka",
@@ -147,12 +155,12 @@ export async function structureOldProject() {
         await fs.copy(targetingPath, targetingFolderPath, { overwrite: true });
 
         console.log(
-          chalk.green(`✅ Updated: ${brand}/${testFolder}/info.json`)
+          chalk.green(`✅ Updated: ${brand}/${testFolder}/info.json`),
         );
       } catch (err) {
         console.error(
           chalk.red(`❌ Failed to update ${brand}/${testFolder}/info.json:`),
-          err
+          err,
         );
       }
     }
@@ -180,48 +188,23 @@ export async function structureOldProject() {
         const isVariationDir = (await fs.stat(variationPath)).isDirectory();
         const stylesPath = path.join(variationPath, "styles");
         const buildPath = path.join(variationPath, "build");
-        const compiledPath = path.join(variationPath, "compiled");
 
         // Check if it's a valid variation folder
         if (isVariationDir && (await fs.pathExists(variationInfoPath))) {
           console.log(chalk.cyan(`Processing variation: ${variation}`));
 
-          // Create the "compiled" folder inside the variation folder
-          await fs.ensureDir(compiledPath);
-
-          // Copy "index.js" to the "compiled" folder
-          const indexJsPath = path.join(variationPath, "index.js");
-          if (await fs.pathExists(indexJsPath)) {
-            await fs.copy(indexJsPath, path.join(compiledPath, "index.js"));
-            console.log(
-              chalk.green(
-                `✅ Copied index.js to compiled folder for ${variation}`
-              )
-            );
-          }
-
-          // Copy "index.css" to "compiled" folder and rename it to "style.css"
-          const indexCssPath = path.join(stylesPath, "index.css");
-          if (await fs.pathExists(indexCssPath)) {
-            await fs.copy(indexCssPath, path.join(compiledPath, "style.css"));
-            console.log(
-              chalk.green(
-                `✅ Copied index.css as style.css to compiled folder for ${variation}`
-              )
-            );
-          }
 
           // Copy "index.scss" to the variation folder and rename it to "style.scss"
           const indexScssPath = path.join(stylesPath, "index.scss");
           if (await fs.pathExists(indexScssPath)) {
             await fs.copy(
               indexScssPath,
-              path.join(variationPath, "style.scss")
+              path.join(variationPath, "style.scss"),
             );
             console.log(
               chalk.green(
-                `✅ Copied index.scss as style.scss to variation folder for ${variation}`
-              )
+                `✅ Copied index.scss as style.scss to variation folder for ${variation}`,
+              ),
             );
           }
 
@@ -229,7 +212,7 @@ export async function structureOldProject() {
           if (await fs.pathExists(stylesPath)) {
             await fs.remove(stylesPath);
             console.log(
-              chalk.green(`✅ Deleted styles folder for ${variation}`)
+              chalk.green(`✅ Deleted styles folder for ${variation}`),
             );
           }
 
@@ -237,15 +220,16 @@ export async function structureOldProject() {
           if (await fs.pathExists(buildPath)) {
             await fs.remove(buildPath);
             console.log(
-              chalk.green(`✅ Deleted build folder for ${variation}`)
+              chalk.green(`✅ Deleted build folder for ${variation}`),
             );
           }
 
           // Update the "index.js" to remove the import statement
+          const indexJsPath = path.join(variationPath, "index.js");
           const indexJsContent = await fs.readFile(indexJsPath, "utf-8");
           const updatedIndexJsContent = indexJsContent.replace(
             /import\s+['"]\.\/styles\/index\.scss['"]\s*;?\s*(\/\*\s*DO NOT IMPORT ANYTHING\s*\*\/)?/g,
-            ""
+            "",
           );
 
           await fs.writeFile(indexJsPath, updatedIndexJsContent, "utf-8");
@@ -265,7 +249,9 @@ export async function structureOldProject() {
             });
 
             const updatedData = {
-              id: `${lastUpdated}_${Math.floor(1000 + Math.random() * 9000)}_${name.replace(/[^a-zA-Z0-9]/g, "_")}`,
+              id: `${lastUpdated}_${Math.floor(
+                1000 + Math.random() * 9000,
+              )}_${name.replace(/[^a-zA-Z0-9]/g, "_")}`,
               name,
               isVariation: true,
               isTouchPointVariation: false,
@@ -279,7 +265,7 @@ export async function structureOldProject() {
           } catch (err) {
             console.error(
               chalk.red(`❌ Failed to update info.json for ${variation}:`),
-              err
+              err,
             );
           }
         }
