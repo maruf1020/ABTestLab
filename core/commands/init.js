@@ -14,7 +14,9 @@ export async function init() {
 
     await createSettingsFile();
     await createSkeleton();
-    // await structureOldProject();
+    // This is for structuring an old project to the new structure
+    // Uncomment the line below if you want to structure an old project
+    await structureOldProject();
 
     console.log(chalk.green("Project initialized successfully! 💯"));
   } catch (error) {

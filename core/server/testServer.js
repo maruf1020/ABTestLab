@@ -56,7 +56,7 @@ export async function startTestServer(selectedVariations) {
         __dirname,
         "..",
         "client",
-        "browser-Runner.js"
+        "browser-runner.js"
       );
       const content = await fs.readFile(scriptPath, "utf-8");
       res.writeHead(200, { "Content-Type": "application/javascript" });

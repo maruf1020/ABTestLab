@@ -226,19 +226,19 @@ export async function buildVariation(variationDir) {
       );
 
       const styleInjectorScript = (css) => `
-                (function() {
-                    var interval = setInterval(function() {
-                        if (document.head) { // Check if <head> exists
-                            clearInterval(interval); // Stop checking once found                            
-                            var style = document.createElement("style");
-                            style.innerHTML = \`${css.replace(/`/g, "\\`")}\`;
-                            document.head.appendChild(style);
-                            setTimeout(() => {
-                              clearInterval(interval); // Clear the interval after 5 seconds
-                            }, 5000);                     
-                        }
-                    }, 100); // Check every 100ms for <head>
-                })();
+        (function() {
+              var interval = setInterval(function() {
+                  if (document.head) { // Check if <head> exists
+                      clearInterval(interval); // Stop checking once found                            
+                      var style = document.createElement("style");
+                      style.innerHTML = \`${css.replace(/`/g, "\\`")}\`;
+                      document.head.appendChild(style);
+                      setTimeout(() => {
+                        clearInterval(interval); // Clear the interval after 5 seconds
+                      }, 5000);                     
+                  }
+              }, 100); // Check every 100ms for <head>
+          })();
             `;
 
       // Create `index.with-css.js`

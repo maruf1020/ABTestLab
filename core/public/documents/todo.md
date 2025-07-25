@@ -19,8 +19,9 @@ project structure :
 ABTestLab
 ├── .vscode/                         # VS Code configuration files
 ├── core/                            # Core functionalities
+├── services/                            # Core functionalities
 │   ├── client/                      # Client-side scripts
-│   │   ├── browser-Runner.js
+│   │   ├── browser-runner.js
 │   │   └── browser-script.js
 │   ├── commands/                    # CLI commands
 │   │   ├── create.js
