@@ -199,6 +199,14 @@ export async function getTouchPointsVariationInfo(website, test, touchPoint, var
   }
 }
 
+export function getTargetDir(website, test) {
+  return path.join(ROOT_DIR, website, test, "targeting")
+}
+
+export function getTargetDirForTouchPoint(website, test, touchPoint) {
+  return path.join(ROOT_DIR, website, test, touchPoint, "targeting")
+}
+
 export function getVariationDir(website, test, variation) {
   return path.join(ROOT_DIR, website, test, variation)
 }
